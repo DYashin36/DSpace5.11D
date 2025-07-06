@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.dspace.app.itemexport.ItemExport;
 import org.dspace.app.util.AuthorizeUtil;
 import org.dspace.app.util.Util;
 import org.dspace.app.webui.servlet.DSpaceServlet;
@@ -640,6 +641,8 @@ public class EditItemServlet extends DSpaceServlet
         // Put them in a list
         List<String> sortedParamNames = new LinkedList<String>();
 
+        Boolean itIs = false;
+
         while (unsortedParamNames.hasMoreElements())
         {
             sortedParamNames.add((String)unsortedParamNames.nextElement());
@@ -912,6 +915,13 @@ public class EditItemServlet extends DSpaceServlet
         }
         else
         {
+            if (itIs == false) {
+                try {
+                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                } catch (Exception e) {
+                    log.info("OHFUCK: " + e.toString());
+                }
+            }
             // Show edit page again
             showEditForm(context, request, response, item);
         }

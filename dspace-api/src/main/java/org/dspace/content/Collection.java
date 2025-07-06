@@ -17,6 +17,7 @@ import org.dspace.browse.BrowseException;
 import org.dspace.browse.IndexBrowse;
 import org.dspace.browse.ItemCountException;
 import org.dspace.browse.ItemCounter;
+import org.dspace.content.Collection.CollectionComparator;
 import org.dspace.core.*;
 import org.dspace.eperson.Group;
 import org.dspace.event.Event;
@@ -481,6 +482,76 @@ public class Collection extends DSpaceObject
                 myQuery,getID());
 
         return new ItemIterator(ourContext, rows);
+    }
+
+    /**
+     * Get all collections in the system if trhy dont have Workflow. These are alphabetically sorted by
+     * collection name.
+     *
+     * @param context DSpace context object
+     * @return the collections in the system
+     * @throws SQLException
+     */
+    public static Collection[] findAllWithoutWorkflow(Context context) throws SQLException {
+        TableRowIterator tri = null;
+        List<Collection> collections = null;
+        List<Serializable> params = new ArrayList<Serializable>();
+        StringBuffer query = new StringBuffer(
+                "SELECT c.* FROM collection c LEFT JOIN metadatavalue m ON " +
+                        "( m.resource_id = c.collection_id AND m.resource_type_id = ? AND m.metadata_field_id = ?) " +
+                        "WHERE c.workflow_step_1 IS NULL AND c.workflow_step_2 IS NULL AND c.workflow_step_3 IS NULL"
+        );
+
+        if (DatabaseManager.isOracle()) {
+            query.append(" ORDER BY cast(m.text_value as varchar2(128))");
+        } else {
+            query.append(" ORDER BY m.text_value");
+        }
+
+        params.add(Constants.COLLECTION);
+        params.add(
+                MetadataField.findByElement(
+                        context,
+                        MetadataSchema.find(context, MetadataSchema.DC_SCHEMA).getSchemaID(),
+                        "title",
+                        null
+                ).getFieldID()
+        );
+
+        try {
+            tri = DatabaseManager.query(
+                    context, query.toString(), params.toArray()
+            );
+
+            collections = new ArrayList<Collection>();
+
+            while (tri.hasNext()) {
+                TableRow row = tri.next();
+
+                // First check the cache
+                Collection fromCache = (Collection) context.fromCache(
+                        Collection.class, row.getIntColumn("collection_id"));
+
+                if (fromCache != null) {
+                    collections.add(fromCache);
+                } else {
+                    collections.add(new Collection(context, row));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Find all Collections - ", e);
+            throw e;
+        } finally {
+            // close the TableRowIterator to free up resources
+            if (tri != null) {
+                tri.close();
+            }
+        }
+
+        Collection[] collectionArray = new Collection[collections.size()];
+        collectionArray = (Collection[]) collections.toArray(collectionArray);
+
+        return collectionArray;
     }
 
     /**

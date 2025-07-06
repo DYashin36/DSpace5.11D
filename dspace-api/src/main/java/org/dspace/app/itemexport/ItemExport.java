@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -349,6 +350,77 @@ public class ItemExport
         }
     }
 
+    public static void exportItemToFolder(Context c, Item myItem, String destDirName,
+            int seqStart, boolean migrate) throws Exception
+    {
+        File destDir = new File(destDirName);
+
+        destDir.setExecutable(true,false);
+        destDir.setWritable(true,false);
+        destDir.setReadable(true,false);
+        
+        if(destDir.exists()){
+            //create a subdirectory
+            File itemDir = new File(destDir + "/");
+
+            Integer files = itemDir.listFiles().length;
+
+            itemDir.setExecutable(true,false);
+            itemDir.setWritable(true,false);
+            itemDir.setReadable(true,false);
+
+            System.out.println("Exporting Item " + myItem.getID() + " to "
+                        + itemDir);
+            writeMetadata(c, myItem, itemDir, migrate,files);
+        }
+    }
+
+    public static void exportItemToFolderMass(Context c, ArrayList<Item> myItem, String destDirName,
+                                          int seqStart, boolean migrate) throws Exception
+    {
+        File destDir = new File(destDirName);
+
+        destDir.setExecutable(true, false);
+        destDir.setWritable(true, false);
+        destDir.setReadable(true, false);
+
+        if (destDir.exists()) {
+            // now create a subdirectory
+            File itemDir = new File(destDir + "/" );
+
+            Integer files = itemDir.listFiles().length;
+
+            itemDir.setExecutable(true, false);
+            itemDir.setWritable(true, false);
+            itemDir.setReadable(true, false);
+
+
+            if (itemDir.exists()) {
+                //       throw new Exception("Directory " + destDir + "/" + seqStart
+                //             + " already exists!");
+            }
+            Set<String> schemas = new HashSet<String>();
+            Metadatum[] dcValues = myItem.get(0).getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY);
+            for (Metadatum dcValue : dcValues)
+            {
+                schemas.add(dcValue.schema);
+            }
+
+            // make it this far, now start exporting
+            writeMetadataMass(c, schemas.iterator().next(), myItem, itemDir, migrate, files);
+            //writeBitstreams(c, myItem, itemDir);
+            if (!migrate) {
+                //     writeHandle(c, myItem, itemDir);
+            }
+
+            // throw new Exception("Error, can't make dir " + itemDir);
+
+        } else {
+            //   throw new Exception("Error, directory " + destDirName
+            //           + " doesn't exist!");
+        }
+    }
+
     private static void exportItem(Context c, Item myItem, String destDirName,
             int seqStart, boolean migrate) throws Exception
     {
@@ -371,7 +443,7 @@ public class ItemExport
             if (itemDir.mkdir())
             {
                 // make it this far, now start exporting
-                writeMetadata(c, myItem, itemDir, migrate);
+                writeMetadata(c, myItem, itemDir, migrate,0);
                 writeBitstreams(c, myItem, itemDir);
                 if (!migrate)
                 {
@@ -390,6 +462,7 @@ public class ItemExport
         }
     }
 
+
     /**
      * Discover the different schemas in use and output a separate metadata XML
      * file for each schema.
@@ -399,7 +472,7 @@ public class ItemExport
      * @param destDir
      * @throws Exception
      */
-    private static void writeMetadata(Context c, Item i, File destDir, boolean migrate)
+    private static void writeMetadata(Context c, Item i, File destDir, boolean migrate, Integer files)
             throws Exception
     {
         Set<String> schemas = new HashSet<String>();
@@ -412,44 +485,67 @@ public class ItemExport
         // Save each of the schemas into it's own metadata file
         for (String schema : schemas)
         {
-            writeMetadata(c, schema, i, destDir, migrate);
+            writeMetadata(c, schema, i, destDir, migrate,files);
         }
     }
 
-    // output the item's dublin core into the item directory
+    //custom metadata writing
     private static void writeMetadata(Context c, String schema, Item i,
-            File destDir, boolean migrate) throws Exception
+            File destDir, boolean migrate, Integer files) throws Exception
     {
-        String filename;
-        if (schema.equals(MetadataSchema.DC_SCHEMA))
-        {
-            filename = "dublin_core.xml";
-        }
+        log.info("start writing "+files);
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Date date = new Date();
+        String zeroes = "";
+        if(files == null)
+            files = 1;
         else
-        {
-            filename = "metadata_" + schema + ".xml";
+            files = files + 1;
+        Integer digits = (int) Math.log10(files) + 1;
+
+        for(int j = digits; j <= 6; j++){
+            zeroes = zeroes + "0";
         }
+        files = files + 1;
+        zeroes = zeroes + files.toString();
 
-        File outFile = new File(destDir, filename);
+        String filename;
+        String filename2 = "";
+        filename = "dublin_core.xml";
+        filename2 = dateFormat.format(date)+zeroes+".xml";
 
+        File outFile = new File(destDir,filename);
+        File outFile2 = new File(destDir, filename2);
+        
+        log.info("writing...");
         System.out.println("Attempting to create file " + outFile);
 
-        if (outFile.createNewFile())
+        if(outFile2.createNewFile())
         {
-            BufferedOutputStream out = new BufferedOutputStream(
-                    new FileOutputStream(outFile));
+            log.info("createNewFile mark");
+
+            BufferedOutputStream out2 = new BufferedOutputStream(
+                    new FileOutputStream(outFile2));
 
             Metadatum[] dcorevalues = i.getMetadata(schema, Item.ANY, Item.ANY,
                     Item.ANY);
 
             // XML preamble
+            
             byte[] utf8 = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
                     .getBytes("UTF-8");
-            out.write(utf8, 0, utf8.length);
+                    
+            out2.write(utf8, 0, utf8.length);
 
             String dcTag = "<dublin_core schema=\"" + schema + "\">\n";
+            String cTag = "<ExchangeXML xmlns=\"http://www.imc-dspace.org\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">";
             utf8 = dcTag.getBytes("UTF-8");
-            out.write(utf8, 0, utf8.length);
+            
+            utf8 = cTag.getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
+            cTag = "<Records>";
+            utf8 = cTag.getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
 
             String dateIssued = null;
             String dateAccessioned = null;
@@ -480,6 +576,7 @@ public class ItemExport
                         + Utils.addEntities(dcv.value) + "</dcvalue>\n")
                         .getBytes("UTF-8");
 
+                //do nothing in the {} block, but can be valuable for exception throw
                 if ((!migrate) ||
                     (migrate && !(
                      ("date".equals(dcv.element) && "issued".equals(qualifier)) ||
@@ -492,7 +589,7 @@ public class ItemExport
                      ("format".equals(dcv.element) && "extent".equals(qualifier)) ||
                      ("format".equals(dcv.element) && "mimetype".equals(qualifier)))))
                 {
-                    out.write(utf8, 0, utf8.length);
+                  //  out.write(utf8, 0, utf8.length);
                 }
 
                 // Store the date issued and accession to see if they are different
@@ -517,19 +614,802 @@ public class ItemExport
                         + "qualifier=\"issued\">"
                         + Utils.addEntities(dateIssued) + "</dcvalue>\n")
                         .getBytes("UTF-8");
-                out.write(utf8, 0, utf8.length);
+              //  out.write(utf8, 0, utf8.length);
             }
 
             utf8 = "</dublin_core>\n".getBytes("UTF-8");
-            out.write(utf8, 0, utf8.length);
+        //    out.write(utf8, 0, utf8.length);
 
-            out.close();
+        //    out.close();
+
+            Metadatum[] dcorevalues2 = i.getMetadata(schema, "title", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Title><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Title>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "contributor", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Contributor><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Contributor>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            dcorevalues2 = i.getMetadata(schema, "creator", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Creator>"+dcv.value+"</Creator>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            dcorevalues2 = i.getMetadata(schema, "publisher", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Publisher>"+dcv.value+"</Publisher>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            dcorevalues2 = i.getMetadata(schema, "link", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Link>"+dcv.value+"</Link>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            dcorevalues2 = i.getMetadata(schema, "date","issued",
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Date>"+dcv.value+"</Date>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            dcorevalues2 = i.getMetadata(schema, "source", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Source>"+dcv.value+"</Source>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            dcorevalues2 = i.getMetadata(schema, "description", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Description><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Description>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "type", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Type>"+dcv.value+"</Type>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+              //  utf8 = ("<Language>"+dcv.language+"</Language>\n")
+              //          .getBytes("UTF-8");
+             //   out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "identifier", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "identifier";
+                }
+                utf8 = ("<Identifier><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Identifier>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "relation", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Relation><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Relation>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "rights", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Rights>"+dcv.value+"</Rights>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "language", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Language>"+dcv.value+"</Language>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "format", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Format><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Format>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "coverage", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Coverage><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Coverage>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "subject", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Subject><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Subject>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            dcorevalues2 = i.getMetadata(schema, "citation", Item.ANY,
+                    Item.ANY);
+            for (Metadatum dcv : dcorevalues2)
+            {
+                String qualifier = dcv.qualifier;
+
+                if (qualifier == null)
+                {
+                    qualifier = "none";
+                }
+                utf8 = ("<Citation><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Citation>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+            utf8 = ("<Link>"+HandleManager.getCanonicalForm(i.getHandle()+"</Link>\n"))
+                    .getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
+            utf8 = ("</Records>\n")
+                    .getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
+            utf8 = ("</ExchangeXML>\n")
+                    .getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
+
+            out2.close();
         }
         else
         {
             throw new Exception("Cannot create dublin_core.xml in " + destDir);
         }
     }
+
+    private static void writeMetadataMass(Context c, String schema, ArrayList<Item> items,
+                                      File destDir, boolean migrate, Integer files) throws Exception
+    {
+        //full copy from dspace-5.2-final
+        log.info("OK, TIMETOWRITE " + files);
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Date date = new Date();
+        String zeroes = "";
+        if(files == 0)
+            files = 1;
+        else
+            files = files + 2;
+
+        if(files == null)
+            files = 1;
+        Integer digits =  (int) Math.log10(files) + 1;
+
+        for(int j = digits; j <= 6; j++){
+            zeroes = zeroes + "0";
+        }
+
+        log.info("OK, TIMETOWRITE 2" + files);
+        zeroes = zeroes + files.toString();
+
+
+        String filename;
+        String filename2 = "";
+
+        if (schema.equals(MetadataSchema.DC_SCHEMA))
+        {
+            filename = "dublin_core.xml";
+            filename2 = dateFormat.format(date)+zeroes+".xml";
+        }
+        else
+        {
+            filename = "metadata_" + schema + ".xml";
+        }
+
+        File outFile = new File(destDir, filename);
+        File outFile2 = new File(destDir, filename2);
+
+        outFile.setReadable(true, false);
+        outFile.setWritable(true, false);
+        outFile.setExecutable(true, false);
+
+        outFile2.setReadable(true, false);
+        outFile2.setWritable(true, false);
+        outFile2.setExecutable(true, false);
+
+        System.out.println("Attempting to create file " + outFile);
+
+        if (outFile2.createNewFile()) {
+          /*  BufferedOutputStream out = new BufferedOutputStream(
+                    new FileOutputStream(outFile));*/
+            BufferedOutputStream out2 = new BufferedOutputStream(
+                    new FileOutputStream(outFile2));
+
+
+            // XML preamble
+            byte[] utf8 = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+                    .getBytes("UTF-8");
+            //       out.write(utf8, 0, utf8.length);
+            out2.write(utf8, 0, utf8.length);
+
+            String dcTag = "<dublin_core schema=\"" + schema + "\">\n";
+            String cTag = "<ExchangeXML xmlns=\"http://www.imc-dspace.org\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">";
+            utf8 = dcTag.getBytes("UTF-8");
+            //    out.write(utf8, 0, utf8.length);
+            utf8 = cTag.getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
+            for (Item i : items) {
+                Metadatum[] dcorevalues = i.getMetadata(schema, Item.ANY, Item.ANY,
+                        Item.ANY);
+                cTag = "<Records>";
+                utf8 = cTag.getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+
+                String dateIssued = null;
+                String dateAccessioned = null;
+
+                for (Metadatum dcv : dcorevalues) {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null) {
+                        qualifier = "none";
+                    }
+
+                    String language = dcv.language;
+
+                    if (language != null) {
+                        language = " language=\"" + language + "\"";
+                    } else {
+                        language = "";
+                    }
+
+                    utf8 = ("  <dcvalue element=\"" + dcv.element + "\" "
+                            + "qualifier=\"" + qualifier + "\""
+                            + language + ">"
+                            + Utils.addEntities(dcv.value) + "</dcvalue>\n")
+                            .getBytes("UTF-8");
+
+                    if ((!migrate) ||
+                            (migrate && !(
+                                    ("date".equals(dcv.element) && "issued".equals(qualifier)) ||
+                                            ("date".equals(dcv.element) && "accessioned".equals(qualifier)) ||
+                                            ("date".equals(dcv.element) && "available".equals(qualifier)) ||
+                                            ("identifier".equals(dcv.element) && "uri".equals(qualifier) &&
+                                                    (dcv.value != null && dcv.value.startsWith("http://hdl.handle.net/" +
+                                                            HandleManager.getPrefix() + "/"))) ||
+                                            ("description".equals(dcv.element) && "provenance".equals(qualifier)) ||
+                                            ("format".equals(dcv.element) && "extent".equals(qualifier)) ||
+                                            ("format".equals(dcv.element) && "mimetype".equals(qualifier))))) {
+                        //  out.write(utf8, 0, utf8.length);
+                    }
+
+                    // Store the date issued and accession to see if they are different
+                    // because we need to keep date.issued if they are, when migrating
+                    if (("date".equals(dcv.element) && "issued".equals(qualifier))) {
+                        dateIssued = dcv.value;
+                    }
+                    if (("date".equals(dcv.element) && "accessioned".equals(qualifier))) {
+                        dateAccessioned = dcv.value;
+                    }
+                }
+
+                // When migrating, only keep date.issued if it is different to date.accessioned
+                if ((migrate) &&
+                        (dateIssued != null) &&
+                        (dateAccessioned != null) &&
+                        (!dateIssued.equals(dateAccessioned))) {
+                    utf8 = ("  <dcvalue element=\"date\" "
+                            + "qualifier=\"issued\">"
+                            + Utils.addEntities(dateIssued) + "</dcvalue>\n")
+                            .getBytes("UTF-8");
+                    //  out.write(utf8, 0, utf8.length);
+                }
+
+                utf8 = "</dublin_core>\n".getBytes("UTF-8");
+                //    out.write(utf8, 0, utf8.length);
+
+                //    out.close();
+
+                Metadatum[] dcorevalues2 = i.getMetadata(schema, "title", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Title><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Title>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "contributor", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Contributor><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Contributor>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+
+                dcorevalues2 = i.getMetadata(schema, "creator", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Creator>"+dcv.value+"</Creator>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+
+                dcorevalues2 = i.getMetadata(schema, "publisher", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Publisher>"+dcv.value+"</Publisher>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+
+                dcorevalues2 = i.getMetadata(schema, "link", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Link>"+dcv.value+"</Link>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+
+                dcorevalues2 = i.getMetadata(schema, "date","issued",
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Date>"+dcv.value+"</Date>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+
+                dcorevalues2 = i.getMetadata(schema, "source", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Source>"+dcv.value+"</Source>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+
+                dcorevalues2 = i.getMetadata(schema, "description", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Description><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Description>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "type", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Type>"+dcv.value+"</Type>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                    //  utf8 = ("<Language>"+dcv.language+"</Language>\n")
+                    //          .getBytes("UTF-8");
+                    //   out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "identifier", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "identifier";
+                    }
+                    utf8 = ("<Identifier><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Identifier>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "relation", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "identifier";
+                    }
+                    utf8 = ("<Relation><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Relation>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "rights", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Rights>"+dcv.value+"</Rights>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "language", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Language>"+dcv.value+"</Language>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "format", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Format><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Format>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "coverage", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Coverage><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Coverage>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "subject", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Subject><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Subject>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                dcorevalues2 = i.getMetadata(schema, "citation", Item.ANY,
+                        Item.ANY);
+                for (Metadatum dcv : dcorevalues2)
+                {
+                    String qualifier = dcv.qualifier;
+
+                    if (qualifier == null)
+                    {
+                        qualifier = "none";
+                    }
+                    utf8 = ("<Citation><Qualifier>"+qualifier+"</Qualifier><Value>"+dcv.value+"</Value></Citation>\n")
+                            .getBytes("UTF-8");
+                    out2.write(utf8, 0, utf8.length);
+                }
+                utf8 = ("<Link>"+HandleManager.getCanonicalForm(i.getHandle()+"</Link>\n"))
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+                utf8 = ("</Records>\n")
+                        .getBytes("UTF-8");
+                out2.write(utf8, 0, utf8.length);
+            }
+
+            utf8 = ("</ExchangeXML>\n")
+                    .getBytes("UTF-8");
+            out2.write(utf8, 0, utf8.length);
+
+            out2.close();
+        }
+        else
+        {
+            throw new Exception("Cannot create dublin_core.xml in " + destDir);
+        }
+    }
+
+    // output the item's dublin core into the item directory
+    // private static void writeMetadata(Context c, String schema, Item i,
+    //         File destDir, boolean migrate,Integer files) throws Exception
+    // {
+    //     String filename;
+    //     if (schema.equals(MetadataSchema.DC_SCHEMA))
+    //     {
+    //         filename = "dublin_core.xml";
+    //     }
+    //     else
+    //     {
+    //         filename = "metadata_" + schema + ".xml";
+    //     }
+
+    //     File outFile = new File(destDir, filename);
+
+    //     System.out.println("Attempting to create file " + outFile);
+
+    //     if (outFile.createNewFile())
+    //     {
+    //         BufferedOutputStream out = new BufferedOutputStream(
+    //                 new FileOutputStream(outFile));
+
+    //         Metadatum[] dcorevalues = i.getMetadata(schema, Item.ANY, Item.ANY,
+    //                 Item.ANY);
+
+    //         // XML preamble
+    //         byte[] utf8 = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+    //                 .getBytes("UTF-8");
+    //         out.write(utf8, 0, utf8.length);
+
+    //         String dcTag = "<dublin_core schema=\"" + schema + "\">\n";
+    //         utf8 = dcTag.getBytes("UTF-8");
+    //         out.write(utf8, 0, utf8.length);
+
+    //         String dateIssued = null;
+    //         String dateAccessioned = null;
+
+    //         for (Metadatum dcv : dcorevalues)
+    //         {
+    //             String qualifier = dcv.qualifier;
+
+    //             if (qualifier == null)
+    //             {
+    //                 qualifier = "none";
+    //             }
+
+    //             String language = dcv.language;
+
+    //             if (language != null)
+    //             {
+    //                 language = " language=\"" + language + "\"";
+    //             }
+    //             else
+    //             {
+    //                 language = "";
+    //             }
+
+    //             utf8 = ("  <dcvalue element=\"" + dcv.element + "\" "
+    //                     + "qualifier=\"" + qualifier + "\""
+    //                     + language + ">"
+    //                     + Utils.addEntities(dcv.value) + "</dcvalue>\n")
+    //                     .getBytes("UTF-8");
+
+    //             if ((!migrate) ||
+    //                 (migrate && !(
+    //                  ("date".equals(dcv.element) && "issued".equals(qualifier)) ||
+    //                  ("date".equals(dcv.element) && "accessioned".equals(qualifier)) ||
+    //                  ("date".equals(dcv.element) && "available".equals(qualifier)) ||
+    //                  ("identifier".equals(dcv.element) && "uri".equals(qualifier) &&
+    //                   (dcv.value != null && dcv.value.startsWith("http://hdl.handle.net/" +
+    //                    HandleManager.getPrefix() + "/"))) ||
+    //                  ("description".equals(dcv.element) && "provenance".equals(qualifier)) ||
+    //                  ("format".equals(dcv.element) && "extent".equals(qualifier)) ||
+    //                  ("format".equals(dcv.element) && "mimetype".equals(qualifier)))))
+    //             {
+    //                 out.write(utf8, 0, utf8.length);
+    //             }
+
+    //             // Store the date issued and accession to see if they are different
+    //             // because we need to keep date.issued if they are, when migrating
+    //             if (("date".equals(dcv.element) && "issued".equals(qualifier)))
+    //             {
+    //                 dateIssued = dcv.value;
+    //             }
+    //             if (("date".equals(dcv.element) && "accessioned".equals(qualifier)))
+    //             {
+    //                 dateAccessioned = dcv.value;
+    //             }
+    //         }
+
+    //         // When migrating, only keep date.issued if it is different to date.accessioned
+    //         if ((migrate) &&
+    //             (dateIssued != null) &&
+    //             (dateAccessioned != null) &&
+    //             (!dateIssued.equals(dateAccessioned)))
+    //         {
+    //             utf8 = ("  <dcvalue element=\"date\" "
+    //                     + "qualifier=\"issued\">"
+    //                     + Utils.addEntities(dateIssued) + "</dcvalue>\n")
+    //                     .getBytes("UTF-8");
+    //             out.write(utf8, 0, utf8.length);
+    //         }
+
+    //         utf8 = "</dublin_core>\n".getBytes("UTF-8");
+    //         out.write(utf8, 0, utf8.length);
+
+    //         out.close();
+    //     }
+    //     else
+    //     {
+    //         throw new Exception("Cannot create dublin_core.xml in " + destDir);
+    //     }
+    // }
 
     // create the file 'handle' which contains the handle assigned to the item
     private static void writeHandle(Context c, Item i, File destDir)

@@ -583,7 +583,7 @@ public class MyDSpaceServlet extends DSpaceServlet
 
     private void processExportArchive(Context context,
             HttpServletRequest request, HttpServletResponse response, boolean migrate) throws ServletException, IOException{
-    	
+    	String path = request.getParameter("path");
     	if (request.getParameter("item_id") != null) {
 			Item item = null;
 			try {
@@ -603,7 +603,8 @@ public class MyDSpaceServlet extends DSpaceServlet
 	            return;
 			} else {
 				try {
-					ItemExport.createDownloadableExport(item, context, migrate);
+                    ItemExport.exportItemToFolder(context,item,path,0,migrate);
+					//ItemExport.createDownloadableExport(item, context, migrate);
 				} catch (ItemExportException iee) {
                     log.warn(LogManager.getHeader(context, "export_too_large_error", UIUtil
 		                    .getRequestLogInfo(request)));

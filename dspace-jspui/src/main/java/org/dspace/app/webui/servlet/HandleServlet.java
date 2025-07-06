@@ -10,8 +10,12 @@ package org.dspace.app.webui.servlet;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URLEncoder;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.Calendar;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -22,6 +26,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.util.GoogleMetadata;
+//import org.dspace.app.util.StatisticsWriter;
 import org.dspace.app.webui.util.Authenticate;
 import org.dspace.app.webui.util.JSPManager;
 import org.dspace.app.webui.util.UIUtil;
@@ -31,6 +36,7 @@ import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 import org.dspace.content.crosswalk.CrosswalkException;
 import org.dspace.content.crosswalk.DisseminationCrosswalk;
 import org.dspace.core.ConfigurationManager;
@@ -38,6 +44,8 @@ import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.core.PluginManager;
+import org.dspace.discovery.DiscoverResult;
+import org.dspace.discovery.configuration.DiscoverySearchFilterFacet;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
 import org.dspace.eperson.Subscribe;
@@ -133,6 +141,24 @@ public class HandleServlet extends DSpaceServlet
             log.info(LogManager.getHeader(context, "invalid_id", "path=" + path));
             JSPManager.showInvalidIDError(request, response, StringEscapeUtils.escapeHtml(path), -1);
 
+            return;
+        }
+
+        if("/reports".equals(extraPathInfo))
+        {
+            //from custom 5.2 (is absent in both releases)
+            // Check configuration properties, auth, etc.
+            // Inject handle attribute
+            log.info(LogManager.getHeader(context, "display_statistics", "handle=" + handle + ", path=" + extraPathInfo));
+            request.setAttribute("handle", handle);
+
+            // Forward to DisplayStatisticsServlet without changing path.
+            RequestDispatcher dispatch = getServletContext().getNamedDispatcher("reports");
+            dispatch.forward(request, response);
+
+            // If we don't return here, we keep processing and end up
+            // throwing a NPE when checking community authorization
+            // and firing a usage event for the DSO we're reporting for
             return;
         }
 
@@ -451,6 +477,86 @@ public class HandleServlet extends DSpaceServlet
             				context,
             				item));
 
+        //following code from 5.2 custom (final)
+        String titleTag = "";
+        Metadatum[] dcorevalues2 = item.getMetadata("dc", "title", Item.ANY,
+                Item.ANY);
+
+        Metadatum tit = dcorevalues2[0];
+
+        titleTag = titleTag + tit.value + " ";
+
+        Metadatum[] authors = item.getMetadata("dc", "contributor", "author", Item.ANY);
+
+
+        for (Metadatum meta:
+             authors) {
+            titleTag = titleTag + meta.value + ", ";
+        }
+
+
+        String h1 = tit.value;
+
+        Metadatum[] subj = item.getMetadata("dc", "subject", null, Item.ANY);
+        String metaTag = "";
+
+        for (Metadatum meta:
+                subj) {
+            metaTag = metaTag + meta.value + ", ";
+        }
+
+        subj = item.getMetadata("dc", "coverage", "spatial", Item.ANY);
+
+        for (Metadatum meta:
+                subj) {
+            metaTag = metaTag + meta.value + ", ";
+        }
+
+        metaTag = metaTag.trim();
+        if (metaTag.length() > 0 ) {
+            metaTag = metaTag.substring(0, metaTag.length()-1);
+        }
+
+        String descrTag = "";
+
+        try{
+            Metadatum[] dcorevalues3 = item.getMetadata("dc", "description", "abstract",
+                    Item.ANY);
+
+            Metadatum tit2 = dcorevalues3[0];
+            int max = 0;
+            for(int i = 0; i < dcorevalues3.length; i++){
+                if(max < dcorevalues3[i].value.length()){
+                    max = dcorevalues3[i].value.length();
+                    descrTag = dcorevalues3[i].value;
+                }
+            }
+           // descrTag = tit2.value;
+        }catch(Exception e){
+
+        }
+
+        String textTag = "";
+        try{
+            Metadatum[] dcorevalues3 = item.getMetadata("dc", "textpart", null,
+                    Item.ANY);
+
+            Metadatum tit2 = dcorevalues3[0];
+            textTag = tit2.value;
+        }catch(Exception ex){
+
+        }
+
+
+        PreparedStatement statement = null;
+        statement = context.getDBConnection().prepareStatement("INSERT INTO statistic (event, date_updated, parent_id) VALUES (?,?,?)");
+        statement.setString(1, "show_item");
+        statement.setDate(2, new Date(Calendar.getInstance().getTime().getTime()));
+        statement.setInt(3, item.getID());
+        int i = statement.executeUpdate();
+        context.getDBConnection().commit();
+        statement.close();
+
         // Set attributes and display
         request.setAttribute("suggest.enable", Boolean.valueOf(suggestEnable));
         request.setAttribute("display.all", Boolean.valueOf(displayAll));
@@ -545,7 +651,81 @@ public class HandleServlet extends DSpaceServlet
             				request,
             				context,
             				community));
+            
 
+            //again, following code is copied from 5.2-final
+            String titleTag = "";
+
+            Metadatum[] dcorevalues2 = community.getMetadata("dc", "title", Item.ANY,
+                    Item.ANY);
+
+            Metadatum tit = dcorevalues2[0];
+
+            titleTag = titleTag + tit.value;
+
+            String descrTag = "";
+
+            try{
+                Metadatum[] dcorevalues3 = community.getMetadata("dc", "description", "abstract",
+                        Item.ANY);
+
+                Metadatum tit2 = dcorevalues3[0];
+                descrTag = tit2.value;
+            }catch(Exception ex){
+
+            }
+
+            String test = "";
+            String h1 = titleTag;
+            titleTag = titleTag +": тематическая подборка документов";
+
+            boolean brefine = false;
+            Map<String, List<DiscoverResult.FacetResult>> mapFacetes = (Map<String, List<DiscoverResult.FacetResult>>) request.getAttribute("discovery.fresults");
+            List<DiscoverySearchFilterFacet> facetsConf = (List<DiscoverySearchFilterFacet>) request.getAttribute("facetsConfig");
+            String searchScope = (String) request.getAttribute("discovery.searchScope");
+            int counter = 0;
+            if (mapFacetes != null)
+            {
+                for (DiscoverySearchFilterFacet facetConf : facetsConf) {
+                    String f = facetConf.getIndexFieldName();
+                    List<DiscoverResult.FacetResult> facet = mapFacetes.get("subject");
+                    //facet = mapFacetes.get(f + ".subject");
+                    if (facet != null) {
+                        //facet = mapFacetes.get(f + ".subject");
+                        for (DiscoverResult.FacetResult fvalue : facet){
+                            test = test + ", " + fvalue.getDisplayedValue();
+                            counter++;
+                            if(counter == 10){
+                                break;
+                            }
+                        }
+                    }
+                        break;
+                }
+            }
+
+            if(test.length() > 3) {
+                test = test.substring(2);
+            }
+
+            try{
+                Metadatum[] dcorevalues4 = community.getMetadata("dc", "description", "tableofcontents",
+                        Item.ANY);
+
+                Metadatum tit3 = dcorevalues4[0];
+                test = tit3.value;
+            }catch(Exception ex){
+                test = "";
+            }
+
+            // StatisticsWriter statisticsWriter = new StatisticsWriter();
+            // statisticsWriter.writeStatistics(context, "show_community", null);
+
+            request.setAttribute("titleTag", titleTag);
+            request.setAttribute("descrTag", descrTag);
+            request.setAttribute("h1", h1);
+            //
+            
             // Forward to community home page
             request.setAttribute("community", community);
             request.setAttribute("collections", collections);
@@ -689,6 +869,80 @@ public class HandleServlet extends DSpaceServlet
             				request,
             				context,
             				collection));
+            //even more code from 5.2-final
+            String titleTag = "";
+            String h1 = "";
+
+            Metadatum[] dcorevalues2 = collection.getMetadata("dc", "title", Item.ANY,
+                    Item.ANY);
+
+            Metadatum tit = dcorevalues2[0];
+
+            titleTag = titleTag + tit.value;
+            h1 = tit.value;
+
+            String descrTag = "";
+
+            try{
+                Metadatum[] dcorevalues3 = collection.getMetadata("dc", "description", "abstract",
+                        Item.ANY);
+
+                Metadatum tit2 = dcorevalues3[0];
+                descrTag = tit2.value;
+            }catch(Exception ex){
+
+            }
+
+            String test = "";
+            titleTag = titleTag +": тематическая подборка документов";
+
+            boolean brefine = false;
+            Map<String, List<DiscoverResult.FacetResult>> mapFacetes = (Map<String, List<DiscoverResult.FacetResult>>) request.getAttribute("discovery.fresults");
+            List<DiscoverySearchFilterFacet> facetsConf = (List<DiscoverySearchFilterFacet>) request.getAttribute("facetsConfig");
+            String searchScope = (String) request.getAttribute("discovery.searchScope");
+            int counter = 0;
+            if (mapFacetes != null)
+            {
+                for (DiscoverySearchFilterFacet facetConf : facetsConf) {
+                    String f = facetConf.getIndexFieldName();
+                    List<DiscoverResult.FacetResult> facet = mapFacetes.get("subject");
+                    //facet = mapFacetes.get(f + ".subject");
+                    if (facet != null) {
+                        //facet = mapFacetes.get(f + ".subject");
+                        for (DiscoverResult.FacetResult fvalue : facet){
+                            test = test + ", " + fvalue.getDisplayedValue();
+                            counter++;
+                            if(counter == 10){
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if(test.length() > 3) {
+                test = test.substring(2);
+            }
+
+            try{
+                Metadatum[] dcorevalues4 = collection.getMetadata("dc", "description", "tableofcontents",
+                        Item.ANY);
+
+                Metadatum tit3 = dcorevalues4[0];
+                test = tit3.value;
+            }catch(Exception ex){
+
+            }
+
+            // StatisticsWriter statisticsWriter = new StatisticsWriter();
+            // statisticsWriter.writeStatistics(context, "show_collection", null);
+            
+            request.setAttribute("metaTag", test);
+            request.setAttribute("titleTag", titleTag);
+            request.setAttribute("descrTag", descrTag);
+            request.setAttribute("h1", h1);
+            //
 
             // Forward to collection home page
             request.setAttribute("collection", collection);

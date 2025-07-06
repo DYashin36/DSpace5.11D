@@ -7,6 +7,7 @@
  */
 package org.dspace.app.webui.servlet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.dspace.app.webui.util.JSPManager;
 import org.dspace.app.webui.util.UIUtil;
 import org.dspace.app.bulkedit.MetadataExport;
+import org.dspace.app.itemexport.ItemExport;
 import org.dspace.app.bulkedit.DSpaceCSV;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.browse.*;
@@ -27,6 +29,7 @@ import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.content.ItemIterator;
 import org.apache.log4j.Logger;
+import org.dspace.content.Item;
 
 /**
  * Servlet for browsing through indices, as they are defined in 
@@ -87,6 +90,49 @@ public class BrowserServlet extends AbstractBrowserServlet
             // execute browse request
             processBrowse(context, scope, request, response);
         }
+    }
+
+    protected void doDSPost(Context context, HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException,
+            AuthorizeException 
+    {
+        StringBuffer jb = new StringBuffer();
+        String line = "string for check";
+        try{
+            BufferedReader reader = request.getReader();
+            while((line = reader.readLine()) != null)
+                jb.append(line);
+        }
+        catch(Exception e) {log.warn("something wrong: "+e.getMessage());}
+
+        String result = request.getParameter("items");
+        String path = request.getParameter("system_to");
+        result = result.replace("[","");
+        result = result.replace("]","");
+        result = result.replace("\"","");
+        result = result.replace("%22","");
+        log.info("items: "+ result);
+        log.info("system_to:  "+ path);
+        String[] parts = result.split(",");
+        ArrayList<Item> items = new ArrayList<>();
+        for(String s : parts){
+            Item item = null;
+            item = Item.find(context, Integer.parseInt(s));
+            items.add(item);
+        }
+
+        try {
+            ItemExport.exportItemToFolderMass(context, items, path, 0, false);
+        } catch (Exception e) {
+            log.trace(e);
+        }
+
+        response.setStatus(200);
+        PrintWriter out = response.getWriter();
+        out.write(jb.toString());
+        out.flush();
+        out.close();
+        return;
     }
 
     

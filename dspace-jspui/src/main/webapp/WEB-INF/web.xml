@@ -198,6 +198,16 @@
   </servlet>
 
   <servlet>
+    <servlet-name>import-item</servlet-name>
+    <servlet-class>org.dspace.app.webui.servlet.ImportServlet</servlet-class>
+  </servlet>
+
+    <servlet>
+      <servlet-name>import-mass</servlet-name>
+      <servlet-class>org.dspace.app.webui.servlet.ImportMassServlet</servlet-class>
+    </servlet>
+
+  <servlet>
     <servlet-name>community-list</servlet-name>
     <servlet-class>org.dspace.app.webui.servlet.CommunityListServlet</servlet-class>
   </servlet>

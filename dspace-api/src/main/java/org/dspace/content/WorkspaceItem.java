@@ -224,6 +224,143 @@ public class WorkspaceItem implements InProgressSubmission
         return wi;
     }
 
+    public static WorkspaceItem createMass(Context c, Collection coll,
+                                       boolean template) throws AuthorizeException, SQLException,
+            IOException
+    {
+        // Check the user has permission to ADD to the collection
+        //AuthorizeManager.authorizeAction(c, coll, Constants.ADD);
+
+        // Create an item
+        Item i = Item.create(c);
+        i.setSubmitter(c.getCurrentUser());
+
+        // Now create the policies for the submitter and workflow
+        // users to modify item and contents
+        // contents = bitstreams, bundles
+        // FIXME: icky hardcoded workflow steps
+      /*  Group step1group = coll.getWorkflowGroup(1);
+        Group step2group = coll.getWorkflowGroup(2);
+        Group step3group = coll.getWorkflowGroup(3);*/
+
+        EPerson e = c.getCurrentUser();
+
+        // read permission
+  /*      AuthorizeManager.addPolicy(c, i, Constants.READ, e, ResourcePolicy.TYPE_SUBMISSION);
+
+
+        if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("originalworkflow")) {
+            if (step1group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.READ, step1group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step2group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.READ, step2group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step3group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.READ, step3group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+        }
+
+
+        // write permission
+        AuthorizeManager.addPolicy(c, i, Constants.WRITE, e, ResourcePolicy.TYPE_SUBMISSION);
+
+        if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("originalworkflow")) {
+            if (step1group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.WRITE, step1group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step2group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.WRITE, step2group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step3group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.WRITE, step3group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+        }
+
+        // add permission
+        AuthorizeManager.addPolicy(c, i, Constants.ADD, e, ResourcePolicy.TYPE_SUBMISSION);
+
+        if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("originalworkflow")) {
+            if (step1group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.ADD, step1group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step2group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.ADD, step2group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step3group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.ADD, step3group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+        }
+
+        // remove contents permission
+        AuthorizeManager.addPolicy(c, i, Constants.REMOVE, e, ResourcePolicy.TYPE_SUBMISSION);
+
+        if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("originalworkflow")) {
+            if (step1group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.REMOVE, step1group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step2group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.REMOVE, step2group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+
+            if (step3group != null)
+            {
+                AuthorizeManager.addPolicy(c, i, Constants.REMOVE, step3group, ResourcePolicy.TYPE_WORKFLOW);
+            }
+        }*/
+
+        // Copy template if appropriate
+        Item templateItem = coll.getTemplateItem();
+
+        if (template && (templateItem != null))
+        {
+            Metadatum[] md = templateItem.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY);
+
+            for (int n = 0; n < md.length; n++)
+            {
+                i.addMetadata(md[n].schema, md[n].element, md[n].qualifier, md[n].language,
+                        md[n].value);
+            }
+        }
+
+        i.update();
+
+        // Create the workspace item row
+        TableRow row = DatabaseManager.row("workspaceitem");
+
+        row.setColumn("item_id", i.getID());
+        row.setColumn("collection_id", coll.getID());
+
+        log.info(LogManager.getHeader(c, "create_workspace_item",
+                "workspace_item_id=" + row.getIntColumn("workspace_item_id")
+                        + "item_id=" + i.getID() + "collection_id="
+                        + coll.getID()));
+
+        DatabaseManager.insert(c, row);
+
+        WorkspaceItem wi = new WorkspaceItem(c, row);
+
+        return wi;
+    }
+
     /**
      * Get all workspace items for a particular e-person. These are ordered by
      * workspace item ID, since this should likely keep them in the order in
