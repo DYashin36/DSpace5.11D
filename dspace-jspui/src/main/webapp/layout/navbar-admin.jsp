@@ -73,7 +73,10 @@
                <li><a href="<%= request.getContextPath() %>/dspace-admin/privateitems"><fmt:message key="jsp.layout.navbar-admin.privateitems"/></a></li>
                <li><a href="<%= request.getContextPath() %>/dspace-admin/metadataimport"><fmt:message key="jsp.layout.navbar-admin.metadataimport"/></a></li>
                <li><a href="<%= request.getContextPath() %>/dspace-admin/batchimport"><fmt:message key="jsp.layout.navbar-admin.batchimport"/></a></li>             
-            </ul>
+            
+            		<li><a href="<%= request.getContextPath() %>/fold">Папки для импорта</a></li>
+		<li><a href="<%= request.getContextPath() %>/import-mass">Импорт из папки</a></li>
+              </ul>
           </li>
                           
            <li class="dropdown">

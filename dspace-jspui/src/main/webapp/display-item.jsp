@@ -150,6 +150,19 @@
                     <%--<input type="submit" name="submit" value="Edit...">--%>
                     <input class="btn btn-default col-md-12" type="submit" name="submit" value="<fmt:message key="jsp.general.edit.button"/>" />
                 </form>
+                <%
+                if(imported)
+                {
+                %>
+                <form method="post" action="/jspui/reimport-item">
+                                    <input type="hidden" name="item_id" value="<%= item.getID() %>" />
+                                    <input type="hidden" name="action" value="reimport" />
+                                    <%--<input type="submit" name="submit" value="Обновить метаданные">--%>
+                                    <input class="btn btn-default col-md-12" type="submit" name="submit" value="Обновить метаданные"/>
+                                </form>
+                <%
+                }
+                %>
                 <form method="post" action="<%= request.getContextPath() %>/mydspace">
                     <input type="hidden" name="item_id" value="<%= item.getID() %>" />
                     <input type="hidden" name="step" value="<%= MyDSpaceServlet.REQUEST_EXPORT_ARCHIVE %>" />
