@@ -44,9 +44,14 @@ import org.dspace.workflow.WorkflowItem;
 import org.dspace.submit.AbstractProcessingStep;
 
 import com.google.gson.Gson;
+
 import java.util.Collections;
+
 import javax.servlet.http.HttpSession;
+
+import org.dspace.app.webui.util.SoapHelper;
 import org.dspace.submit.step.UploadStep;
+import org.w3c.dom.Document;
 
 /**
  * Submission Manager servlet for DSpace. Handles the initial submission of
@@ -237,6 +242,33 @@ public class SubmissionController extends DSpaceServlet
         
         //need to find out what type of form we are dealing with
         String contentType = request.getContentType();
+
+        //from 5.2 custom
+        String itemId = request.getParameter("workspace_item_id");
+
+
+
+        String step = request.getParameter("step");
+        if(step == null){
+            step = "";
+        }
+        if(step.equals("2")){
+
+        }
+
+        String item_id = request.getParameter("import_item");
+
+        Document doc = null;
+        Document docId = null;
+
+        SoapHelper sh = new SoapHelper();
+        if(item_id != null) {
+            if (!item_id.equals("")) {
+            }
+
+
+        }
+        //
 
         // if multipart form, we have to wrap the multipart request
         // in order to be able to retrieve request parameters, etc.

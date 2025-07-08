@@ -221,6 +221,21 @@
     <servlet-name>edit-item</servlet-name>
     <servlet-class>org.dspace.app.webui.servlet.admin.EditItemServlet</servlet-class>
   </servlet>
+
+  <servlet>
+        <servlet-name>import-item</servlet-name>
+        <servlet-class>org.dspace.app.webui.servlet.ImportServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>import-mass</servlet-name>
+        <servlet-class>org.dspace.app.webui.servlet.ImportMassServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>reimport-item</servlet-name>
+        <servlet-class>org.dspace.app.webui.servlet.ReimportServlet</servlet-class>
+    </servlet>
   
   <servlet>
     <servlet-name>edit-news</servlet-name>
@@ -550,6 +565,20 @@
     <servlet-name>edit-epeople</servlet-name>
     <url-pattern>/dspace-admin/edit-epeople</url-pattern>
   </servlet-mapping>
+
+  <servlet-mapping>
+        <servlet-name>import-item</servlet-name>
+        <url-pattern>/import-item/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>import-mass</servlet-name>
+        <url-pattern>/import-mass/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>reimport-item</servlet-name>
+        <url-pattern>/reimport-item/*</url-pattern>
+    </servlet-mapping>
 
   <servlet-mapping>
     <servlet-name>edit-item</servlet-name>
