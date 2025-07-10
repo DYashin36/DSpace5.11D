@@ -88,6 +88,7 @@ public class CompleteStep extends AbstractProcessingStep
             AuthorizeException
     {
         // The Submission is COMPLETE!!
+        log.info("COMPLETESTEP DO PROCESSING");
         log.info(LogManager.getHeader(context, "submission_complete",
                 "Completed submission with id="
                         + subInfo.getSubmissionItem().getID()));
@@ -142,9 +143,10 @@ public class CompleteStep extends AbstractProcessingStep
                 context.getDBConnection().rollback();
             }
         }
-
+        log.info("COMPLETE STEP ITEM: "+item);
         try {
             if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
+                log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
 	            boolean forbiden = false;
 	            try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
 		            pstm.setInt(1, cc.getID());
@@ -156,13 +158,18 @@ public class CompleteStep extends AbstractProcessingStep
 	            } catch (SQLException | NumberFormatException e) {
 		            log.error(e.getLocalizedMessage(), e);
 	            }
-	            if (!forbiden) ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+	            if (!forbiden)
+                {
+                    log.info("COMPLETE STEP EXPORT");
+                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                    ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     
-
+        log.info("COMPLETE STEP COMPLETE STEP");
         return STATUS_COMPLETE;
 
         //Following code is original 5.11 source

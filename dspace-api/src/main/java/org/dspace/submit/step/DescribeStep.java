@@ -59,7 +59,7 @@ import org.dspace.submit.AbstractProcessingStep;
 public class DescribeStep extends AbstractProcessingStep
 {
     /** log4j logger */
-    private static Logger log = Logger.getLogger(DescribeStep.class);
+    private static java.util.logging.Logger log = Logger.getLogger(DescribeStep.class);
 
     /** hash of all submission forms details */
     private static DCInputsReader inputsReader = null;
@@ -117,6 +117,7 @@ public class DescribeStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("DESCRIBESTEP doPROCESSING");
         if(!request.getParameterNames().hasMoreElements()){
             //In case of an empty request do NOT just remove all metadata, just return to the submission page
             return STATUS_MORE_INPUT_REQUESTED;
@@ -354,6 +355,7 @@ public class DescribeStep extends AbstractProcessingStep
             return STATUS_MISSING_REQUIRED_FIELDS;
         }
 
+        log.info("DESCRIBESTEP STATUS COMPLETE");
         // completed without errors
         return STATUS_COMPLETE;
     }

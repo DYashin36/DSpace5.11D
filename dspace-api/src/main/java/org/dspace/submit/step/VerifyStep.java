@@ -66,6 +66,7 @@ public class VerifyStep extends AbstractProcessingStep
             AuthorizeException
     {
         // nothing to process/save from the Verify Step.
+        
         return STATUS_COMPLETE;
     }
 

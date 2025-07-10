@@ -87,6 +87,7 @@ public class LicenseStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("LICENSE STEP DO PROCESSING");
         String buttonPressed = Util.getSubmitButton(request, CANCEL_BUTTON);
 
         boolean licenseGranted = false;
@@ -139,7 +140,7 @@ public class LicenseStep extends AbstractProcessingStep
             // commit changes
             context.commit();
         }
-
+        log.info("LICENCE STEP STATUS COMPLETE");
         // completed without errors
         return STATUS_COMPLETE;
     }
