@@ -8,21 +8,32 @@
 package org.dspace.submit.step;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.dspace.app.itemexport.ItemExport;
+//import org.dspace.app.util.StatisticsWriter;
 
 import org.dspace.app.util.SubmissionInfo;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.submit.AbstractProcessingStep;
 import org.dspace.authorize.AuthorizeException;
+import org.dspace.content.Collection;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
 import org.dspace.content.WorkspaceItem;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
+import org.dspace.handle.HandleManager;
 import org.dspace.workflow.WorkflowManager;
 import org.dspace.xmlworkflow.XmlWorkflowManager;
 
@@ -77,10 +88,28 @@ public class CompleteStep extends AbstractProcessingStep
             AuthorizeException
     {
         // The Submission is COMPLETE!!
+        log.info("COMPLETESTEP DO PROCESSING");
         log.info(LogManager.getHeader(context, "submission_complete",
                 "Completed submission with id="
                         + subInfo.getSubmissionItem().getID()));
+        //Following code - is changed sequence (from 5.2 custom version)
+        // StatisticsWriter sw = new StatisticsWriter();
+        // sw.writeStatistics(context, "item_added", null);
 
+        String itemId = request.getParameter("workspace_item_id");
+        WorkspaceItem ws = WorkspaceItem.find(context, Integer.parseInt(itemId));
+        Item item = ws.getItem();
+
+        Collection cc = ws.getCollection();
+
+        item.setOwningCollection(cc);
+        item.update();
+        context.commit();
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        Date date = new Date();
+        item.addMetadata(MetadataSchema.DC_SCHEMA, "identifier", null, "ru", "Dspace\\SGAU\\" + dateFormat.format(date) + "\\" + item.getID());
+        
         // Start the workflow for this Submission
         boolean success = false;
         try
@@ -114,7 +143,71 @@ public class CompleteStep extends AbstractProcessingStep
                 context.getDBConnection().rollback();
             }
         }
+        log.info("COMPLETE STEP ITEM: "+item);
+        try {
+            if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
+                log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
+	            boolean forbiden = false;
+	            try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
+		            pstm.setInt(1, cc.getID());
+		            try (ResultSet resultSet = pstm.executeQuery();) {
+			            resultSet.next();
+			            int cnt = resultSet.getInt(1);
+                        log.info("COMPLETE STEP CNT IS: "+cnt);
+			            if (cnt > 0) forbiden = true;
+		            }
+	            } catch (SQLException | NumberFormatException e) {
+		            log.error(e.getLocalizedMessage(), e);
+	            }
+	            if (!forbiden)
+                {
+                    log.info("COMPLETE STEP EXPORT");
+                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                    ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    
+        log.info("COMPLETE STEP COMPLETE STEP");
         return STATUS_COMPLETE;
+
+        //Following code is original 5.11 source
+        // // Start the workflow for this Submission
+        // boolean success = false;
+        // try
+        // {
+        //     if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
+        //         try{
+        //             XmlWorkflowManager.start(context, (WorkspaceItem) subInfo.getSubmissionItem());
+        //         }catch (Exception e){
+        //             log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: " + subInfo.getSubmissionItem().getItem().getID()), e);
+        //             throw new ServletException(e);
+        //         }
+        //     }else{
+        //         WorkflowManager.start(context, (WorkspaceItem) subInfo.getSubmissionItem());
+        //     }
+        //     success = true;
+        // }
+        // catch (Exception e)
+        // {
+        //     log.error("Caught exception in submission step: ",e);
+        //     throw new ServletException(e);
+        // }
+        // finally
+        // {
+        // // commit changes to database
+        //     if (success)
+        //     {
+        //         context.commit();
+        //     }
+        //     else
+        //     {
+        //         context.getDBConnection().rollback();
+        //     }
+        // }
+        // return STATUS_COMPLETE;
     }
 
     /**

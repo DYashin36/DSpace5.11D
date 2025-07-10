@@ -10,7 +10,6 @@ package org.dspace.submit.step;
 import java.io.IOException;
 import java.sql.SQLException;
 
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,6 +65,7 @@ public class VerifyStep extends AbstractProcessingStep
             AuthorizeException
     {
         // nothing to process/save from the Verify Step.
+        
         return STATUS_COMPLETE;
     }
 

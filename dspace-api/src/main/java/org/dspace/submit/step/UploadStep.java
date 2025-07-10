@@ -128,6 +128,7 @@ public class UploadStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("UPLOADSTEP DOPROCESSING");
         // get button user pressed
         String buttonPressed = Util.getSubmitButton(request, NEXT_BUTTON);
 
@@ -150,6 +151,7 @@ public class UploadStep extends AbstractProcessingStep
             // if error occurred, return immediately
             if (status != STATUS_COMPLETE)
             {
+                log.info("UPLOAD STEP STATUS "+status);
                 return status;
             }
         }
@@ -166,6 +168,7 @@ public class UploadStep extends AbstractProcessingStep
             }
             else
             {
+                log.info("UPLOAD STEP STATUS COMPLETE");
                 return STATUS_COMPLETE;
             }
         }
@@ -184,6 +187,7 @@ public class UploadStep extends AbstractProcessingStep
                 subInfo.setBitstream(null);
 
                 // this flag will just return us to the normal upload screen
+                log.info("UPLOAD STEP STATUS EDIT COMPLETE");
                 return STATUS_EDIT_COMPLETE;
             }
             else
@@ -210,6 +214,7 @@ public class UploadStep extends AbstractProcessingStep
 
             // return appropriate status flag to say we are now editing the
             // bitstream
+            log.info("UPLOAD STEP STATUS EDIT_BITSTREAM");
             return STATUS_EDIT_BITSTREAM;
         }
 
@@ -236,6 +241,7 @@ public class UploadStep extends AbstractProcessingStep
                     // if error occurred, return immediately
                     if (status != STATUS_COMPLETE)
                     {
+                        log.info("UPLOAD STEP STATUS "+status);
                         return status;
                     }
                 }
@@ -254,6 +260,7 @@ public class UploadStep extends AbstractProcessingStep
             // if error occurred, return immediately
             if (status != STATUS_COMPLETE)
             {
+                log.info("UPLOAD STEP STATUS "+status);
                 return status;
             }
 
@@ -298,6 +305,7 @@ public class UploadStep extends AbstractProcessingStep
                     }
                 }
             }
+            log.info("UPLOAD STEP STATUS COMPLETE");
             return STATUS_COMPLETE;
         }
         

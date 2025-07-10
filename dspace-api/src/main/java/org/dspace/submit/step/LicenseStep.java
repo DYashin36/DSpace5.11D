@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-
 import org.dspace.app.util.SubmissionInfo;
 import org.dspace.app.util.Util;
 import org.dspace.authorize.AuthorizeException;
@@ -24,7 +23,6 @@ import org.dspace.content.LicenseUtils;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.eperson.EPerson;
-import org.dspace.license.CreativeCommons;
 import org.dspace.submit.AbstractProcessingStep;
 
 /**
@@ -87,6 +85,7 @@ public class LicenseStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("LICENSE STEP DO PROCESSING");
         String buttonPressed = Util.getSubmitButton(request, CANCEL_BUTTON);
 
         boolean licenseGranted = false;
@@ -139,7 +138,7 @@ public class LicenseStep extends AbstractProcessingStep
             // commit changes
             context.commit();
         }
-
+        log.info("LICENCE STEP STATUS COMPLETE");
         // completed without errors
         return STATUS_COMPLETE;
     }
