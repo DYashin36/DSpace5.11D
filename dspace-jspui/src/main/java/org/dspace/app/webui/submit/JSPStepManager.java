@@ -275,6 +275,7 @@ public class JSPStepManager
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("THIS IS STAP START");
         log.debug("Doing pre-processing for step " + this.getClass().getName());
 
         // first, do any pre-processing and get the JSP to display
