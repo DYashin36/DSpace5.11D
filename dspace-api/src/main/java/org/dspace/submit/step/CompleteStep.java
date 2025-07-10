@@ -153,6 +153,7 @@ public class CompleteStep extends AbstractProcessingStep
 		            try (ResultSet resultSet = pstm.executeQuery();) {
 			            resultSet.next();
 			            int cnt = resultSet.getInt(1);
+                        log.info("COMPLETE STEP CNT IS: "+cnt);
 			            if (cnt > 0) forbiden = true;
 		            }
 	            } catch (SQLException | NumberFormatException e) {
