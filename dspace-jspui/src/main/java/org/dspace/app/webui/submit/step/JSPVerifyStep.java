@@ -98,6 +98,7 @@ public class JSPVerifyStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("JSP VERIFY STEP");
         // load the current submission process config
         // to get the list of steps the user went through
         SubmissionConfig subProcessConfig = subInfo.getSubmissionConfig();

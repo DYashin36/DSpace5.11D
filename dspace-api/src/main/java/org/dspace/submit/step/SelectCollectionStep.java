@@ -21,6 +21,7 @@ import org.dspace.content.Collection;
 import org.dspace.content.WorkspaceItem;
 import org.dspace.core.Context;
 import org.dspace.submit.AbstractProcessingStep;
+import org.apache.log4j.Logger;
 
 /**
  * SelectCollection Step which processes the collection that the user selected
@@ -51,6 +52,7 @@ public class SelectCollectionStep extends AbstractProcessingStep
 
     // invalid collection or error finding collection
     public static final int STATUS_INVALID_COLLECTION = 2;
+    private static Logger log = Logger.getLogger(SelectCollectionStep.class);
 
     /**
      * Do any processing of the information input by the user, and/or perform
@@ -80,6 +82,7 @@ public class SelectCollectionStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("THIS IS A SELECT-COLLECTION-STEP");
         // First we find the collection which was selected
         int id = Util.getIntParameter(request, "collection");
 
@@ -115,6 +118,7 @@ public class SelectCollectionStep extends AbstractProcessingStep
         }
 
         // no errors occurred
+        log.info("SCS IS OVER");
         return STATUS_COMPLETE;
     }
 

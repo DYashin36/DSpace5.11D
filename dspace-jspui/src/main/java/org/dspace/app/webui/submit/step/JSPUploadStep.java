@@ -134,6 +134,7 @@ public class JSPUploadStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("JSPUPLOADSTEP ");
         // pass on the fileupload setting
         if (subInfo != null)
         {
