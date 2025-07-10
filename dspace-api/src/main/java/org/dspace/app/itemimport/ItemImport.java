@@ -1108,6 +1108,7 @@ public class ItemImport
         {
             value = "";
         }
+        //
         else
         {
         	value = value.trim();

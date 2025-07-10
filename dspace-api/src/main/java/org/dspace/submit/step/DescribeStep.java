@@ -59,7 +59,7 @@ import org.dspace.submit.AbstractProcessingStep;
 public class DescribeStep extends AbstractProcessingStep
 {
     /** log4j logger */
-    private static java.util.logging.Logger log = Logger.getLogger(DescribeStep.class);
+    private static org.apache.log4j.Logger log = Logger.getLogger(DescribeStep.class);
 
     /** hash of all submission forms details */
     private static DCInputsReader inputsReader = null;
