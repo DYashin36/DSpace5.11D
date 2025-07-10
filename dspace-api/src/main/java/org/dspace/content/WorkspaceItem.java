@@ -224,62 +224,6 @@ public class WorkspaceItem implements InProgressSubmission
         return wi;
     }
 
-    /**
-     * Get all workspace items for a particular e-person. These are ordered by
-     * workspace item ID, since this should likely keep them in the order in
-     * which they were created.
-     * 
-     * @param context
-     *            the context object
-     * @param ep
-     *            the eperson
-     * 
-     * @return the corresponding workspace items
-     * @throws java.sql.SQLException passed through.
-     */
-    public static WorkspaceItem[] findByEPerson(Context context, EPerson ep)
-            throws SQLException
-    {
-        List<WorkspaceItem> wsItems = new ArrayList<WorkspaceItem>();
-
-        TableRowIterator tri = DatabaseManager.queryTable(context, "workspaceitem",
-                "SELECT workspaceitem.* FROM workspaceitem, item WHERE " +
-                "workspaceitem.item_id=item.item_id AND " +
-                "item.submitter_id= ? " +
-                "ORDER BY workspaceitem.workspace_item_id", 
-                ep.getID());
-
-        try
-        {
-            while (tri.hasNext())
-            {
-                TableRow row = tri.next();
-
-                // Check the cache
-                WorkspaceItem wi = (WorkspaceItem) context.fromCache(
-                        WorkspaceItem.class, row.getIntColumn("workspace_item_id"));
-
-                if (wi == null)
-                {
-                    wi = new WorkspaceItem(context, row);
-                }
-
-                wsItems.add(wi);
-            }
-        }
-        finally
-        {
-            // close the TableRowIterator to free up resources
-            if (tri != null)
-            {
-                tri.close();
-            }
-        }
-
-        return wsItems.toArray(new WorkspaceItem[wsItems.size()]);
-    }
-
-
     public static WorkspaceItem createMass(Context c, Collection coll,
                                        boolean template) throws AuthorizeException, SQLException,
             IOException
@@ -415,6 +359,61 @@ public class WorkspaceItem implements InProgressSubmission
         WorkspaceItem wi = new WorkspaceItem(c, row);
 
         return wi;
+    }
+
+    /**
+     * Get all workspace items for a particular e-person. These are ordered by
+     * workspace item ID, since this should likely keep them in the order in
+     * which they were created.
+     * 
+     * @param context
+     *            the context object
+     * @param ep
+     *            the eperson
+     * 
+     * @return the corresponding workspace items
+     * @throws java.sql.SQLException passed through.
+     */
+    public static WorkspaceItem[] findByEPerson(Context context, EPerson ep)
+            throws SQLException
+    {
+        List<WorkspaceItem> wsItems = new ArrayList<WorkspaceItem>();
+
+        TableRowIterator tri = DatabaseManager.queryTable(context, "workspaceitem",
+                "SELECT workspaceitem.* FROM workspaceitem, item WHERE " +
+                "workspaceitem.item_id=item.item_id AND " +
+                "item.submitter_id= ? " +
+                "ORDER BY workspaceitem.workspace_item_id", 
+                ep.getID());
+
+        try
+        {
+            while (tri.hasNext())
+            {
+                TableRow row = tri.next();
+
+                // Check the cache
+                WorkspaceItem wi = (WorkspaceItem) context.fromCache(
+                        WorkspaceItem.class, row.getIntColumn("workspace_item_id"));
+
+                if (wi == null)
+                {
+                    wi = new WorkspaceItem(context, row);
+                }
+
+                wsItems.add(wi);
+            }
+        }
+        finally
+        {
+            // close the TableRowIterator to free up resources
+            if (tri != null)
+            {
+                tri.close();
+            }
+        }
+
+        return wsItems.toArray(new WorkspaceItem[wsItems.size()]);
     }
 
     /**
