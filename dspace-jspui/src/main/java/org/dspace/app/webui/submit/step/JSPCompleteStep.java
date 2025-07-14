@@ -6,7 +6,6 @@
  * http://www.dspace.org/license/
  */
 package org.dspace.app.webui.submit.step;
-
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -14,8 +13,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.dspace.app.webui.submit.JSPStep;
+import org.apache.log4j.Logger;
 import org.dspace.app.util.SubmissionInfo;
+import org.dspace.app.webui.submit.JSPStep;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Context;
 
@@ -39,6 +39,9 @@ import org.dspace.core.Context;
  */
 public class JSPCompleteStep extends JSPStep
 {
+    /** log4j logger */
+    private static Logger log = Logger.getLogger(JSPCompleteStep.class);
+
     /**
      * Do any pre-processing to determine which JSP (if any) is used to generate
      * the UI for this step. This method should include the gathering and
@@ -67,6 +70,7 @@ public class JSPCompleteStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.debug("JSPCompleteStep Preprocessing");
         //No pre-processing necessary, since submission is complete!
     }
 
@@ -99,6 +103,7 @@ public class JSPCompleteStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.debug("JSPCompleteStep Postprocessing");
         //No post-processing necessary, since submission is complete!
     }
 
@@ -122,6 +127,7 @@ public class JSPCompleteStep extends JSPStep
     public String getReviewJSP(Context context, HttpServletRequest request,
             HttpServletResponse response, SubmissionInfo subInfo)
     {
+        log.debug("JSPCompleteStep reviewJSP");
         return NO_JSP; //no need to return a Review JSP as we are completed!
     }
     
