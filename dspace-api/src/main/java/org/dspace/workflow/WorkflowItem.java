@@ -357,6 +357,7 @@ public class WorkflowItem implements InProgressSubmission
      */
     public void update() throws SQLException, AuthorizeException
     {
+        log.info("THIS IS A WORKFLOWITEM UPDATE LOG");
         // FIXME check auth
         log.info(LogManager.getHeader(ourContext, "update_workflow_item",
                 "workflow_item_id=" + getID()));

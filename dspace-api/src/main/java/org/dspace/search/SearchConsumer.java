@@ -186,6 +186,7 @@ public class SearchConsumer implements Consumer
                 {
                     try
                     {
+                        log.info("SearchConsumer calls indexContent()");
                         DSIndexer.indexContent(ctx, iu, true);
                         log.debug("Indexed "
                              + Constants.typeText[iu.getType()]

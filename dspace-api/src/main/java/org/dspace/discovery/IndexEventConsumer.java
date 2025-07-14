@@ -167,6 +167,7 @@ public class IndexEventConsumer implements Consumer {
                 String hdl = iu.getHandle();
                 if (hdl != null && !handlesToDelete.contains(hdl)) {
                     try {
+                        log.info("IndexEventConsumer calls indexContent()");
                         indexer.indexContent(ctx, iu, true);
                         log.debug("Indexed "
                                 + Constants.typeText[iu.getType()]

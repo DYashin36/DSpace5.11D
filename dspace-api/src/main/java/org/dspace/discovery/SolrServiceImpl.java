@@ -227,6 +227,7 @@ public class SolrServiceImpl implements SearchService, IndexingService {
                                 || force)
                         {
                             unIndexContent(context, handle);
+                            log.info("INDEXING CONTENT IN SOLR");
                             buildDocument(context, (Item) dso);
                         }
                     } else {

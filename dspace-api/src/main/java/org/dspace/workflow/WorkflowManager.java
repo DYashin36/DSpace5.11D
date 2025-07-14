@@ -159,6 +159,7 @@ public class WorkflowManager
     public static WorkflowItem start(Context c, WorkspaceItem wsi)
             throws SQLException, AuthorizeException, IOException
     {
+        log.info("WorkflowManager calls start()");
         Item myitem = wsi.getItem();
         Collection collection = wsi.getCollection();
 
@@ -200,6 +201,7 @@ public class WorkflowManager
     public static WorkflowItem startWithoutNotify(Context c, WorkspaceItem wsi)
             throws SQLException, AuthorizeException, IOException
     {
+        log.info("WorkflowManager calls startWithoutNotify()");
         // make a hash table entry with item ID for no notify
         // notify code checks no notify hash for item id
         noEMail.put(Integer.valueOf(wsi.getItem().getID()), Boolean.TRUE);
@@ -218,6 +220,7 @@ public class WorkflowManager
     public static List<WorkflowItem> getOwnedTasks(Context c, EPerson e)
             throws java.sql.SQLException
     {
+        log.info("WorkflowManager calls getOwnedTasks()");
         ArrayList<WorkflowItem> mylist = new ArrayList<WorkflowItem>();
 
         String myquery = "SELECT * FROM WorkflowItem WHERE owner= ? ORDER BY workflow_id";
@@ -252,6 +255,7 @@ public class WorkflowManager
      */
     public static List<WorkflowItem> getPooledTasks(Context c, EPerson e) throws SQLException
     {
+        log.info("WorkflowManager calls getPooledTasks()");
         ArrayList<WorkflowItem> mylist = new ArrayList<WorkflowItem>();
 
         String myquery = "SELECT workflowitem.* FROM workflowitem, TaskListItem" +
@@ -593,7 +597,7 @@ public class WorkflowManager
 
         wi.setState(newstate);
 
-        boolean archived;
+        //boolean archived;
         switch (newstate)
         {
         // case WFSTATE_STEP1POOL:
@@ -782,12 +786,20 @@ public class WorkflowManager
             throw new IllegalArgumentException("WorkflowManager cannot handle workflowItemState " + newstate);
         }
 
-        try {
-            c.turnOffAuthorisationSystem();
+        logWorkflowEvent(c, wi.getItem(), wi, c.getCurrentUser(), newstate, newowner, mycollection, oldState, mygroup);
+
+        if (!archived)
+        {
+            log.info("workflow-manager !archived update");
             wi.update();
-        } finally {
-            c.restoreAuthSystemState();
         }
+
+        // try {
+        //     //c.turnOffAuthorisationSystem();
+        //     wi.update();
+        // } finally {
+        //     //c.restoreAuthSystemState();
+        // }
         log.info("END OF DOSTATE");
         return archived;
     }
@@ -1480,6 +1492,7 @@ public class WorkflowManager
 
         // Add to item as a DC field
         item.addDC("description", "provenance", "en", provDescription);
+        log.info("workflow-manager record-approval update");
         item.update();
     }
 

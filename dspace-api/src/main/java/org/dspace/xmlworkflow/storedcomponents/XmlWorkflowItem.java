@@ -389,6 +389,7 @@ public class XmlWorkflowItem implements InProgressSubmission {
      * Update the workflow item, including the unarchived item.
      */
     public void update() throws SQLException, AuthorizeException {
+        log.info("xmlWorkflowItem udate call");
         // FIXME check auth
         log.info(LogManager.getHeader(ourContext, "update_workflow_item",
                 "workflowitem_id=" + getID()));
