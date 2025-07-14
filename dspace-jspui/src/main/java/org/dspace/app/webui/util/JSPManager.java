@@ -50,6 +50,7 @@ public class JSPManager
             HttpServletResponse response, String jsp) throws ServletException,
             IOException
     {
+        log.info("THIS IS A LOG FOR A "+jsp+"showJsp()");
         if (log.isDebugEnabled())
         {
             log.debug(LogManager.getHeader((Context) request

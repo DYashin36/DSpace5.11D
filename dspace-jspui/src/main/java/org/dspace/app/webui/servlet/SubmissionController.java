@@ -10,14 +10,12 @@ package org.dspace.app.webui.servlet;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +30,7 @@ import org.dspace.app.webui.submit.JSPStepManager;
 import org.dspace.app.webui.util.FileUploadRequest;
 import org.dspace.app.webui.util.JSONUploadResponse;
 import org.dspace.app.webui.util.JSPManager;
+import org.dspace.app.webui.util.SoapHelper;
 import org.dspace.app.webui.util.UIUtil;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Bitstream;
@@ -40,18 +39,12 @@ import org.dspace.content.WorkspaceItem;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
-import org.dspace.workflow.WorkflowItem;
 import org.dspace.submit.AbstractProcessingStep;
+import org.dspace.submit.step.UploadStep;
+import org.dspace.workflow.WorkflowItem;
+import org.w3c.dom.Document;
 
 import com.google.gson.Gson;
-
-import java.util.Collections;
-
-import javax.servlet.http.HttpSession;
-
-import org.dspace.app.webui.util.SoapHelper;
-import org.dspace.submit.step.UploadStep;
-import org.w3c.dom.Document;
 
 /**
  * Submission Manager servlet for DSpace. Handles the initial submission of
@@ -419,6 +412,7 @@ public class SubmissionController extends DSpaceServlet
         // to the "select collection" step.
         else if (subInfo.getSubmissionItem() == null)
         {
+            log.info("THIS IS A LOG FOR A submitButton getSubmissionItem() == null");
             // we have just started this submission
             // (or we have just resumed a saved submission)
 
@@ -428,6 +422,7 @@ public class SubmissionController extends DSpaceServlet
         else
         // otherwise, figure out the next Step to call!
         {
+            log.info("THIS IS A LOG FOR A submit process next step to call");
             // Get the current step
             currentStepConfig = getCurrentStepConfig(request, subInfo);
 
@@ -449,11 +444,13 @@ public class SubmissionController extends DSpaceServlet
             else if (UIUtil.getSubmitButton(request, "").startsWith(
                     AbstractProcessingStep.PROGRESS_BAR_PREFIX))
             {
+                log.info("THIS IS A LOG FOR A submitButton stepJump()");
                 // jumping to a particular step/page
                 doStepJump(context, request, response, subInfo, currentStepConfig);
             }
             else
             {
+                log.info("THIS IS A LOG FOR A submitButton doStep()l");
                 // by default, load step class to start 
                 // or continue its processing
                 doStep(context, request, response, subInfo, currentStepConfig.getStepNumber());
@@ -569,21 +566,25 @@ public class SubmissionController extends DSpaceServlet
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.info("THIS IS A LOG FOR A NEXT STEP");
         // find current Step number
         int currentStepNum;
         if (currentStepConfig == null)
         {
             currentStepNum = -1;
+            log.info("THIS IS A LOG FOR A NULL CURRENT_STEP_CONFIG");
         }
         else
         {
             currentStepNum = currentStepConfig.getStepNumber();
+            log.info("THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG");
         }
 
         // as long as there are more steps after the current step,
         // do the next step in the current Submission Process
         if (subInfo.getSubmissionConfig().hasMoreSteps(currentStepNum))
         {
+            log.info("THIS IS A LOG FOR 'hasMoreSteps()' TRUE");
             // update the current step & do this step
             currentStepNum++;
             
@@ -596,14 +597,17 @@ public class SubmissionController extends DSpaceServlet
         {
             //if this submission is in the workflow process, 
             //forward user back to relevant task page
+            log.info("THIS IS A LOG FOR 'hasMoreSteps()' FALSE");
             if(subInfo.isInWorkflow())
             {
+                log.info("THIS IS A LOG FOR 'isInWorkflow()' true");
                 request.setAttribute("workflow.item", subInfo.getSubmissionItem());
                 JSPManager.showJSP(request, response,
                         "/mydspace/perform-task.jsp");
             }
             else
             {
+                log.info("THIS IS A LOG FOR 'isInWorkflow()' false - THIS IS COMPLETE STEP INVOKE");
                 // The Submission is COMPLETE!!
                
                 // save our current Submission information into the Request object
@@ -1042,7 +1046,7 @@ public class SubmissionController extends DSpaceServlet
             throws ServletException, IOException
     {
         saveSubmissionInfo(request, subInfo);
-
+        log.info("THIS IS A LOG FOR SHOW_JSP COMPLETE");
         JSPManager.showJSP(request, response, jspPath);
     }
 
