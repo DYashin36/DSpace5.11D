@@ -482,6 +482,7 @@ public class SubmissionController extends DSpaceServlet
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.debug(">>> SubmissionController: entering JSPStepManager.doStep()");
     	SubmissionStepConfig currentStepConfig = null;
     	
         if (subInfo.getSubmissionConfig() != null)
@@ -501,6 +502,7 @@ public class SubmissionController extends DSpaceServlet
         // if this is the furthest step the user has been to, save that info
         if (!subInfo.isInWorkflow() && (currentStepConfig.getStepNumber() > getStepReached(subInfo)))
         {
+            log.debug(">>> SubmissionController: setBeginning of step");
             // update submission info
             userHasReached(subInfo, currentStepConfig.getStepNumber());
             // commit changes to database
@@ -545,6 +547,7 @@ public class SubmissionController extends DSpaceServlet
                 //commit & close context
                 context.complete();
             }
+            
         }
         catch (Exception e)
         {
@@ -570,8 +573,8 @@ public class SubmissionController extends DSpaceServlet
             HttpServletResponse response, SubmissionInfo subInfo, SubmissionStepConfig currentStepConfig)
             throws ServletException, IOException, SQLException,
             AuthorizeException
-    {   log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NEXT STEP"));
-        log.info("THIS IS A LOG FOR A NEXT STEP");
+    {   log.debug(LogManager.getHeader(context, "doNextStep", "SubnissionController doNextStep"));
+        //log.debug("THIS IS A LOG FOR A NEXT STEP");
         // find current Step number
         int currentStepNum;
         if (currentStepConfig == null)
