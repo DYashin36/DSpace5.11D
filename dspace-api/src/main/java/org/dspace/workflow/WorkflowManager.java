@@ -389,7 +389,8 @@ public class WorkflowManager
                                   boolean curate, boolean record)
             throws SQLException, IOException, AuthorizeException
     {
-        log.info("WORKFLOWMANAGER.ADVANCE()");
+        log.info(LogManager.getHeader(c, "advance_workflow",
+                        "workflow_manager advance()"));
         int taskstate = wi.getState();
         boolean archived = false;
 
@@ -399,7 +400,7 @@ public class WorkflowManager
             if (! WorkflowCurator.doCuration(c, wi)) {
                 // don't proceed - either curation tasks queued, or item rejected
                 log.info(LogManager.getHeader(c, "advance_workflow",
-                        "workflow_item_id=" + wi.getID() + ",item_id="
+                        "This log is certainly work #1: workflow_item_id=" + wi.getID() + ",item_id="
                         + wi.getItem().getID() + ",collection_id="
                         + wi.getCollection().getID() + ",old_state="
                         + taskstate + ",doCuration=false"));
@@ -410,7 +411,8 @@ public class WorkflowManager
         switch (taskstate)
         {
         case WFSTATE_SUBMIT:
-        log.info("WORKFLOWMANAGER.ADVANCE() WSTATE_SUBMIT STEP");
+        log.info(LogManager.getHeader(c, "advance_workflow",
+                        "wstate submit"));
             archived = doState(c, wi, WFSTATE_STEP1POOL, e);
 
             break;
@@ -430,6 +432,8 @@ public class WorkflowManager
             {
                 recordApproval(c, wi, e);
             }
+            log.info(LogManager.getHeader(c, "advance_workflow",
+                        "wstate step 1"));
             archived = doState(c, wi, WFSTATE_STEP2POOL, e);
 
             break;
@@ -448,6 +452,8 @@ public class WorkflowManager
             {
                 recordApproval(c, wi, e);
             }
+            log.info(LogManager.getHeader(c, "advance_workflow",
+                        "wstate step 2"));
             archived = doState(c, wi, WFSTATE_STEP3POOL, e);
 
             break;
@@ -471,7 +477,7 @@ public class WorkflowManager
         }
 
         log.info(LogManager.getHeader(c, "advance_workflow",
-                "workflow_item_id=" + wi.getID() + ",item_id="
+                "This log is certainly work #2: workflow_item_id=" + wi.getID() + ",item_id="
                         + wi.getItem().getID() + ",collection_id="
                         + wi.getCollection().getID() + ",old_state="
                         + taskstate + ",new_state=" + wi.getState()));
@@ -800,7 +806,8 @@ public class WorkflowManager
         // } finally {
         //     //c.restoreAuthSystemState();
         // }
-        log.info("END OF DOSTATE");
+        log.info(LogManager.getHeader(c, "doState_workflow",
+                        "end of doState"));
         return archived;
     }
 
