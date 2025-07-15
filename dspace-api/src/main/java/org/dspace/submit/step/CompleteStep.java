@@ -86,9 +86,9 @@ public class CompleteStep extends AbstractProcessingStep
             AuthorizeException
     {
         // The Submission is COMPLETE!!
-        log.debug(LogManager.getHeader(context, "submission_complete",
+        log.debug(LogManager.getHeader(null, "submission_complete",
                 "This is a complete step process"));
-        log.info(LogManager.getHeader(context, "submission_complete",
+        log.info(LogManager.getHeader(null, "submission_complete",
                 "Completed submission with id="
                         + subInfo.getSubmissionItem().getID()));
         //Following code - is changed sequence (from 5.2 custom version)
@@ -167,6 +167,18 @@ public class CompleteStep extends AbstractProcessingStep
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        finally
+        {
+        // commit changes to database
+            if (success)
+            {
+                context.commit();
+            }
+            else
+            {
+                context.getDBConnection().rollback();
+            }
         }
     
         log.info("COMPLETE STEP COMPLETE STEP");

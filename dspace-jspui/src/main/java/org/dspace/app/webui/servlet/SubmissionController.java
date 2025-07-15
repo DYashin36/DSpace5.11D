@@ -231,6 +231,8 @@ public class SubmissionController extends DSpaceServlet
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException
     {
+        log.info(LogManager.getHeader(null,"do-ds-posting","here is a doDSPost of submissionController"));
+    	
     	// Configuration of current step in Item Submission Process
         SubmissionStepConfig currentStepConfig;
         

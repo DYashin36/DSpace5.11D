@@ -129,7 +129,7 @@ public class UploadStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
-        log.debug(LogManager.getHeader(context, "uploading",
+        log.debug(LogManager.getHeader(null, "uploading",
                 "This is a upload step process"));
         // get button user pressed
         String buttonPressed = Util.getSubmitButton(request, NEXT_BUTTON);
