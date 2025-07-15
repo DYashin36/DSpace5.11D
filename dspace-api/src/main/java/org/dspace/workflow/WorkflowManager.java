@@ -400,7 +400,7 @@ public class WorkflowManager
             if (! WorkflowCurator.doCuration(c, wi)) {
                 // don't proceed - either curation tasks queued, or item rejected
                 log.info(LogManager.getHeader(c, "advance_workflow",
-                        "This log is certainly work #1: workflow_item_id=" + wi.getID() + ",item_id="
+                        "This_log_is_certainly_work_1=" + wi.getID() + ",item_id="
                         + wi.getItem().getID() + ",collection_id="
                         + wi.getCollection().getID() + ",old_state="
                         + taskstate + ",doCuration=false"));
@@ -477,7 +477,7 @@ public class WorkflowManager
         }
 
         log.info(LogManager.getHeader(c, "advance_workflow",
-                "This log is certainly work #2: workflow_item_id=" + wi.getID() + ",item_id="
+                "This_log_is_certainly_work_2=" + wi.getID() + ",item_id="
                         + wi.getItem().getID() + ",collection_id="
                         + wi.getCollection().getID() + ",old_state="
                         + taskstate + ",new_state=" + wi.getState()));
