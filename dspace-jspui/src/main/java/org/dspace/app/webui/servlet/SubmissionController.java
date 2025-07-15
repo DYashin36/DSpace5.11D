@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Enumeration;
 
@@ -482,6 +483,9 @@ public class SubmissionController extends DSpaceServlet
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        PrintWriter out = response.getWriter();
+        out.println("SubmissionController doStep() start");
+        
         log.debug(">>> SubmissionController: entering JSPStepManager.doStep()");
     	SubmissionStepConfig currentStepConfig = null;
     	
@@ -489,6 +493,7 @@ public class SubmissionController extends DSpaceServlet
         {
             // get step to perform
             currentStepConfig = subInfo.getSubmissionConfig().getStep(stepNumber);
+            out.println("SubmissionController currentStepConfig is "+currentStepConfig);
         }
         else
         {
@@ -520,7 +525,7 @@ public class SubmissionController extends DSpaceServlet
 
         try
         {
-            
+            out.println("SubmissionController following processStep sequence ");
             JSPStepManager stepManager = JSPStepManager.loadStep(currentStepConfig);
            
             //tell the step class to do its processing
@@ -553,6 +558,10 @@ public class SubmissionController extends DSpaceServlet
         {
             log.error("Error loading step class'" + currentStepConfig.getProcessingClassName() + "':", e);
             JSPManager.showInternalError(request, response);
+        }
+        finally
+        {
+            out.close();
         }
 
     }

@@ -348,6 +348,7 @@ public class JSPStepManager
             String pathToJSP) throws ServletException, IOException,
             SQLException
     {
+        log.debug("here is a "+pathToJSP+" stepmanager showJSP");
 
         // As long as user is not currently cancelling
         // or saving submission, show the JSP specified

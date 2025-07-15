@@ -8,6 +8,7 @@
 package org.dspace.app.webui.util;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -50,6 +51,9 @@ public class JSPManager
             HttpServletResponse response, String jsp) throws ServletException,
             IOException
     {
+        PrintWriter out = response.getWriter();
+        out.println("showJsp():"+jsp);
+        out.close();
         log.debug(LogManager.getHeader((Context) request
                     .getAttribute("dspace.context"), "showJsp", "THIS IS A LOG FOR A "+jsp+"showJsp()"));
             
