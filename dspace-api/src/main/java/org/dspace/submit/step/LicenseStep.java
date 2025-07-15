@@ -85,7 +85,8 @@ public class LicenseStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
-        log.info("LICENSE STEP DO PROCESSING");
+        log.debug(LogManager.getHeader(context, "licencing",
+                "This is a licence step process"));
         String buttonPressed = Util.getSubmitButton(request, CANCEL_BUTTON);
 
         boolean licenseGranted = false;

@@ -21,19 +21,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.dspace.app.itemexport.ItemExport;
-//import org.dspace.app.util.StatisticsWriter;
-
 import org.dspace.app.util.SubmissionInfo;
-import org.dspace.core.ConfigurationManager;
-import org.dspace.submit.AbstractProcessingStep;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataSchema;
 import org.dspace.content.WorkspaceItem;
+import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.handle.HandleManager;
+import org.dspace.submit.AbstractProcessingStep;
 import org.dspace.workflow.WorkflowManager;
 import org.dspace.xmlworkflow.XmlWorkflowManager;
 
@@ -88,7 +86,8 @@ public class CompleteStep extends AbstractProcessingStep
             AuthorizeException
     {
         // The Submission is COMPLETE!!
-        log.info("COMPLETESTEP DO PROCESSING");
+        log.debug(LogManager.getHeader(context, "submission_complete",
+                "This is a complete step process"));
         log.info(LogManager.getHeader(context, "submission_complete",
                 "Completed submission with id="
                         + subInfo.getSubmissionItem().getID()));

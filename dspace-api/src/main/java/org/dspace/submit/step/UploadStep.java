@@ -31,6 +31,7 @@ import org.dspace.content.FormatIdentifier;
 import org.dspace.content.Item;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
+import org.dspace.core.LogManager;
 import org.dspace.curate.Curator;
 import org.dspace.submit.AbstractProcessingStep;
 
@@ -128,7 +129,8 @@ public class UploadStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
-        log.info("UPLOADSTEP DOPROCESSING");
+        log.debug(LogManager.getHeader(context, "uploading",
+                "This is a upload step process"));
         // get button user pressed
         String buttonPressed = Util.getSubmitButton(request, NEXT_BUTTON);
 

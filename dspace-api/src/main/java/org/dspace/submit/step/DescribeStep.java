@@ -37,6 +37,7 @@ import org.dspace.content.authority.ChoiceAuthorityManager;
 import org.dspace.content.authority.Choices;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
+import org.dspace.core.LogManager;
 import org.dspace.submit.AbstractProcessingStep;
 
 /**
@@ -117,7 +118,8 @@ public class DescribeStep extends AbstractProcessingStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
-        log.info("DESCRIBESTEP doPROCESSING");
+        log.debug(LogManager.getHeader(context, "describe doProcessing",
+                "This is a describe step process"));
         if(!request.getParameterNames().hasMoreElements()){
             //In case of an empty request do NOT just remove all metadata, just return to the submission page
             return STATUS_MORE_INPUT_REQUESTED;

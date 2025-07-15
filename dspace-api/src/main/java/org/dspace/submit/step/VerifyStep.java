@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.dspace.app.util.SubmissionInfo;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Context;
+import org.dspace.core.LogManager;
 import org.dspace.submit.AbstractProcessingStep;
 
 /**
