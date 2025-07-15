@@ -389,8 +389,7 @@ public class WorkflowManager
                                   boolean curate, boolean record)
             throws SQLException, IOException, AuthorizeException
     {
-        log.info(LogManager.getHeader(c, "advance_workflow",
-                        "workflow_manager advance()"));
+        System.out.println("this is a log from advance method");
         int taskstate = wi.getState();
         boolean archived = false;
 
@@ -411,6 +410,7 @@ public class WorkflowManager
         switch (taskstate)
         {
         case WFSTATE_SUBMIT:
+        System.out.println("this is a log from wstate submit");
         log.info(LogManager.getHeader(c, "advance_workflow",
                         "wstate submit"));
             archived = doState(c, wi, WFSTATE_STEP1POOL, e);
@@ -428,6 +428,7 @@ public class WorkflowManager
             //}
 
             // Record provenance
+            System.out.println("this is a log from wstate 1");
             if (record)
             {
                 recordApproval(c, wi, e);
@@ -446,6 +447,7 @@ public class WorkflowManager
             // {
             //     AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_2, true);
             // }
+            System.out.println("this is a log from wstate 2");
 
             // Record provenance
             if (record)
@@ -469,6 +471,7 @@ public class WorkflowManager
 
             // We don't record approval for editors, since they can't reject,
             // and thus didn't actually make a decision
+            System.out.println("this is a log from wstate 3");
             archived = doState(c, wi, WFSTATE_ARCHIVE, e);
 
             break;
@@ -482,6 +485,7 @@ public class WorkflowManager
                         + wi.getCollection().getID() + ",old_state="
                         + taskstate + ",new_state=" + wi.getState()));
         log.info("END OF WORKFLOWMANAGER.ADVANCE()");
+        System.out.println("this is a log from advance end");
         return archived;
     }
 
