@@ -18,6 +18,7 @@ import org.dspace.app.util.SubmissionInfo;
 import org.dspace.app.webui.submit.JSPStep;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.core.Context;
+import org.dspace.core.LogManager;
 
 /**
  * This is the JSP binding class which defines what happens once a submission completes!
@@ -70,6 +71,8 @@ public class JSPCompleteStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.debug(LogManager.getHeader(context, "doPreProcessing", "JSPCompleteStep Preprocessing"));
+            
         log.debug("JSPCompleteStep Preprocessing");
         //No pre-processing necessary, since submission is complete!
     }
@@ -103,6 +106,7 @@ public class JSPCompleteStep extends JSPStep
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
+        log.debug(LogManager.getHeader(context, "doPostProcessing", "JSPCompleteStep Postprocessing"));
         log.debug("JSPCompleteStep Postprocessing");
         //No post-processing necessary, since submission is complete!
     }
@@ -127,6 +131,7 @@ public class JSPCompleteStep extends JSPStep
     public String getReviewJSP(Context context, HttpServletRequest request,
             HttpServletResponse response, SubmissionInfo subInfo)
     {
+        log.debug(LogManager.getHeader(context, "getReviewJSP", "JSPCompleteStep reviewJSP"));
         log.debug("JSPCompleteStep reviewJSP");
         return NO_JSP; //no need to return a Review JSP as we are completed!
     }
