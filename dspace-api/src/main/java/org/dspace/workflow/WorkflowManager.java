@@ -449,7 +449,8 @@ public class WorkflowManager {
                 + ", collection_id=" + wi.getCollection().getID()
                 + ", old_state=" + taskstate + ", new_state=" + wi.getState()));
 
-        log.info("<=== EXIT advance() for workflow_item_id=" + wi.getID());
+        log.info(LogManager.getHeader(c, "advance_workflow",
+                "END"));
         return archived;
     }
 
