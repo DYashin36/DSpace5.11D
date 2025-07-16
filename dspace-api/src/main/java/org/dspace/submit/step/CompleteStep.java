@@ -7,6 +7,8 @@
  */
 package org.dspace.submit.step;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,23 +40,25 @@ import org.dspace.xmlworkflow.XmlWorkflowManager;
 /**
  * This is the class which defines what happens once a submission completes!
  * <P>
- * This class performs all the behind-the-scenes processing that
- * this particular step requires.  This class's methods are utilized 
- * by both the JSP-UI and the Manakin XML-UI
+ * This class performs all the behind-the-scenes processing that this particular
+ * step requires. This class's methods are utilized by both the JSP-UI and the
+ * Manakin XML-UI
  * <P>
  * This step is non-interactive (i.e. no user interface), and simply performs
  * the processing that is necessary after a submission has been completed!
- * 
+ *
  * @see org.dspace.app.util.SubmissionConfig
  * @see org.dspace.app.util.SubmissionStepConfig
  * @see org.dspace.submit.AbstractProcessingStep
- * 
+ *
  * @author Tim Donohue
  * @version $Revision$
  */
-public class CompleteStep extends AbstractProcessingStep
-{
-    /** log4j logger */
+public class CompleteStep extends AbstractProcessingStep {
+
+    /**
+     * log4j logger
+     */
     private static Logger log = Logger.getLogger(CompleteStep.class);
 
     /**
@@ -67,30 +71,25 @@ public class CompleteStep extends AbstractProcessingStep
      * <P>
      * NOTE: If this step is a non-interactive step (i.e. requires no UI), then
      * it should perform *all* of its processing in this method!
-     * 
-     * @param context
-     *            current DSpace context
-     * @param request
-     *            current servlet request object
-     * @param response
-     *            current servlet response object
-     * @param subInfo
-     *            submission info object
+     *
+     * @param context current DSpace context
+     * @param request current servlet request object
+     * @param response current servlet response object
+     * @param subInfo submission info object
      * @return Status or error flag which will be processed by
-     *         doPostProcessing() below! (if STATUS_COMPLETE or 0 is returned,
-     *         no errors occurred!)
+     * doPostProcessing() below! (if STATUS_COMPLETE or 0 is returned, no errors
+     * occurred!)
      */
     public int doProcessing(Context context, HttpServletRequest request,
             HttpServletResponse response, SubmissionInfo subInfo)
             throws ServletException, IOException, SQLException,
-            AuthorizeException
-    {
+            AuthorizeException {
         // The Submission is COMPLETE!!
         log.debug(LogManager.getHeader(null, "submission_complete",
                 "This is a complete step process"));
         log.info(LogManager.getHeader(context, "submission_complete",
                 "Completed submission with id="
-                        + subInfo.getSubmissionItem().getID()));
+                + subInfo.getSubmissionItem().getID()));
         //Following code - is changed sequence (from 5.2 custom version)
         // StatisticsWriter sw = new StatisticsWriter();
         // sw.writeStatistics(context, "item_added", null);
@@ -110,73 +109,72 @@ public class CompleteStep extends AbstractProcessingStep
         log.info(LogManager.getHeader(context, "submission_complete",
                 "item.addMetadata"));
         item.addMetadata(MetadataSchema.DC_SCHEMA, "identifier", null, "ru", "Dspace\\SGAU\\" + dateFormat.format(date) + "\\" + item.getID());
-        
+
         // Start the workflow for this Submission
         boolean success = false;
-        try
-        {
-            if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
-                try{
+        try {
+            if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("xmlworkflow")) {
+                try {
                     log.info(LogManager.getHeader(context, "submission_complete",
-                "call XmlWorkflowManager.start"));
+                            "call XmlWorkflowManager.start"));
                     XmlWorkflowManager.start(context, (WorkspaceItem) subInfo.getSubmissionItem());
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: " + subInfo.getSubmissionItem().getItem().getID()), e);
                     throw new ServletException(e);
                 }
-            }else{
+            } else {
                 log.info(LogManager.getHeader(context, "submission_complete",
-                "call WorkflowManager.start"));
+                        "call WorkflowManager.start"));
                 WorkflowManager.start(context, (WorkspaceItem) subInfo.getSubmissionItem());
             }
             success = true;
-        }
-        catch (Exception e)
-        {
-            log.error("Caught exception in submission step: ",e);
+        } catch (Exception e) {
+            log.error("Caught exception in submission step: ", e);
             throw new ServletException(e);
-        }
-        finally
-        {
-        // commit changes to database
-            if (success)
-            {
+        } finally {
+            // commit changes to database
+            if (success) {
+                log.info(LogManager.getHeader(null, "submission_complete",
+                "here is completeStep commit"));
                 context.commit();
-            }
-            else
-            {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter("/home/vboxuser/opt/dspace/1C/completion.txt", true))) {
+                    writer.write("Submission complete!");
+                    writer.newLine();
+                } catch (IOException e) {
+                    log.error("Failed to write submission log to file", e);
+                }
+            } else {
                 context.getDBConnection().rollback();
             }
         }
-        log.info(LogManager.getHeader(context, "submission_complete",
-                "call try block"));
-        try {
-            if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
-                log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
-	            boolean forbiden = false;
-	            try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
-		            pstm.setInt(1, cc.getID());
-		            try (ResultSet resultSet = pstm.executeQuery();) {
-			            resultSet.next();
-			            int cnt = resultSet.getInt(1);
-                        log.info("COMPLETE STEP CNT IS: "+cnt);
-			            if (cnt > 0) forbiden = true;
-		            }
-	            } catch (SQLException | NumberFormatException e) {
-		            log.error(e.getLocalizedMessage(), e);
-	            }
-	            if (!forbiden)
-                {
-                    log.info("COMPLETE STEP EXPORT");
-                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
-                    ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-    
+
+        // log.info(LogManager.getHeader(context, "submission_complete",
+        //         "call try block"));
+        // try {
+        //     if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
+        //         log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
+        //         boolean forbiden = false;
+        //         try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
+        //             pstm.setInt(1, cc.getID());
+        //             try (ResultSet resultSet = pstm.executeQuery();) {
+        // 	            resultSet.next();
+        // 	            int cnt = resultSet.getInt(1);
+        //                 log.info("COMPLETE STEP CNT IS: "+cnt);
+        // 	            if (cnt > 0) forbiden = true;
+        //             }
+        //         } catch (SQLException | NumberFormatException e) {
+        //             log.error(e.getLocalizedMessage(), e);
+        //         }
+        //         if (!forbiden)
+        //         {
+        //             log.info("COMPLETE STEP EXPORT");
+        //             ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+        //             ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
+        //         }
+        //     }
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
         log.info("COMPLETE STEP COMPLETE STEP");
         return STATUS_COMPLETE;
 
@@ -231,17 +229,14 @@ public class CompleteStep extends AbstractProcessingStep
      * Steps which are non-interactive (i.e. they do not display an interface to
      * the user) should return a value of 1, so that they are only processed
      * once!
-     * 
-     * @param request
-     *            The HTTP Request
-     * @param subInfo
-     *            The current submission information object
-     * 
+     *
+     * @param request The HTTP Request
+     * @param subInfo The current submission information object
+     *
      * @return the number of pages in this step
      */
     public int getNumberOfPages(HttpServletRequest request,
-            SubmissionInfo subInfo) throws ServletException
-    {
+            SubmissionInfo subInfo) throws ServletException {
         // This class represents the non-interactive processing step
         // that occurs just *before* the final confirmation page!
         // (so it should only be processed once!)
