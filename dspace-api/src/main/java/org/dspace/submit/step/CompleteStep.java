@@ -88,7 +88,7 @@ public class CompleteStep extends AbstractProcessingStep
         // The Submission is COMPLETE!!
         log.debug(LogManager.getHeader(null, "submission_complete",
                 "This is a complete step process"));
-        log.info(LogManager.getHeader(null, "submission_complete",
+        log.info(LogManager.getHeader(context, "submission_complete",
                 "Completed submission with id="
                         + subInfo.getSubmissionItem().getID()));
         //Following code - is changed sequence (from 5.2 custom version)
@@ -107,6 +107,8 @@ public class CompleteStep extends AbstractProcessingStep
 
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         Date date = new Date();
+        log.info(LogManager.getHeader(context, "submission_complete",
+                "item.addMetadata"));
         item.addMetadata(MetadataSchema.DC_SCHEMA, "identifier", null, "ru", "Dspace\\SGAU\\" + dateFormat.format(date) + "\\" + item.getID());
         
         // Start the workflow for this Submission
@@ -115,12 +117,16 @@ public class CompleteStep extends AbstractProcessingStep
         {
             if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
                 try{
+                    log.info(LogManager.getHeader(context, "submission_complete",
+                "call XmlWorkflowManager.start"));
                     XmlWorkflowManager.start(context, (WorkspaceItem) subInfo.getSubmissionItem());
                 }catch (Exception e){
                     log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: " + subInfo.getSubmissionItem().getItem().getID()), e);
                     throw new ServletException(e);
                 }
             }else{
+                log.info(LogManager.getHeader(context, "submission_complete",
+                "call WorkflowManager.start"));
                 WorkflowManager.start(context, (WorkspaceItem) subInfo.getSubmissionItem());
             }
             success = true;
@@ -142,7 +148,8 @@ public class CompleteStep extends AbstractProcessingStep
                 context.getDBConnection().rollback();
             }
         }
-        log.info("COMPLETE STEP ITEM: "+item);
+        log.info(LogManager.getHeader(context, "submission_complete",
+                "call try block"));
         try {
             if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
                 log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
@@ -168,18 +175,7 @@ public class CompleteStep extends AbstractProcessingStep
         } catch (Exception e) {
             e.printStackTrace();
         }
-        finally
-        {
-        // commit changes to database
-            if (success)
-            {
-                context.commit();
-            }
-            else
-            {
-                context.getDBConnection().rollback();
-            }
-        }
+        
     
         log.info("COMPLETE STEP COMPLETE STEP");
         return STATUS_COMPLETE;

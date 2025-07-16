@@ -415,7 +415,7 @@ public class SubmissionController extends DSpaceServlet
         // to the "select collection" step.
         else if (subInfo.getSubmissionItem() == null)
         {
-            log.debug(LogManager.getHeader(context, "doDSPost", "THIS IS A LOG FOR A submitButton getSubmissionItem() == null"));
+            log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton getSubmissionItem() == null"));
             log.info("THIS IS A LOG FOR A submitButton getSubmissionItem() == null");
             // we have just started this submission
             // (or we have just resumed a saved submission)
@@ -426,7 +426,7 @@ public class SubmissionController extends DSpaceServlet
         else
         // otherwise, figure out the next Step to call!
         {
-            log.debug(LogManager.getHeader(context, "doDSPost", "THIS IS A LOG FOR A submit process next step to call"));
+            log.info(LogManager.getHeader(null "doDSPost", "THIS IS A LOG FOR A submit process next step to call"));
             
             log.info("THIS IS A LOG FOR A submit process next step to call");
             // Get the current step
@@ -450,14 +450,14 @@ public class SubmissionController extends DSpaceServlet
             else if (UIUtil.getSubmitButton(request, "").startsWith(
                     AbstractProcessingStep.PROGRESS_BAR_PREFIX))
             {
-                log.debug(LogManager.getHeader(context, "doDSPost", "THIS IS A LOG FOR A submitButton stepJump()"));
+                log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton stepJump()"));
                 log.info("THIS IS A LOG FOR A submitButton stepJump()");
                 // jumping to a particular step/page
                 doStepJump(context, request, response, subInfo, currentStepConfig);
             }
             else
             {
-                log.debug(LogManager.getHeader(context, "doDSPost", "THIS IS A LOG FOR A submitButton doStep()"));
+                log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton doStep()"));
                 log.info("THIS IS A LOG FOR A submitButton doStep()");
                 // by default, load step class to start 
                 // or continue its processing
@@ -488,7 +488,7 @@ public class SubmissionController extends DSpaceServlet
         PrintWriter out = response.getWriter();
         out.println("SubmissionController doStep() start");
         
-        log.debug(">>> SubmissionController: entering JSPStepManager.doStep()");
+        log.info(">>> SubmissionController: entering JSPStepManager.doStep()");
     	SubmissionStepConfig currentStepConfig = null;
     	
         if (subInfo.getSubmissionConfig() != null)
