@@ -52,16 +52,18 @@ import org.dspace.utils.DSpace;
 /**
  * Workflow state machine.
  *
- * <p>Notes:
+ * <p>
+ * Notes:
  *
- * <p>Determining item status from the database:
+ * <p>
+ * Determining item status from the database:
  *
  * <ul>
  * <li>When an item has not been submitted yet, it is in the user's personal
  * workspace (there is a row in PersonalWorkspace pointing to it.)
  *
- * <li>When an item is submitted and is somewhere in a workflow, it has a row in the
- * WorkflowItem table pointing to it. The state of the workflow can be
+ * <li>When an item is submitted and is somewhere in a workflow, it has a row in
+ * the WorkflowItem table pointing to it. The state of the workflow can be
  * determined by looking at {@link WorkflowItem#getState()}
  *
  * <li>When a submission is complete, the {@link WorkflowItem} pointing to the
@@ -70,73 +72,76 @@ import org.dspace.utils.DSpace;
  * method is called, which hooks the item up to the archive.
  * </ul>
  *
- * <p>Notification: When an item enters a state that requires notification,
+ * <p>
+ * Notification: When an item enters a state that requires notification,
  * (WFSTATE_STEP1POOL, WFSTATE_STEP2POOL, WFSTATE_STEP3POOL,) the workflow needs
  * to notify the appropriate groups that they have a pending task to claim.
  *
- * <p>Revealing lists of approvers, editors, and reviewers. A method could be added
+ * <p>
+ * Revealing lists of approvers, editors, and reviewers. A method could be added
  * to do this, but it isn't strictly necessary. (say public List
  * getStateEPeople( WorkflowItem wi, int state ) could return people affected by
  * the item's current state.
  */
-public class WorkflowManager
-{
+public class WorkflowManager {
+
     // states to store in WorkflowItem for the GUI to report on
     // fits our current set of workflow states (stored in WorkflowItem.state)
     public static final int WFSTATE_SUBMIT = 0; // hmm, probably don't need
 
     public static final int WFSTATE_STEP1POOL = 1; // waiting for a reviewer to
-                                                   // claim it
+    // claim it
 
     public static final int WFSTATE_STEP1 = 2; // task - reviewer has claimed it
 
     public static final int WFSTATE_STEP2POOL = 3; // waiting for an admin to
-                                                   // claim it
+    // claim it
 
     public static final int WFSTATE_STEP2 = 4; // task - admin has claimed item
 
     public static final int WFSTATE_STEP3POOL = 5; // waiting for an editor to
-                                                   // claim it
+    // claim it
 
     public static final int WFSTATE_STEP3 = 6; // task - editor has claimed the
-                                               // item
+    // item
 
     public static final int WFSTATE_ARCHIVE = 7; // probably don't need this one
-                                                 // either
+    // either
 
-    /** Symbolic names of workflow steps. */
-    private static final String workflowText[] =
-    {
-        "SUBMIT",           // 0
-        "STEP1POOL",        // 1
-        "STEP1",            // 2
-        "STEP2POOL",        // 3
-        "STEP2",            // 4
-        "STEP3POOL",        // 5
-        "STEP3",            // 6
-        "ARCHIVE"           // 7
-    };
+    /**
+     * Symbolic names of workflow steps.
+     */
+    private static final String workflowText[]
+            = {
+                "SUBMIT", // 0
+                "STEP1POOL", // 1
+                "STEP1", // 2
+                "STEP2POOL", // 3
+                "STEP2", // 4
+                "STEP3POOL", // 5
+                "STEP3", // 6
+                "ARCHIVE" // 7
+            };
 
     /* support for 'no notification' */
     private static final Map<Integer, Boolean> noEMail = new HashMap<Integer, Boolean>();
 
-    /** log4j logger */
+    /**
+     * log4j logger
+     */
     private static final Logger log = Logger.getLogger(WorkflowManager.class);
 
     /**
-     * Translate symbolic name of workflow state into number.
-     * The name is case-insensitive.  Returns -1 when name cannot
-     * be matched.
-     * @param state symbolic name of workflow state, must be one of
-     *        the elements of workflowText array.
+     * Translate symbolic name of workflow state into number. The name is
+     * case-insensitive. Returns -1 when name cannot be matched.
+     *
+     * @param state symbolic name of workflow state, must be one of the elements
+     * of workflowText array.
      * @return numeric workflow state or -1 for error.
      */
-    public static int getWorkflowID(String state)
-    {
-        for (int i = 0; i < workflowText.length; ++i)
-        {
-            if (state.equalsIgnoreCase(workflowText[i]))
-            {
+    public static int getWorkflowID(String state) {
+        for (int i = 0; i < workflowText.length; ++i) {
+            if (state.equalsIgnoreCase(workflowText[i])) {
                 return i;
             }
         }
@@ -147,18 +152,15 @@ public class WorkflowManager
      * startWorkflow() begins a workflow - in a single transaction do away with
      * the PersonalWorkspace entry and turn it into a WorkflowItem.
      *
-     * @param c
-     *            Context
-     * @param wsi
-     *            The WorkspaceItem to convert to a workflow item
+     * @param c Context
+     * @param wsi The WorkspaceItem to convert to a workflow item
      * @return The resulting workflow item
      * @throws java.sql.SQLException passed through.
      * @throws org.dspace.authorize.AuthorizeException passed through.
      * @throws java.io.IOException passed through.
      */
     public static WorkflowItem start(Context c, WorkspaceItem wsi)
-            throws SQLException, AuthorizeException, IOException
-    {
+            throws SQLException, AuthorizeException, IOException {
         Item myitem = wsi.getItem();
         Collection collection = wsi.getCollection();
 
@@ -198,8 +200,7 @@ public class WorkflowManager
      * subsequent notifications happen normally
      */
     public static WorkflowItem startWithoutNotify(Context c, WorkspaceItem wsi)
-            throws SQLException, AuthorizeException, IOException
-    {
+            throws SQLException, AuthorizeException, IOException {
         // make a hash table entry with item ID for no notify
         // notify code checks no notify hash for item id
         noEMail.put(Integer.valueOf(wsi.getItem().getID()), Boolean.TRUE);
@@ -212,30 +213,23 @@ public class WorkflowManager
      * claimed and owned by an EPerson. The GUI displays this info on the
      * MyDSpace page.
      *
-     * @param e
-     *            The EPerson we want to fetch owned tasks for.
+     * @param e The EPerson we want to fetch owned tasks for.
      */
     public static List<WorkflowItem> getOwnedTasks(Context c, EPerson e)
-            throws java.sql.SQLException
-    {
+            throws java.sql.SQLException {
         ArrayList<WorkflowItem> mylist = new ArrayList<WorkflowItem>();
 
         String myquery = "SELECT * FROM WorkflowItem WHERE owner= ? ORDER BY workflow_id";
 
         TableRowIterator tri = DatabaseManager.queryTable(c,
-        		"workflowitem", myquery,e.getID());
+                "workflowitem", myquery, e.getID());
 
-        try
-        {
-            while (tri.hasNext())
-            {
+        try {
+            while (tri.hasNext()) {
                 mylist.add(new WorkflowItem(c, tri.next()));
             }
-        }
-        finally
-        {
-            if (tri != null)
-            {
+        } finally {
+            if (tri != null) {
                 tri.close();
             }
         }
@@ -247,31 +241,24 @@ public class WorkflowManager
      * getPooledTasks() returns a List of WorkflowItems an EPerson could claim
      * (as a reviewer, etc.) for display on a user's MyDSpace page.
      *
-     * @param e
-     *            The Eperson we want to fetch the pooled tasks for.
+     * @param e The Eperson we want to fetch the pooled tasks for.
      */
-    public static List<WorkflowItem> getPooledTasks(Context c, EPerson e) throws SQLException
-    {
+    public static List<WorkflowItem> getPooledTasks(Context c, EPerson e) throws SQLException {
         ArrayList<WorkflowItem> mylist = new ArrayList<WorkflowItem>();
 
-        String myquery = "SELECT workflowitem.* FROM workflowitem, TaskListItem" +
-        		" WHERE tasklistitem.eperson_id= ? " +
-        		" AND tasklistitem.workflow_id=workflowitem.workflow_id ORDER BY workflowitem.workflow_id";
+        String myquery = "SELECT workflowitem.* FROM workflowitem, TaskListItem"
+                + " WHERE tasklistitem.eperson_id= ? "
+                + " AND tasklistitem.workflow_id=workflowitem.workflow_id ORDER BY workflowitem.workflow_id";
 
         TableRowIterator tri = DatabaseManager
                 .queryTable(c, "workflowitem", myquery, e.getID());
 
-        try
-        {
-            while (tri.hasNext())
-            {
+        try {
+            while (tri.hasNext()) {
                 mylist.add(new WorkflowItem(c, tri.next()));
             }
-        }
-        finally
-        {
-            if (tri != null)
-            {
+        } finally {
+            if (tri != null) {
                 tri.close();
             }
         }
@@ -282,47 +269,42 @@ public class WorkflowManager
     /**
      * claim() claims a workflow task for an EPerson
      *
-     * @param c
-     *            Current user context.
-     * @param wi
-     *            WorkflowItem to do the claim on
-     * @param e
-     *            The EPerson doing the claim
+     * @param c Current user context.
+     * @param wi WorkflowItem to do the claim on
+     * @param e The EPerson doing the claim
      * @throws java.sql.SQLException passed through.
      * @throws java.io.IOException passed through.
      * @throws org.dspace.authorize.AuthorizeException passed through.
      */
     public static void claim(Context c, WorkflowItem wi, EPerson e)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         int taskstate = wi.getState();
 
-        switch (taskstate)
-        {
-        case WFSTATE_STEP1POOL:
+        switch (taskstate) {
+            case WFSTATE_STEP1POOL:
 
-            // FIXME note:  authorizeAction ASSUMES that c.getCurrentUser() == e!
-            AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_1, true);
-            doState(c, wi, WFSTATE_STEP1, e);
+                // FIXME note:  authorizeAction ASSUMES that c.getCurrentUser() == e!
+                AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_1, true);
+                doState(c, wi, WFSTATE_STEP1, e);
 
-            break;
+                break;
 
-        case WFSTATE_STEP2POOL:
+            case WFSTATE_STEP2POOL:
 
-            AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_2, true);
-            doState(c, wi, WFSTATE_STEP2, e);
+                AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_2, true);
+                doState(c, wi, WFSTATE_STEP2, e);
 
-            break;
+                break;
 
-        case WFSTATE_STEP3POOL:
+            case WFSTATE_STEP3POOL:
 
-            AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_3, true);
-            doState(c, wi, WFSTATE_STEP3, e);
+                AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_3, true);
+                doState(c, wi, WFSTATE_STEP3, e);
 
-            break;
+                break;
 
-        default:
-            throw new IllegalArgumentException("Workflow Step " + taskstate + " is out of range.");
+            default:
+                throw new IllegalArgumentException("Workflow Step " + taskstate + " is out of range.");
         }
 
         log.info(LogManager.getHeader(c, "claim_task", "workflow_item_id="
@@ -333,184 +315,179 @@ public class WorkflowManager
     }
 
     /**
-     * advance() sends an item forward in the workflow (reviewers,
-     * approvers, and editors all do an 'approve' to move the item forward) if
-     * the item arrives at the submit state, then remove the WorkflowItem and
-     * call the archive() method to put it in the archive, and email notify the
-     * submitter of a successful submission
+     * advance() sends an item forward in the workflow (reviewers, approvers,
+     * and editors all do an 'approve' to move the item forward) if the item
+     * arrives at the submit state, then remove the WorkflowItem and call the
+     * archive() method to put it in the archive, and email notify the submitter
+     * of a successful submission
      *
-     * @param c
-     *            Context
-     * @param wi
-     *            WorkflowItem do do the approval on
-     * @param e
-     *            EPerson doing the approval
+     * @param c Context
+     * @param wi WorkflowItem do do the approval on
+     * @param e EPerson doing the approval
      * @throws java.sql.SQLException passed through.
      * @throws java.io.IOException passed through.
      * @throws org.dspace.authorize.AuthorizeException passed through.
      */
     public static void advance(Context c, WorkflowItem wi, EPerson e)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         advance(c, wi, e, true, true);
     }
 
     /**
-     * advance() sends an item forward in the workflow. Reviewers,
-     * approvers, and editors all do an 'approve' to move the item forward.
-     * If the item arrives at the submit state, then remove the WorkflowItem,
-     * call the {@link #archive(org.dspace.core.Context, org.dspace.workflow.WorkflowItem)}
-     * method to put it in the archive, and email notify the
-     * submitter of a successful submission.
+     * advance() sends an item forward in the workflow. Reviewers, approvers,
+     * and editors all do an 'approve' to move the item forward. If the item
+     * arrives at the submit state, then remove the WorkflowItem, call the
+     * {@link #archive(org.dspace.core.Context, org.dspace.workflow.WorkflowItem)}
+     * method to put it in the archive, and email notify the submitter of a
+     * successful submission.
      *
-     * @param c
-     *            Context
-     * @param wi
-     *            WorkflowItem do do the approval on
-     * @param e
-     *            EPerson doing the approval
+     * @param c Context
+     * @param wi WorkflowItem do do the approval on
+     * @param e EPerson doing the approval
      *
-     * @param curate
-     *            boolean indicating whether curation tasks should be done
+     * @param curate boolean indicating whether curation tasks should be done
      *
-     * @param record
-     *            boolean indicating whether to record action
+     * @param record boolean indicating whether to record action
      * @return true if the state was advanced.
      * @throws java.sql.SQLException passed through.
      * @throws java.io.IOException passed through.
      * @throws org.dspace.authorize.AuthorizeException passed through.
      */
     public static boolean advance(Context c, WorkflowItem wi, EPerson e,
-                                  boolean curate, boolean record)
-            throws SQLException, IOException, AuthorizeException
-    {
+            boolean curate, boolean record)
+            throws SQLException, IOException, AuthorizeException {
+        log.info("===> ENTER advance() for workflow_item_id=" + wi.getID());
+
         int taskstate = wi.getState();
         boolean archived = false;
 
+        log.info("Current task state: " + taskstate + " for item_id=" + wi.getItem().getID());
+
         // perform curation tasks if needed
-        if (curate && WorkflowCurator.needsCuration(wi))
-        {
-            if (! WorkflowCurator.doCuration(c, wi)) {
-                // don't proceed - either curation tasks queued, or item rejected
-                log.info(LogManager.getHeader(c, "advance_workflow",
-                        "workflow_item_id=" + wi.getID() + ",item_id="
-                        + wi.getItem().getID() + ",collection_id="
-                        + wi.getCollection().getID() + ",old_state="
-                        + taskstate + ",doCuration=false"));
+        if (curate && WorkflowCurator.needsCuration(wi)) {
+            log.info("Curation is required, starting curation for item_id=" + wi.getItem().getID());
+            if (!WorkflowCurator.doCuration(c, wi)) {
+                log.info(LogManager.getHeader(c, "advance_workflow_checker",
+                        "Curation incomplete or rejected - workflow_item_id=" + wi.getID()
+                        + ", item_id=" + wi.getItem().getID()
+                        + ", collection_id=" + wi.getCollection().getID()
+                        + ", old_state=" + taskstate));
                 return archived;
             }
+            log.info("Curation complete for item_id=" + wi.getItem().getID());
+        } else {
+            log.info("No curation needed for item_id=" + wi.getItem().getID());
         }
 
-        switch (taskstate)
-        {
-        case WFSTATE_SUBMIT:
-            archived = doState(c, wi, WFSTATE_STEP1POOL, e);
+        switch (taskstate) {
+            case WFSTATE_SUBMIT:
+                log.info("State = WFSTATE_SUBMIT. Advancing to STEP1POOL...");
+                archived = doState(c, wi, WFSTATE_STEP1POOL, e);
+                log.info("Finished STEP1POOL. Archived = " + archived);
+                break;
 
-            break;
+            case WFSTATE_STEP1:
+                log.info("State = WFSTATE_STEP1.");
+                if (wi.getCollection().getWorkflowGroup(1) != null) {
+                    log.info("WorkflowGroup(1) exists. Authorizing STEP1...");
+                    AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_1, true);
+                } else {
+                    log.info("No WorkflowGroup(1) exists. Skipping authorization.");
+                }
 
-        case WFSTATE_STEP1:
-            // advance(...) will call itself if no workflow step group exists
-            // so we need to check permissions only if a workflow step group is
-            // in place.
-            if (wi.getCollection().getWorkflowGroup(1) != null)
-            {
-                // FIXME note:  authorizeAction ASSUMES that c.getCurrentUser() == e!
-                AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_1, true);
-            }
+                if (record) {
+                    log.info("Recording approval for STEP1...");
+                    recordApproval(c, wi, e);
+                }
 
-            // Record provenance
-            if (record)
-            {
-                recordApproval(c, wi, e);
-            }
-            archived = doState(c, wi, WFSTATE_STEP2POOL, e);
+                log.info("Advancing to STEP2POOL...");
+                archived = doState(c, wi, WFSTATE_STEP2POOL, e);
+                log.info("Finished STEP2POOL. Archived = " + archived);
+                break;
 
-            break;
+            case WFSTATE_STEP2:
+                log.info("State = WFSTATE_STEP2.");
+                if (wi.getCollection().getWorkflowGroup(2) != null) {
+                    log.info("WorkflowGroup(2) exists. Authorizing STEP2...");
+                    AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_2, true);
+                } else {
+                    log.info("No WorkflowGroup(2) exists. Skipping authorization.");
+                }
 
-        case WFSTATE_STEP2:
-            // advance(...) will call itself if no workflow step group exists
-            // so we need to check permissions only if a workflow step group is
-            // in place.
-            if (wi.getCollection().getWorkflowGroup(2) != null)
-            {
-                AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_2, true);
-            }
+                if (record) {
+                    log.info("Recording approval for STEP2...");
+                    recordApproval(c, wi, e);
+                }
 
-            // Record provenance
-            if (record)
-            {
-                recordApproval(c, wi, e);
-            }
-            archived = doState(c, wi, WFSTATE_STEP3POOL, e);
+                log.info("Advancing to STEP3POOL...");
+                archived = doState(c, wi, WFSTATE_STEP3POOL, e);
+                log.info("Finished STEP3POOL. Archived = " + archived);
+                break;
 
-            break;
+            case WFSTATE_STEP3:
+                log.info("State = WFSTATE_STEP3.");
+                if (wi.getCollection().getWorkflowGroup(3) != null) {
+                    log.info("WorkflowGroup(3) exists. Authorizing STEP3...");
+                    AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_3, true);
+                } else {
+                    log.info("No WorkflowGroup(3) exists. Skipping authorization.");
+                }
 
-        case WFSTATE_STEP3:
-            // advance(...) will call itself if no workflow step group exists
-            // so we need to check permissions only if a workflow step group is
-            // in place.
-            if (wi.getCollection().getWorkflowGroup(3) != null)
-            {
-                AuthorizeManager.authorizeAction(c, wi.getCollection(), Constants.WORKFLOW_STEP_3, true);
-            }
+                log.info("Advancing to ARCHIVE...");
+                archived = doState(c, wi, WFSTATE_ARCHIVE, e);
+                log.info("Finished ARCHIVE. Archived = " + archived);
+                break;
 
-            // We don't record approval for editors, since they can't reject,
-            // and thus didn't actually make a decision
-            archived = doState(c, wi, WFSTATE_ARCHIVE, e);
-
-            break;
-
-        // error handling? shouldn't get here
+            default:
+                log.warn("Unexpected workflow state: " + taskstate + " for item_id=" + wi.getItem().getID());
+                break;
         }
 
-        log.info(LogManager.getHeader(c, "advance_workflow",
-                "workflow_item_id=" + wi.getID() + ",item_id="
-                        + wi.getItem().getID() + ",collection_id="
-                        + wi.getCollection().getID() + ",old_state="
-                        + taskstate + ",new_state=" + wi.getState()));
+        log.info(LogManager.getHeader(c, "advance_workflow_checker",
+                "Complete advance - workflow_item_id=" + wi.getID()
+                + ", item_id=" + wi.getItem().getID()
+                + ", collection_id=" + wi.getCollection().getID()
+                + ", old_state=" + taskstate + ", new_state=" + wi.getState()));
+
+        log.info("<=== EXIT advance() for workflow_item_id=" + wi.getID());
         return archived;
     }
 
     /**
      * returns an owned task/item to the pool
      *
-     * @param c
-     *            Context
-     * @param wi
-     *            WorkflowItem to operate on
-     * @param e
-     *            EPerson doing the operation
+     * @param c Context
+     * @param wi WorkflowItem to operate on
+     * @param e EPerson doing the operation
      * @throws java.sql.SQLException passed through.
      * @throws java.io.IOException passed through.
      * @throws org.dspace.authorize.AuthorizeException passed through.
      */
     public static void unclaim(Context c, WorkflowItem wi, EPerson e)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         int taskstate = wi.getState();
 
-        switch (taskstate)
-        {
-        case WFSTATE_STEP1:
+        switch (taskstate) {
+            case WFSTATE_STEP1:
 
-            doState(c, wi, WFSTATE_STEP1POOL, e);
+                doState(c, wi, WFSTATE_STEP1POOL, e);
 
-            break;
+                break;
 
-        case WFSTATE_STEP2:
+            case WFSTATE_STEP2:
 
-            doState(c, wi, WFSTATE_STEP2POOL, e);
+                doState(c, wi, WFSTATE_STEP2POOL, e);
 
-            break;
+                break;
 
-        case WFSTATE_STEP3:
+            case WFSTATE_STEP3:
 
-            doState(c, wi, WFSTATE_STEP3POOL, e);
+                doState(c, wi, WFSTATE_STEP3POOL, e);
 
-            break;
+                break;
 
-        default:
-            throw new IllegalStateException("WorkflowItem reached an unknown state.");
+            default:
+                throw new IllegalStateException("WorkflowItem reached an unknown state.");
         }
 
         try {
@@ -522,9 +499,9 @@ public class WorkflowManager
 
         log.info(LogManager.getHeader(c, "unclaim_workflow",
                 "workflow_item_id=" + wi.getID() + ",item_id="
-                        + wi.getItem().getID() + ",collection_id="
-                        + wi.getCollection().getID() + ",old_state="
-                        + taskstate + ",new_state=" + wi.getState()));
+                + wi.getItem().getID() + ",collection_id="
+                + wi.getCollection().getID() + ",old_state="
+                + taskstate + ",new_state=" + wi.getState()));
     }
 
     /**
@@ -532,19 +509,14 @@ public class WorkflowManager
      * (it will basically do a reject from any state - the item ends up back in
      * the user's PersonalWorkspace
      *
-     * @param c
-     *            Context
-     * @param wi
-     *            WorkflowItem to operate on
-     * @param e
-     *            EPerson doing the operation
+     * @param c Context
+     * @param wi WorkflowItem to operate on
+     * @param e EPerson doing the operation
      */
     public static void abort(Context c, WorkflowItem wi, EPerson e)
-            throws SQLException, AuthorizeException, IOException
-    {
+            throws SQLException, AuthorizeException, IOException {
         // authorize a DSpaceActions.ABORT
-        if (!AuthorizeManager.isAdmin(c))
-        {
+        if (!AuthorizeManager.isAdmin(c)) {
             throw new AuthorizeException(
                     "You must be an admin to abort a workflow");
         }
@@ -562,7 +534,7 @@ public class WorkflowManager
     }
 
     /**
-     * Move a workflow item to a new state.  The item may be put in a pool,
+     * Move a workflow item to a new state. The item may be put in a pool,
      * removed from a pool and assigned to a user, or archived.
      *
      * @param c current DSpace context.
@@ -576,8 +548,7 @@ public class WorkflowManager
      */
     private static boolean doState(Context c, WorkflowItem wi, int newstate,
             EPerson newowner) throws SQLException, IOException,
-            AuthorizeException
-    {
+            AuthorizeException {
         Collection mycollection = wi.getCollection();
 
         //Gather our old data for launching the workflow event
@@ -586,58 +557,57 @@ public class WorkflowManager
         wi.setState(newstate);
 
         boolean archived;
-        switch (newstate)
-        {
-        case WFSTATE_STEP1POOL:
-            archived = pool(c, wi, 1);
-            break;
+        switch (newstate) {
+            case WFSTATE_STEP1POOL:
+                archived = pool(c, wi, 1);
+                break;
 
-        case WFSTATE_STEP1:
-            assignToReviewer(c, wi, 1, newowner);
-            archived = false;
-            break;
+            case WFSTATE_STEP1:
+                assignToReviewer(c, wi, 1, newowner);
+                archived = false;
+                break;
 
-        case WFSTATE_STEP2POOL:
-            archived = pool(c, wi, 2);
-            break;
+            case WFSTATE_STEP2POOL:
+                archived = pool(c, wi, 2);
+                break;
 
-        case WFSTATE_STEP2:
-            assignToReviewer(c, wi, 2, newowner);
-            archived = false;
-            break;
+            case WFSTATE_STEP2:
+                assignToReviewer(c, wi, 2, newowner);
+                archived = false;
+                break;
 
-        case WFSTATE_STEP3POOL:
-            archived = pool(c, wi, 3);
-            break;
+            case WFSTATE_STEP3POOL:
+                archived = pool(c, wi, 3);
+                break;
 
-        case WFSTATE_STEP3:
-            assignToReviewer(c, wi, 3, newowner);
-            archived = false;
-            break;
+            case WFSTATE_STEP3:
+                assignToReviewer(c, wi, 3, newowner);
+                archived = false;
+                break;
 
-        case WFSTATE_ARCHIVE:
-            // put in archive in one transaction
-            // remove workflow tasks
-            deleteTasks(c, wi);
-            mycollection = wi.getCollection();
-            Item myItem = archive(c, wi);
+            case WFSTATE_ARCHIVE:
+                // put in archive in one transaction
+                // remove workflow tasks
+                deleteTasks(c, wi);
+                mycollection = wi.getCollection();
+                Item myItem = archive(c, wi);
 
-            // now email notification
-            notifyOfArchive(c, myItem, mycollection);
+                // now email notification
+                notifyOfArchive(c, myItem, mycollection);
 
-            // remove any workflow policies left
-            try {
-                c.turnOffAuthorisationSystem();
-                revokeReviewerPolicies(c, myItem);
-            } finally {
-                c.restoreAuthSystemState();
-            }
+                // remove any workflow policies left
+                try {
+                    c.turnOffAuthorisationSystem();
+                    revokeReviewerPolicies(c, myItem);
+                } finally {
+                    c.restoreAuthSystemState();
+                }
 
-            logWorkflowEvent(c, wi.getItem(), wi, c.getCurrentUser(), newstate,
-                    newowner, mycollection, oldState, null);
-            return true;
-        default:
-            throw new IllegalArgumentException("WorkflowManager cannot handle workflowItemState " + newstate);
+                logWorkflowEvent(c, wi.getItem(), wi, c.getCurrentUser(), newstate,
+                        newowner, mycollection, oldState, null);
+                return true;
+            default:
+                throw new IllegalArgumentException("WorkflowManager cannot handle workflowItemState " + newstate);
         }
 
         try {
@@ -662,29 +632,27 @@ public class WorkflowManager
      */
     protected static void assignToReviewer(Context context, WorkflowItem workflowItem,
             int step, EPerson newowner)
-            throws AuthorizeException, SQLException
-    {
+            throws AuthorizeException, SQLException {
         // shortcut to the collection
         Collection collection = workflowItem.getCollection();
         // from the step we can recognize the new state and the corresponding policy action.
         int newState;
         int correspondingAction;
-        switch (step)
-        {
-        case 1:
-            newState = WFSTATE_STEP1;
-            correspondingAction = Constants.WORKFLOW_STEP_1;
-            break;
-        case 2:
-            newState = WFSTATE_STEP2;
-            correspondingAction = Constants.WORKFLOW_STEP_2;
-            break;
-        case 3:
-            newState = WFSTATE_STEP3;
-            correspondingAction = Constants.WORKFLOW_STEP_3;
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown workflow step " + step);
+        switch (step) {
+            case 1:
+                newState = WFSTATE_STEP1;
+                correspondingAction = Constants.WORKFLOW_STEP_1;
+                break;
+            case 2:
+                newState = WFSTATE_STEP2;
+                correspondingAction = Constants.WORKFLOW_STEP_2;
+                break;
+            case 3:
+                newState = WFSTATE_STEP3;
+                correspondingAction = Constants.WORKFLOW_STEP_3;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown workflow step " + step);
         }
 
         // Gather the old state for logging.
@@ -693,8 +661,7 @@ public class WorkflowManager
         // If there is a workflow state group and it contains any members,
         // then we have to check the permissions first.
         Group stateGroup = collection.getWorkflowGroup(step);
-        if ((stateGroup != null) && !(stateGroup.isEmpty()))
-        {
+        if ((stateGroup != null) && !(stateGroup.isEmpty())) {
             // FIXME note:  authorizeAction ASSUMES that c.getCurrentUser() == newowner!
             AuthorizeManager.authorizeAction(context, collection, correspondingAction, true);
         }
@@ -721,30 +688,30 @@ public class WorkflowManager
     }
 
     /**
-     * Helper method that manages state, policies, owner, notifies, task list items
-     * and so on whenever a WorkflowItem should be added to a workflow step pool.
-     * Don't use this method directly.  Either use
+     * Helper method that manages state, policies, owner, notifies, task list
+     * items and so on whenever a WorkflowItem should be added to a workflow
+     * step pool. Don't use this method directly. Either use
      * {@link #unclaim(Context, WorkflowItem, EPerson)} if the item is claimed,
      * {@link #start(Context, WorkspaceItem)} to start the workflow, or
-     * {@link #advance(Context, WorkflowItem, EPerson)} to move an item to the next state.
+     * {@link #advance(Context, WorkflowItem, EPerson)} to move an item to the
+     * next state.
      *
      * @param context DSpace context object.
      * @param workflowItem the item to be pooled.
      * @param step the step (1-3) of the pool the item should be put into.
      * @return true if the item was archived because no reviewers were assigned
-     *         to any of the following workflow steps, false otherwise.
+     * to any of the following workflow steps, false otherwise.
      * @throws SQLException passed through.
      * @throws AuthorizeException passed through.
      * @throws IOException passed through.
      * @throws IllegalArgumentException if {@code step} has another value than
-     *         either 1, 2, or 3.
+     * either 1, 2, or 3.
      */
     protected static boolean pool(Context context, WorkflowItem workflowItem, int step)
-            throws SQLException, AuthorizeException, IOException
-    {
+            throws SQLException, AuthorizeException, IOException {
         // shortcut to the collection
         Collection collection = workflowItem.getCollection();
-        
+
         // From the step we can recognize the new state and the corresponding state.
         // The new state is the pool of the step.
         // The corresponding state is the state an item gets when it is claimed.
@@ -752,24 +719,23 @@ public class WorkflowManager
         // and if we have to skip a pool.
         int newState;
         int correspondingState;
-        switch (step)
-        {
-        case 1:
-            newState = WFSTATE_STEP1POOL;
-            correspondingState = WFSTATE_STEP1;
-            break;
-        case 2:
-            newState = WFSTATE_STEP2POOL;
-            correspondingState = WFSTATE_STEP2;
-            break;
-        case 3:
-            newState = WFSTATE_STEP3POOL;
-            correspondingState = WFSTATE_STEP3;
-            break;
-        default:
-            throw new IllegalArgumentException("Unknown workflow step " + step);
+        switch (step) {
+            case 1:
+                newState = WFSTATE_STEP1POOL;
+                correspondingState = WFSTATE_STEP1;
+                break;
+            case 2:
+                newState = WFSTATE_STEP2POOL;
+                correspondingState = WFSTATE_STEP2;
+                break;
+            case 3:
+                newState = WFSTATE_STEP3POOL;
+                correspondingState = WFSTATE_STEP3;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown workflow step " + step);
         }
-        
+
         // Gather our old owner and state, as we need those as well to determine
         // whether we have to send notifications.
         int oldState = workflowItem.getState();
@@ -777,20 +743,19 @@ public class WorkflowManager
         // Clear owner.
         workflowItem.setOwner(null);
         // Don't revoke the reviewer policies yet.  They may be needed to advance the item.
-        
+
         // Any approvers?  If so, add them to the tasklist; if not, skip to next state.
         Group workflowStepGroup = collection.getWorkflowGroup(step);
-        if ((workflowStepGroup != null) && !(workflowStepGroup.isEmpty()))
-        {
+        if ((workflowStepGroup != null) && !(workflowStepGroup.isEmpty())) {
             // Set new item state.
             workflowItem.setState(newState);
-            
+
             // Revoke previously granted reviewer policies and grant read permissions.
             try {
                 context.turnOffAuthorisationSystem();
                 // Revoke previously granted policies.
                 revokeReviewerPolicies(context, workflowItem.getItem());
-                
+
                 // JSPUI offers a preview to every task before a reviewer claims it.
                 // So we need to grant permissions in advance, so that all
                 // possible reviewers can read the item and all bitstreams in
@@ -804,12 +769,10 @@ public class WorkflowManager
                 } catch (IndexOutOfBoundsException ex) {
                     originalBundle = null;
                 }
-                if (originalBundle != null)
-                {
+                if (originalBundle != null) {
                     AuthorizeManager.addPolicy(context, originalBundle, Constants.READ,
                             workflowStepGroup, ResourcePolicy.TYPE_WORKFLOW);
-                    for (Bitstream bitstream : originalBundle.getBitstreams())
-                    {
+                    for (Bitstream bitstream : originalBundle.getBitstreams()) {
                         AuthorizeManager.addPolicy(context, bitstream, Constants.READ,
                                 workflowStepGroup, ResourcePolicy.TYPE_WORKFLOW);
                     }
@@ -817,17 +780,16 @@ public class WorkflowManager
             } finally {
                 context.restoreAuthSystemState();
             }
-            
+
             // Get a list of all epeople in group (or any subgroups)
             EPerson[] epa = Group.allMembers(context, workflowStepGroup);
-            
+
             // There were reviewers.  Change the state and then add them to the list.
             createTasks(context, workflowItem, epa);
             ConfigurationService configurationService = new DSpace().getConfigurationService();
             if (configurationService.getPropertyAsType("workflow.notify.returned.tasks", true)
                     || oldState != correspondingState
-                    || oldOwner == null)
-            {
+                    || oldOwner == null) {
                 // Email notification
                 notifyGroupOfTask(context, workflowItem, workflowStepGroup, epa);
             }
@@ -835,14 +797,11 @@ public class WorkflowManager
                     context.getCurrentUser(), newState, null, collection,
                     oldState, workflowStepGroup);
             return false;
-        }
-        else
-        {
+        } else {
             // No reviewers -- skip ahead.
             workflowItem.setState(correspondingState);
             boolean archived = advance(context, workflowItem, null, true, false);
-            if (archived)
-            {
+            if (archived) {
                 // Remove any workflow policies that may be left over.
                 try {
                     context.turnOffAuthorisationSystem();
@@ -856,16 +815,16 @@ public class WorkflowManager
     }
 
     private static void logWorkflowEvent(Context c, Item item, WorkflowItem workflowItem, EPerson actor, int newstate, EPerson newOwner, Collection mycollection, int oldState, Group newOwnerGroup) {
-        if(newstate == WFSTATE_ARCHIVE || newstate == WFSTATE_STEP1POOL || newstate == WFSTATE_STEP2POOL || newstate == WFSTATE_STEP3POOL){
+        if (newstate == WFSTATE_ARCHIVE || newstate == WFSTATE_STEP1POOL || newstate == WFSTATE_STEP2POOL || newstate == WFSTATE_STEP3POOL) {
             //Clear the newowner variable since this one isn't owned anymore !
             newOwner = null;
         }
 
         UsageWorkflowEvent usageWorkflowEvent = new UsageWorkflowEvent(c, item, workflowItem, workflowText[newstate], workflowText[oldState], mycollection, actor);
-        if(newOwner != null){
+        if (newOwner != null) {
             usageWorkflowEvent.setEpersonOwners(newOwner);
         }
-        if(newOwnerGroup != null){
+        if (newOwnerGroup != null) {
             usageWorkflowEvent.setGroupOwners(newOwnerGroup);
         }
         new DSpace().getEventService().fireEvent(usageWorkflowEvent);
@@ -877,8 +836,7 @@ public class WorkflowManager
      * @param state the workflow state
      * @return the text representation
      */
-    public static String getWorkflowText(int state)
-    {
+    public static String getWorkflowText(int state) {
         if (state > -1 && state < workflowText.length) {
             return workflowText[state];
         }
@@ -894,8 +852,7 @@ public class WorkflowManager
      * @return the fully archived item.
      */
     private static Item archive(Context c, WorkflowItem wfi)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         // FIXME: Check auth
         Item item = wfi.getItem();
         Collection collection = wfi.getCollection();
@@ -917,10 +874,8 @@ public class WorkflowManager
      * notify the submitter that the item is archived
      */
     private static void notifyOfArchive(Context c, Item i, Collection coll)
-            throws SQLException, IOException
-    {
-        try
-        {
+            throws SQLException, IOException {
+        try {
             // Get submitter
             EPerson ep = i.getSubmitter();
             // Get the Locale
@@ -933,16 +888,12 @@ public class WorkflowManager
             // Get title
             Metadatum[] titles = i.getDC("title", null, Item.ANY);
             String title = "";
-            try
-            {
+            try {
                 title = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
-            }
-            catch (MissingResourceException e)
-            {
+            } catch (MissingResourceException e) {
                 title = "Untitled";
             }
-            if (titles.length > 0)
-            {
+            if (titles.length > 0) {
                 title = titles[0].value;
             }
 
@@ -952,9 +903,7 @@ public class WorkflowManager
             email.addArgument(HandleManager.getCanonicalForm(handle));
 
             email.send();
-        }
-        catch (MessagingException e)
-        {
+        } catch (MessagingException e) {
             log.warn(LogManager.getHeader(c, "notifyOfArchive",
                     "cannot email user; item_id=" + i.getID()
                     + ":  " + e.getMessage()));
@@ -965,15 +914,12 @@ public class WorkflowManager
      * Return the workflow item to the workspace of the submitter. The workflow
      * item is removed, and a workspace item created.
      *
-     * @param c
-     *            Context
-     * @param wfi
-     *            WorkflowItem to be 'dismantled'
+     * @param c Context
+     * @param wfi WorkflowItem to be 'dismantled'
      * @return the workspace item
      */
     private static WorkspaceItem returnToWorkspace(Context c, WorkflowItem wfi)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         Item myitem = wfi.getItem();
         Collection mycollection = wfi.getCollection();
 
@@ -998,7 +944,7 @@ public class WorkflowManager
         //myitem.update();
         log.info(LogManager.getHeader(c, "return_to_workspace",
                 "workflow_item_id=" + wfi.getID() + "workspace_item_id="
-                        + wi.getID()));
+                + wi.getID()));
 
         // Now remove the workflow object manually from the database
         DatabaseManager.updateQuery(c,
@@ -1012,19 +958,14 @@ public class WorkflowManager
      * created, and the WorkflowItem is removed, user is emailed
      * rejection_message.
      *
-     * @param c
-     *            Context
-     * @param wi
-     *            WorkflowItem to operate on
-     * @param e
-     *            EPerson doing the operation
-     * @param rejection_message
-     *            message to email to user
+     * @param c Context
+     * @param wi WorkflowItem to operate on
+     * @param e EPerson doing the operation
+     * @param rejection_message message to email to user
      */
     public static WorkspaceItem reject(Context c, WorkflowItem wi, EPerson e,
             String rejection_message) throws SQLException, AuthorizeException,
-            IOException
-    {
+            IOException {
 
         int oldState = wi.getState();
         // authorize a DSpaceActions.REJECT
@@ -1067,11 +1008,9 @@ public class WorkflowManager
     // creates workflow tasklist entries for a workflow
     // for all the given EPeople
     private static void createTasks(Context c, WorkflowItem wi, EPerson[] epa)
-            throws SQLException
-    {
+            throws SQLException {
         // create a tasklist entry for each eperson
-        for (int i = 0; i < epa.length; i++)
-        {
+        for (int i = 0; i < epa.length; i++) {
             // can we get away without creating a tasklistitem class?
             // do we want to?
             TableRow tr = DatabaseManager.row("tasklistitem");
@@ -1081,9 +1020,10 @@ public class WorkflowManager
         }
     }
 
-    /** Deletes all tasks associated with a workflowitem. */
-    static void deleteTasks(Context c, WorkflowItem wi) throws SQLException
-    {
+    /**
+     * Deletes all tasks associated with a workflowitem.
+     */
+    static void deleteTasks(Context c, WorkflowItem wi) throws SQLException {
         String myrequest = "DELETE FROM TaskListItem WHERE workflow_id= ? ";
 
         DatabaseManager.updateQuery(c, myrequest, wi.getID());
@@ -1091,10 +1031,8 @@ public class WorkflowManager
 
     // send notices of curation activity
     public static void notifyOfCuration(Context c, WorkflowItem wi, EPerson[] epa,
-           String taskName, String action, String message) throws SQLException, IOException
-    {
-        try
-        {
+            String taskName, String action, String message) throws SQLException, IOException {
+        try {
             // Get the item title
             String title = getItemTitle(wi);
 
@@ -1104,11 +1042,10 @@ public class WorkflowManager
             // Get the collection
             Collection coll = wi.getCollection();
 
-            for (int i = 0; i < epa.length; i++)
-            {
+            for (int i = 0; i < epa.length; i++) {
                 Locale supportedLocale = I18nUtil.getEPersonLocale(epa[i]);
                 Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale,
-                                                                                  "flowtask_notify"));
+                        "flowtask_notify"));
                 email.addArgument(title);
                 email.addArgument(coll.getMetadata("name"));
                 email.addArgument(submitter);
@@ -1118,32 +1055,25 @@ public class WorkflowManager
                 email.addRecipient(epa[i].getEmail());
                 email.send();
             }
-        }
-        catch (MessagingException e)
-        {
+        } catch (MessagingException e) {
             log.warn(LogManager.getHeader(c, "notifyOfCuration",
                     "cannot email users of workflow_item_id " + wi.getID()
-                            + ":  " + e.getMessage()));
+                    + ":  " + e.getMessage()));
         }
     }
 
     private static void notifyGroupOfTask(Context c, WorkflowItem wi,
-            Group mygroup, EPerson[] epa) throws SQLException, IOException
-    {
+            Group mygroup, EPerson[] epa) throws SQLException, IOException {
         // check to see if notification is turned off
         // and only do it once - delete key after notification has
         // been suppressed for the first time
         Integer myID = Integer.valueOf(wi.getItem().getID());
 
-        if (noEMail.containsKey(myID))
-        {
+        if (noEMail.containsKey(myID)) {
             // suppress email, and delete key
             noEMail.remove(myID);
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 // Get the item title
                 String title = getItemTitle(wi);
 
@@ -1155,8 +1085,7 @@ public class WorkflowManager
 
                 String message = "";
 
-                for (int i = 0; i < epa.length; i++)
-                {
+                for (int i = 0; i < epa.length; i++) {
                     Locale supportedLocale = I18nUtil.getEPersonLocale(epa[i]);
                     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_task"));
                     email.addArgument(title);
@@ -1164,8 +1093,7 @@ public class WorkflowManager
                     email.addArgument(submitter);
 
                     ResourceBundle messages = ResourceBundle.getBundle("Messages", supportedLocale);
-                    switch (wi.getState())
-                    {
+                    switch (wi.getState()) {
                         case WFSTATE_STEP1POOL:
                             message = messages.getString("org.dspace.workflow.WorkflowManager.step1");
 
@@ -1186,29 +1114,24 @@ public class WorkflowManager
                     email.addRecipient(epa[i].getEmail());
                     email.send();
                 }
-            }
-            catch (MessagingException e)
-            {
-                String gid = (mygroup != null) ?
-                             String.valueOf(mygroup.getID()) : "none";
+            } catch (MessagingException e) {
+                String gid = (mygroup != null)
+                        ? String.valueOf(mygroup.getID()) : "none";
                 log.warn(LogManager.getHeader(c, "notifyGroupofTask",
                         "cannot email user group_id=" + gid
-                                + " workflow_item_id=" + wi.getID()
-                                + ":  " + e.getMessage()));
+                        + " workflow_item_id=" + wi.getID()
+                        + ":  " + e.getMessage()));
             }
         }
     }
 
-    private static String getMyDSpaceLink()
-    {
+    private static String getMyDSpaceLink() {
         return ConfigurationManager.getProperty("dspace.url") + "/mydspace";
     }
 
     private static void notifyOfReject(Context c, WorkflowItem wi, EPerson e,
-            String reason)
-    {
-        try
-        {
+            String reason) {
+        try {
             // Get the item title
             String title = getItemTitle(wi);
 
@@ -1218,7 +1141,7 @@ public class WorkflowManager
             // Get rejector's name
             String rejector = getEPersonName(e);
             Locale supportedLocale = I18nUtil.getEPersonLocale(e);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale,"submit_reject"));
+            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_reject"));
 
             email.addRecipient(getSubmitterEPerson(wi).getEmail());
             email.addArgument(title);
@@ -1228,33 +1151,28 @@ public class WorkflowManager
             email.addArgument(getMyDSpaceLink());
 
             email.send();
-        }
-        catch (RuntimeException re)
-        {
+        } catch (RuntimeException re) {
             // log this email error
             log.warn(LogManager.getHeader(c, "notify_of_reject",
                     "cannot email user eperson_id=" + e.getID()
-                            + " eperson_email=" + e.getEmail()
-                            + " workflow_item_id=" + wi.getID()
-                            + ":  " + re.getMessage()));
+                    + " eperson_email=" + e.getEmail()
+                    + " workflow_item_id=" + wi.getID()
+                    + ":  " + re.getMessage()));
 
             throw re;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             // log this email error
             log.warn(LogManager.getHeader(c, "notify_of_reject",
                     "cannot email user eperson_id=" + e.getID()
-                            + " eperson_email=" + e.getEmail()
-                            + " workflow_item_id=" + wi.getID()
-                            + ":  " + ex.getMessage()));
+                    + " eperson_email=" + e.getEmail()
+                    + " workflow_item_id=" + wi.getID()
+                    + ":  " + ex.getMessage()));
         }
     }
 
     // FIXME - are the following methods still needed?
     private static EPerson getSubmitterEPerson(WorkflowItem wi)
-            throws SQLException
-    {
+            throws SQLException {
         EPerson e = wi.getSubmitter();
 
         return e;
@@ -1263,20 +1181,16 @@ public class WorkflowManager
     /**
      * get the title of the item in this workflow
      *
-     * @param wi  the workflow item object
+     * @param wi the workflow item object
      */
-    public static String getItemTitle(WorkflowItem wi) throws SQLException
-    {
+    public static String getItemTitle(WorkflowItem wi) throws SQLException {
         Item myitem = wi.getItem();
         Metadatum[] titles = myitem.getDC("title", null, Item.ANY);
 
         // only return the first element, or "Untitled"
-        if (titles.length > 0)
-        {
+        if (titles.length > 0) {
             return titles[0].value;
-        }
-        else
-        {
+        } else {
             return I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled ");
         }
     }
@@ -1284,21 +1198,18 @@ public class WorkflowManager
     /**
      * get the name of the eperson who started this workflow
      *
-     * @param wi  the workflow item
+     * @param wi the workflow item
      * @return "user name (email@address)"
      * @throws java.sql.SQLException passed through.
      */
-    public static String getSubmitterName(WorkflowItem wi) throws SQLException
-    {
+    public static String getSubmitterName(WorkflowItem wi) throws SQLException {
         EPerson e = wi.getSubmitter();
 
         return getEPersonName(e);
     }
 
-    private static String getEPersonName(EPerson e) throws SQLException
-    {
-        if (e == null)
-        {
+    private static String getEPersonName(EPerson e) throws SQLException {
+        if (e == null) {
             return "Unknown";
         }
         String submitter = e.getFullName();
@@ -1310,8 +1221,7 @@ public class WorkflowManager
 
     // Record approval provenance statement
     private static void recordApproval(Context c, WorkflowItem wi, EPerson e)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         Item item = wi.getItem();
 
         // Get user's name + email address
@@ -1334,22 +1244,18 @@ public class WorkflowManager
 
     // Create workflow start provenance message
     private static void recordStart(Context c, Item myitem)
-            throws SQLException, IOException, AuthorizeException
-    {
+            throws SQLException, IOException, AuthorizeException {
         // get date
         DCDate now = DCDate.getCurrent();
 
         // Create provenance description
         String provmessage = "";
 
-        if (myitem.getSubmitter() != null)
-        {
+        if (myitem.getSubmitter() != null) {
             provmessage = "Submitted by " + myitem.getSubmitter().getFullName()
                     + " (" + myitem.getSubmitter().getEmail() + ") on "
                     + now.toString() + "\n";
-        }
-        else
-        // null submitter
+        } else // null submitter
         {
             provmessage = "Submitted by unknown (probably automated) on"
                     + now.toString() + "\n";
@@ -1375,15 +1281,14 @@ public class WorkflowManager
      *
      * @param context
      * @param wfi While all policies are granted on item, bundle or bitstream
-     *            level, this method takes a {@link WorkflowItem} for convenience and
-     *            uses wfi.getItem() to get the actual item.
+     * level, this method takes a {@link WorkflowItem} for convenience and uses
+     * wfi.getItem() to get the actual item.
      * @param reviewer EPerson to grant the rights to.
      * @throws SQLException
      * @throws AuthorizeException
      */
     protected static void grantReviewerPolicies(Context context, WorkflowItem wfi, EPerson reviewer)
-            throws SQLException, AuthorizeException
-    {
+            throws SQLException, AuthorizeException {
         // get item and bundle "ORIGINAL"
         Item item = wfi.getItem();
         Bundle originalBundle;
@@ -1394,14 +1299,12 @@ public class WorkflowManager
         }
 
         // grant item level policies
-        for (int action : new int[] {Constants.READ, Constants.WRITE, Constants.ADD, Constants.REMOVE, Constants.DELETE})
-        {
+        for (int action : new int[]{Constants.READ, Constants.WRITE, Constants.ADD, Constants.REMOVE, Constants.DELETE}) {
             AuthorizeManager.addPolicy(context, item, action, reviewer, ResourcePolicy.TYPE_WORKFLOW);
         }
 
         // set bitstream and bundle policies
-        if (originalBundle != null)
-        {
+        if (originalBundle != null) {
             AuthorizeManager.addPolicy(context, originalBundle, Constants.READ, reviewer, ResourcePolicy.TYPE_WORKFLOW);
 
             // shall reviewers be able to edit files?
@@ -1409,8 +1312,7 @@ public class WorkflowManager
             boolean editFiles = Boolean.parseBoolean(configurationService.getProperty("workflow.reviewer.file-edit"));
             // if a reviewer should be able to edit bitstreams, we need add
             // permissions regarding the bundle "ORIGINAL" and its bitstreams
-            if (editFiles)
-            {
+            if (editFiles) {
                 AuthorizeManager.addPolicy(context, originalBundle, Constants.ADD, reviewer, ResourcePolicy.TYPE_WORKFLOW);
                 AuthorizeManager.addPolicy(context, originalBundle, Constants.REMOVE, reviewer, ResourcePolicy.TYPE_WORKFLOW);
                 // Whenever a new bitstream is added, it inherit the policies of the bundle.
@@ -1418,13 +1320,11 @@ public class WorkflowManager
                 AuthorizeManager.addPolicy(context, originalBundle, Constants.WRITE, reviewer, ResourcePolicy.TYPE_WORKFLOW);
                 AuthorizeManager.addPolicy(context, originalBundle, Constants.DELETE, reviewer, ResourcePolicy.TYPE_WORKFLOW);
             }
-            for (Bitstream bitstream : originalBundle.getBitstreams())
-            {
+            for (Bitstream bitstream : originalBundle.getBitstreams()) {
                 AuthorizeManager.addPolicy(context, bitstream, Constants.READ, reviewer, ResourcePolicy.TYPE_WORKFLOW);
 
                 // add further rights if reviewer should be able to edit bitstreams
-                if (editFiles)
-                {
+                if (editFiles) {
                     AuthorizeManager.addPolicy(context, bitstream, Constants.WRITE, reviewer, ResourcePolicy.TYPE_WORKFLOW);
                     AuthorizeManager.addPolicy(context, bitstream, Constants.DELETE, reviewer, ResourcePolicy.TYPE_WORKFLOW);
                 }
@@ -1449,8 +1349,7 @@ public class WorkflowManager
      * @throws AuthorizeException passed through.
      */
     protected static void revokeReviewerPolicies(Context context, Item item)
-            throws SQLException, AuthorizeException
-    {
+            throws SQLException, AuthorizeException {
         // get bundle "ORIGINAL"
         Bundle originalBundle;
         try {
@@ -1460,11 +1359,9 @@ public class WorkflowManager
         }
 
         // remove bitstream and bundle level policies
-        if (originalBundle != null)
-        {
+        if (originalBundle != null) {
             // We added policies for Bitstreams of the bundle "original" only
-            for (Bitstream bitstream : originalBundle.getBitstreams())
-            {
+            for (Bitstream bitstream : originalBundle.getBitstreams()) {
                 AuthorizeManager.removeAllPoliciesByDSOAndType(context, bitstream, ResourcePolicy.TYPE_WORKFLOW);
             }
 
@@ -1473,5 +1370,5 @@ public class WorkflowManager
 
         // remove item level policies
         AuthorizeManager.removeAllPoliciesByDSOAndType(context, item, ResourcePolicy.TYPE_WORKFLOW);
-     }
+    }
 }
