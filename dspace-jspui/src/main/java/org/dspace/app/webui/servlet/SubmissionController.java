@@ -426,7 +426,7 @@ public class SubmissionController extends DSpaceServlet
         else
         // otherwise, figure out the next Step to call!
         {
-            log.info(LogManager.getHeader(null "doDSPost", "THIS IS A LOG FOR A submit process next step to call"));
+            log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submit process next step to call"));
             
             log.info("THIS IS A LOG FOR A submit process next step to call");
             // Get the current step
