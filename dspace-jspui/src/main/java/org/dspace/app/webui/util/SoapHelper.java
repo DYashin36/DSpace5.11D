@@ -24,12 +24,15 @@ public class SoapHelper {
     private static Logger log = Logger.getLogger(EditCommunitiesServlet.class);
 
     public Document getRecordByCode(String id){
+        
         HttpURLConnection connection = null;
         URL url = null;
-
+        log.info("SH>>getRecordByCode>>ID:"+id);
         try {
-            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/BiblRecords.1cws");
+            url = new URL("https://localhost:8888/soap");
+            log.info("SUCCESSFULL CONNECTING SOAP");
         } catch (MalformedURLException e) {
+            log.info("ERROR CONNECTING SOAP");
             e.printStackTrace();
         }
 
@@ -143,6 +146,7 @@ public class SoapHelper {
 
         String authors = "(Автор Равно "+name+")";
         String titles = "(Заглавие Содержит "+title+")";
+        log.info("SH>>getRecordByName>>name:"+name+";title:"+title);
 
         if(name == null){
             authors = "";
@@ -153,8 +157,10 @@ public class SoapHelper {
 
 
         try {
-            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/BiblRecords.1cws");
+            url = new URL("https://localhost:8888/soap");
+            log.info("SUCCESSFULL CONNECTING SOAP");
         } catch (MalformedURLException e) {
+            log.info("ERROR CONNECTING SOAP");
             e.printStackTrace();
         }
 
@@ -261,9 +267,12 @@ public class SoapHelper {
     public Document getRecordById(String id){
         HttpURLConnection connection = null;
         URL url = null;
+        log.info("SH>>getRecordById>> id="+id);
         try {
-            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/DspaceIntegration.1cws");
+            url = new URL("https://localhost:8888/soap");
+            log.info("SUCCESSFULL CONNECTING SOAP");
         } catch (MalformedURLException e) {
+            log.info("ERROR CONNECTING SOAP");
             e.printStackTrace();
         }
 
@@ -374,7 +383,7 @@ public class SoapHelper {
         HttpURLConnection connection = null;
         URL url = null;
         try {
-            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/DspaceIntegration.1cws");
+            url = new URL("https://localhost:8888/soap");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

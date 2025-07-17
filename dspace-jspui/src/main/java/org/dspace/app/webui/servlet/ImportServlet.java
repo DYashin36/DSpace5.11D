@@ -55,10 +55,11 @@ public class ImportServlet extends DSpaceServlet {
                            HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
 
-
-        request.setAttribute("community_id", request.getParameter("community_id"));
+        String community_id = request.getParameter("community_id");
+        request.setAttribute("community_id", community_id);
 	    String collection_id = request.getParameter("collection_id");
 	    request.setAttribute("collection_id", collection_id);
+        log.info("ImportServlet>>>doDSGET>>comm:"+community_id+"; coll"+collection_id);
 	    boolean forbiden = false;
 	    if (collection_id != null) {
 		    try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")){
@@ -66,6 +67,7 @@ public class ImportServlet extends DSpaceServlet {
 			    try (ResultSet resultSet = pstm.executeQuery();){
 				    resultSet.next();
 				    int cnt = resultSet.getInt(1);
+                    log.info("ImportServlet>>>doDSGET>>result of sql query is cnt:"+cnt);
 				    if (cnt > 0) forbiden = true;
 			    }
 		    } catch (SQLException | NumberFormatException e) {
@@ -83,13 +85,13 @@ public class ImportServlet extends DSpaceServlet {
     protected void doDSPost(Context context, HttpServletRequest request,
                             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException{
-
+        log.info("ImportServlet>>>doDSPOST>>enter");
         SoapHelper sh = new SoapHelper();
 
         String collectionId = request.getParameter("collection_id");
-
+        
         Collection col = Collection.find(context, Integer.parseInt(collectionId));
-
+        log.info("ImportServlet>>>doDSPOST>>collection_id:"+collectionId+"; collection itself"+col);
         request.setAttribute("collection_id", collectionId);
 
         WorkspaceItem wsitem = WorkspaceItem.createMass(context, col, false);
@@ -101,13 +103,14 @@ public class ImportServlet extends DSpaceServlet {
 
         String test = request.getParameter("action");
         String item_id = request.getParameter("import_item");
-
+        log.info("ImportServlet>>>doDSPost>>action:"+test+"; item_id"+item_id);
         if(test != null) {
             Document docMeta = null;
 
 
             if (test.equals("write_ident")) {
                 String iden = request.getParameter("identifier");
+                log.info("ImportServlet>>>doDSPost>>write_ident identifier:"+iden);
                 try {
                     docMeta = sh.getRecordById(iden);
                 } catch(Exception e){
@@ -123,6 +126,7 @@ public class ImportServlet extends DSpaceServlet {
                 NodeList idNode = bullshit_doc.getElementsByTagName("m:BiblId");
 
                 String idItem = idNode.item(0).getTextContent();
+                log.info("ImportServlet>>>doDSPost>>write_name identifier:"+idItem);
 
                 //request.setAttribute(idItem, "identifier");
                 try {
@@ -138,7 +142,7 @@ public class ImportServlet extends DSpaceServlet {
         if(test == null) {
             String uuid = request.getParameter("uuid_search");
             Document doc = null;
-
+            log.info("ImportServlet>>>doDSPost>getRecordById-uuid>uuid:"+uuid+";");
             try{
                 doc = sh.getRecordById(uuid);
             } catch(Exception e){
@@ -185,6 +189,7 @@ public class ImportServlet extends DSpaceServlet {
             else {
             String name = request.getParameter("name");
             String title = request.getParameter("title");
+            log.info("ImportServlet>>>doDSPost>getRecordByName>name:"+name+"; title:"+title);
 
             if (name != null && name.equals(""))
                 name = null;
