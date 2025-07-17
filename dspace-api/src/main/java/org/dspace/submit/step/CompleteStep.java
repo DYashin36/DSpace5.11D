@@ -136,45 +136,45 @@ public class CompleteStep extends AbstractProcessingStep {
             if (success) {
                 log.info(LogManager.getHeader(null, "submission_complete",
                 "here is completeStep commit"));
-                context.commit();
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter("/home/vboxuser/opt/dspace/1C/completion.txt", true))) {
-                    writer.write("Submission complete!");
-                    writer.newLine();
-                } catch (IOException e) {
-                    log.error("Failed to write submission log to file", e);
-                }
+                // context.commit();
+                // try (BufferedWriter writer = new BufferedWriter(new FileWriter("/home/vboxuser/opt/dspace/1C/completion.txt", true))) {
+                //     writer.write("Submission complete!");
+                //     writer.newLine();
+                // } catch (IOException e) {
+                //     log.error("Failed to write submission log to file", e);
+                // }
             } else {
                 context.getDBConnection().rollback();
             }
         }
 
-        // log.info(LogManager.getHeader(context, "submission_complete",
-        //         "call try block"));
-        // try {
-        //     if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
-        //         log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
-        //         boolean forbiden = false;
-        //         try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
-        //             pstm.setInt(1, cc.getID());
-        //             try (ResultSet resultSet = pstm.executeQuery();) {
-        // 	            resultSet.next();
-        // 	            int cnt = resultSet.getInt(1);
-        //                 log.info("COMPLETE STEP CNT IS: "+cnt);
-        // 	            if (cnt > 0) forbiden = true;
-        //             }
-        //         } catch (SQLException | NumberFormatException e) {
-        //             log.error(e.getLocalizedMessage(), e);
-        //         }
-        //         if (!forbiden)
-        //         {
-        //             log.info("COMPLETE STEP EXPORT");
-        //             ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
-        //             ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
-        //         }
-        //     }
-        // } catch (Exception e) {
-        //     e.printStackTrace();
-        // }
+        log.info(LogManager.getHeader(context, "submission_complete",
+                "call try block"));
+        try {
+            if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
+                log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
+                boolean forbiden = false;
+                try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
+                    pstm.setInt(1, cc.getID());
+                    try (ResultSet resultSet = pstm.executeQuery();) {
+        	            resultSet.next();
+        	            int cnt = resultSet.getInt(1);
+                        log.info("COMPLETE STEP CNT IS: "+cnt);
+        	            if (cnt > 0) forbiden = true;
+                    }
+                } catch (SQLException | NumberFormatException e) {
+                    log.error(e.getLocalizedMessage(), e);
+                }
+                if (!forbiden)
+                {
+                    log.info("COMPLETE STEP EXPORT");
+                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                    ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         log.info("COMPLETE STEP COMPLETE STEP");
         return STATUS_COMPLETE;
 
