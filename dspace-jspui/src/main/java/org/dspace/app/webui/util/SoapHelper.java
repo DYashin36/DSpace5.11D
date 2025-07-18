@@ -276,7 +276,7 @@ public class SoapHelper {
         URL url = null;
         log.info("SH>>getRecordById>> id="+id);
         try {
-            url = new URL("https://localhost:8888/soap");
+            url = new URL("http://localhost:8888/soap");
             log.info("SUCCESSFULL CREATING URL");
         } catch (MalformedURLException e) {
             log.info("ERROR CREATING URL");
