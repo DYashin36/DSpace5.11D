@@ -22,7 +22,7 @@
 		</c:when>
 		<c:otherwise>
 			<b>Поиск по идентификатору</b><br>
-			<form action="/import-item" method="post" name="cd edit_metadata" id="edit_metadata"
+			<form action="/import-item/" method="post" name="cd edit_metadata" id="edit_metadata"
 			      onkeydown="return disableEnterKey(event);">
 				<div class="row">
 					<span class="col-md-5">
@@ -43,7 +43,7 @@
 			<br>
 			<br>
 			<b>Поиск по имени и заголовку</b><br>
-			<form action="/import-item" method="post" name="edit_metadata" id="edit_metadata"
+			<form action="/import-item/" method="post" name="edit_metadata" id="edit_metadata"
 			      onkeydown="return disableEnterKey(event);">
 				<div class="row">
 					<span class="col-md-5">
