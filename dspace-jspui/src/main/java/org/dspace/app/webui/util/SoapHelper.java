@@ -1,20 +1,27 @@
 package org.dspace.app.webui.util;
 
-import org.apache.log4j.Logger;
-import org.dspace.app.webui.servlet.admin.EditCommunitiesServlet;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.Charset;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.log4j.Logger;
+import org.dspace.app.webui.servlet.admin.EditCommunitiesServlet;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Created by root on 1/1/16.
@@ -270,15 +277,17 @@ public class SoapHelper {
         log.info("SH>>getRecordById>> id="+id);
         try {
             url = new URL("https://localhost:8888/soap");
-            log.info("SUCCESSFULL CONNECTING SOAP");
+            log.info("SUCCESSFULL CREATING URL");
         } catch (MalformedURLException e) {
-            log.info("ERROR CONNECTING SOAP");
+            log.info("ERROR CREATING URL");
             e.printStackTrace();
         }
 
         try {
             connection = (HttpURLConnection)url.openConnection();
+            log.info("SUCCESSFULL CONNECTING SOAP");
         } catch (IOException e) {
+            log.info("ERROR CONNECTING SOAP");
             e.printStackTrace();
         }
         connection.setRequestProperty("Authorization", "Basic d2Vic2VydmljZTp3ZWJzZXJ2aWNl");
@@ -286,16 +295,20 @@ public class SoapHelper {
         connection.setRequestProperty("Accept-Encoding", "gzip,deflate");
         try {
             connection.setRequestMethod("POST");
+            log.info("SET REQUEST METHOD POST");
         } catch (ProtocolException e) {
+            log.info("EXCEPTION WHILE SET REQUEST METHOD POST");
             e.printStackTrace();
         }
         connection.setDoOutput(true);
-
+        log.info("SUCCESSFULL SET DO OUTPUT");
         DataOutputStream wr = null;
         try {
             wr = new DataOutputStream(
                     connection.getOutputStream());
+                    log.info("DOS received");
         } catch (IOException e) {
+            log.info("error while get DOS");
             e.printStackTrace();
         }
 
@@ -312,11 +325,14 @@ public class SoapHelper {
                     "      </imc:GetRecordsInfo>\n" +
                     "   </soap:Body>\n" +
                     "</soap:Envelope>").getBytes(charset));
+            log.info(">>Successfull write string to DOS");
         } catch (IOException e) {
+            log.info(">>Error while write string to DOS");
             e.printStackTrace();
         }
         try {
             wr.close();
+            log.info(">>DOS closed");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -324,7 +340,9 @@ public class SoapHelper {
         InputStream is = null;
         try {
             is = connection.getInputStream();
+            log.info(">>IS opened");
         } catch (IOException e) {
+            log.info(">>error occured while opening IS");
             e.printStackTrace();
         }
         BufferedReader rd = new BufferedReader(new InputStreamReader(is));
@@ -336,6 +354,7 @@ public class SoapHelper {
                 responseString+=line;
             }
         } catch (IOException e) {
+            log.info(">>error occured while reading rd; curret line="+responseString);
             e.printStackTrace();
         }
         try {
