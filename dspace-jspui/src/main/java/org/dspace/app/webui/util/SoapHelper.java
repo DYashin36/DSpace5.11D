@@ -150,7 +150,7 @@ public class SoapHelper {
     public Document getRecordByName(String name, String title){
         HttpURLConnection connection = null;
         URL url = null;
-
+        log.info("SH>>getRecordByName was called");
         String authors = "(Автор Равно "+name+")";
         String titles = "(Заглавие Содержит "+title+")";
         log.info("SH>>getRecordByName>>name:"+name+";title:"+title);
@@ -165,14 +165,15 @@ public class SoapHelper {
 
         try {
             url = new URL("https://localhost:8888/soap");
-            log.info("SUCCESSFULL CONNECTING SOAP");
+            log.info("SH>>getRecordByName>>SUCCESSFULL CREATING URL");
         } catch (MalformedURLException e) {
-            log.info("ERROR CONNECTING SOAP");
+            log.info("SH>>getRecordByName>>ERROR occurred when creating an url");
             e.printStackTrace();
         }
 
         try {
             connection = (HttpURLConnection)url.openConnection();
+            log.info("SH>>getRecordByName>>SUCCESSFULL OPEN CONNECTION");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -190,7 +191,9 @@ public class SoapHelper {
         try {
             wr = new DataOutputStream(
                     connection.getOutputStream());
+                    log.info("SH>>getRecordByName>>OUS was received");
         } catch (IOException e) {
+            log.info("SH>>getRecordByName>>Error occurred when get the ous");
             e.printStackTrace();
         }
 
@@ -213,14 +216,18 @@ public class SoapHelper {
         }
         try {
             wr.close();
+            log.info("SH>>getRecordByName>>OUS was closed");
         } catch (IOException e) {
+            log.info("SH>>getRecordByName>>ERror closing the wr "+e.getMessage());
             e.printStackTrace();
         }
 
         InputStream is = null;
         try {
             is = connection.getInputStream();
+            log.info("SH>>getRecordByName>>IS received");
         } catch (IOException e) {
+            log.info("SH>>getRecordByName>>Error occurred in IS receicing");
             e.printStackTrace();
         }
         BufferedReader rd = new BufferedReader(new InputStreamReader(is));
@@ -244,7 +251,9 @@ public class SoapHelper {
 
         try {
             db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            log.info("SH>>getRecordByName>>DocumentBuilderFactory created");
         } catch (ParserConfigurationException e) {
+            log.info("SH>>getRecordByName>>DocumentBuilderFactory creation ERROR");
             e.printStackTrace();
         }
         InputSource is2 = new InputSource();
