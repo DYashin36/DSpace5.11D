@@ -180,7 +180,7 @@ public class ImportServlet extends DSpaceServlet {
                 e.printStackTrace();
             }
             String output = writer.getBuffer().toString().replaceAll("\n|\r", "");
-            log.info("dsPost>>here is final version of output");
+            log.info("dsPost>>here is final version of output:"+output);
 
             request.setAttribute("community_id", request.getParameter("community_id"));
             request.setAttribute("collection_id", request.getParameter("collection_id"));
@@ -199,7 +199,8 @@ public class ImportServlet extends DSpaceServlet {
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
             } catch (Exception e){
-                log.info("error occured when select the recordS");
+                log.info("error occured when select the recordS:"+e.getMessage());
+                e.printStackTrace();
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
 
