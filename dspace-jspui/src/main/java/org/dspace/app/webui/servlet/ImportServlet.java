@@ -1,14 +1,45 @@
 package org.dspace.app.webui.servlet;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.log4j.Logger;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
-
 import org.dspace.app.webui.util.SoapHelper;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.*;
+import org.dspace.content.Bitstream;
+import org.dspace.content.BitstreamFormat;
+import org.dspace.content.Collection;
+import org.dspace.content.FormatIdentifier;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.Metadatum;
+import org.dspace.content.WorkspaceItem;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
@@ -22,26 +53,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by root on 1/1/16.
@@ -105,6 +116,7 @@ public class ImportServlet extends DSpaceServlet {
         String item_id = request.getParameter("import_item");
         log.info("ImportServlet>>>doDSPost>>action:"+test+"; item_id"+item_id);
         if(test != null) {
+            log.info("doDSPost>>action is not null");
             Document docMeta = null;
 
 
@@ -140,11 +152,13 @@ public class ImportServlet extends DSpaceServlet {
         }
 
         if(test == null) {
+            log.info("doDSPost>>action is null");
             String uuid = request.getParameter("uuid_search");
             Document doc = null;
             log.info("ImportServlet>>>doDSPost>getRecordById-uuid>uuid:"+uuid+";");
             try{
                 doc = sh.getRecordById(uuid);
+                log.info("ImportServlet>>>doDSPost>doc received");
             } catch(Exception e){
                 doc = sh.getRecordById(uuid);
             }
@@ -162,10 +176,11 @@ public class ImportServlet extends DSpaceServlet {
             try {
                 transformer.transform(new DOMSource(doc), new StreamResult(writer));
             } catch (TransformerException e) {
+                log.info("doDSPost>>error occurred when doc was transformed by transform()");
                 e.printStackTrace();
             }
             String output = writer.getBuffer().toString().replaceAll("\n|\r", "");
-
+            log.info("dsPost>>here is final version of output");
 
             request.setAttribute("community_id", request.getParameter("community_id"));
             request.setAttribute("collection_id", request.getParameter("collection_id"));
@@ -177,16 +192,20 @@ public class ImportServlet extends DSpaceServlet {
             NodeList testWow = doc.getElementsByTagName("Records");
             try{
                 if(testWow.getLength() > 0) {
+                    log.info("ImportServlet>>>doDSPost>>length>0");
                     request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
                 } else {
+                    log.info("ImportServlet>>>doDSPost>>length==0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
             } catch (Exception e){
+                log.info("error occured when select the recordS");
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
 
             }
             else {
+                log.info("doDSPost>>Second branch for action is not null (?)");
             String name = request.getParameter("name");
             String title = request.getParameter("title");
             log.info("ImportServlet>>>doDSPost>getRecordByName>name:"+name+"; title:"+title);
