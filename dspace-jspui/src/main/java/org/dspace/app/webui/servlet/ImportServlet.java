@@ -222,7 +222,7 @@ public class ImportServlet extends DSpaceServlet {
             } catch(Exception e){
                 doc = sh.getRecordByName(name, title);
             }
-            
+
 
             TransformerFactory tf = TransformerFactory.newInstance();
             log.info("SH>>doDSPost>>TransformerFactory was created");
@@ -252,13 +252,14 @@ public class ImportServlet extends DSpaceServlet {
             try{
                 if(testWow.getLength() > 0) {
                     log.info("SH>>doDSPost>>BiblRecoreds number is more than 0");
-                    request.getRequestDispatcher("/import/import-items.jsp").forward(request, response);
+                    request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
                 } else {
                     log.info("SH>>doDSPost>>BiblRecoreds number is lesser than 0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
             } catch (Exception e){
                 log.info("SH>>doDSPost>>Error occured; Open import-no");
+                e.printStackTrace();
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
 
