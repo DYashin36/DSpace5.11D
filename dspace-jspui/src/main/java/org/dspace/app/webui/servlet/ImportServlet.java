@@ -192,7 +192,7 @@ public class ImportServlet extends DSpaceServlet {
             NodeList testWow = doc.getElementsByTagName("Records");
             try{
                 if(testWow.getLength() > 0) {
-                    log.info("ImportServlet>>>doDSPost>>length>0");
+                    log.info("ImportServlet>>>doDSPost>>length>0 - REDIRECT TO IMPORT/IMPORT-ITEM");
                     request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
                 } else {
                     log.info("ImportServlet>>>doDSPost>>length==0");
@@ -252,7 +252,7 @@ public class ImportServlet extends DSpaceServlet {
             try{
                 if(testWow.getLength() > 0) {
                     log.info("SH>>doDSPost>>BiblRecoreds number is more than 0; redirect to import");
-                    request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
+                    request.getRequestDispatcher("/import/import-items.jsp").forward(request, response);
                 } else {
                     log.info("SH>>doDSPost>>BiblRecoreds number is lesser than 0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
