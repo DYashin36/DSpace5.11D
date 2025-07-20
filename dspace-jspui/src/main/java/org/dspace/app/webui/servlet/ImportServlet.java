@@ -258,7 +258,7 @@ public class ImportServlet extends DSpaceServlet {
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
             } catch (Exception e){
-                log.info("SH>>doDSPost>>Error occured; Open import-no");
+                log.info("SH>>doDSPost>>Error occured; Open import-no:"+e.getMessage());
                 e.printStackTrace();
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
