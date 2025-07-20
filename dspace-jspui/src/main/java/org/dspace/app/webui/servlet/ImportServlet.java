@@ -251,7 +251,7 @@ public class ImportServlet extends DSpaceServlet {
             NodeList testWow = doc.getElementsByTagName("m:BiblRecords");
             try{
                 if(testWow.getLength() > 0) {
-                    log.info("SH>>doDSPost>>BiblRecoreds number is more than 0");
+                    log.info("SH>>doDSPost>>BiblRecoreds number is more than 0; redirect to import");
                     request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
                 } else {
                     log.info("SH>>doDSPost>>BiblRecoreds number is lesser than 0");
