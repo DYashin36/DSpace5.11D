@@ -222,9 +222,10 @@ public class ImportServlet extends DSpaceServlet {
             } catch(Exception e){
                 doc = sh.getRecordByName(name, title);
             }
-
+            
 
             TransformerFactory tf = TransformerFactory.newInstance();
+            log.info("SH>>doDSPost>>TransformerFactory was created");
             Transformer transformer = null;
             try {
                 transformer = tf.newTransformer();
@@ -232,9 +233,11 @@ public class ImportServlet extends DSpaceServlet {
                 e.printStackTrace();
             }
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            log.info("SH>>doDSPost>>setOutputProperty() worked");
             StringWriter writer = new StringWriter();
             try {
                 transformer.transform(new DOMSource(doc), new StreamResult(writer));
+                log.info("SH>>doDSPost>>Transformer was transformed");
             } catch (TransformerException e) {
                 e.printStackTrace();
             }
@@ -248,11 +251,14 @@ public class ImportServlet extends DSpaceServlet {
             NodeList testWow = doc.getElementsByTagName("m:BiblRecords");
             try{
                 if(testWow.getLength() > 0) {
+                    log.info("SH>>doDSPost>>BiblRecoreds number is more than 0");
                     request.getRequestDispatcher("/import/import-items.jsp").forward(request, response);
                 } else {
+                    log.info("SH>>doDSPost>>BiblRecoreds number is lesser than 0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
             } catch (Exception e){
+                log.info("SH>>doDSPost>>Error occured; Open import-no");
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
 
