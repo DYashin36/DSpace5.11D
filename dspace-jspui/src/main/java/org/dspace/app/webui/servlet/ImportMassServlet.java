@@ -70,7 +70,7 @@ public class ImportMassServlet extends DSpaceServlet {
     protected void doDSGet(Context context, HttpServletRequest request,
                            HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
-
+        log.info("ImportMassServlet>>doDSGet>>Here is import-mass DSget enter");
         Collection[] col = Collection.findAllWithoutWorkflow(context);
 
         TableRowIterator tri = DatabaseManager.queryTable(context, "folders", "SELECT * FROM folders");
@@ -85,15 +85,17 @@ public class ImportMassServlet extends DSpaceServlet {
 
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
+        log.info("ImportMassServlet>>doDSGet>>Redirect to import/import-mass-home");
         request.getRequestDispatcher("/import/import-mass-home.jsp").forward(request, response);
     }
 
     protected void doDSPost(Context context, HttpServletRequest request,
                             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException{
-
+        log.info("ImportMassServlet>>doDSPost>>Here is import-mass DSPost enter");
         String folder = request.getParameter("folder_path");
         String collectionId = request.getParameter("collection_id");
+        log.info("ImportMassServlet>>doDSPost>>received params: folder="+folder+"; collectionId="+collectionId);
 
         File dir = null;
         File[] directoryListing = null;
@@ -102,13 +104,15 @@ public class ImportMassServlet extends DSpaceServlet {
              dir = new File(folder);
              directoryListing = dir.listFiles();
         } catch(Exception e){
+            log.info("ImportMassServlet>>doDSPost>>error occurred when dir/file receiving");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
 
         if (directoryListing == null) {
+            log.info("ImportMassServlet>>doDSPost>>null directoryListing");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
-
+            log.info("ImportMassServlet>>doDSPost>>start to find a collection");
             Collection col = Collection.find(context, Integer.parseInt(collectionId));
             Integer lel = directoryListing.length;
             log.debug("WTFDIRECTO " + lel.toString());
@@ -118,9 +122,11 @@ public class ImportMassServlet extends DSpaceServlet {
         ArrayList<String> links = new ArrayList<String>();
 
         if(directoryListing.length <= 0){
+            log.info("ImportMassServlet>>doDSPost>>length of directoryListing is below 0");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
         if (directoryListing != null) {
+            log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to "+directoryListing);
             for (int j = 0; j < directoryListing.length; j++) {
                 String absolutePath = directoryListing[j].getAbsolutePath();
                 String filepath = absolutePath.
@@ -152,6 +158,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                         Document doc = db.parse(is);
                         NodeList records = doc.getElementsByTagName("Records");
+                        if(records.getLength()>0) log.info("ImportMassServlet>>doDSPost>>length of records is "+ records.getLength());
                         howManyWasSubmited++;
                         for (int i = 0; i < records.getLength(); i++) {
                             try {
@@ -553,8 +560,10 @@ public class ImportMassServlet extends DSpaceServlet {
         }
         context.complete();
         if(howManyWasSubmited > 0){
+            log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-done");
             request.getRequestDispatcher("/import/mass-import-done.jsp").forward(request, response);
         } else{
+            log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-wrong");
             request.getRequestDispatcher("/import/mass-import-wrong.jsp").forward(request, response);
         }
 

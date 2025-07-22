@@ -14,7 +14,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-
+<script src="./libs/jquery/1.10.1/jquery.min.js"></script>
 <%@ taglib uri="http://www.dspace.org/dspace-tags.tld" prefix="dspace" %>
 
 <%@ page import="org.dspace.browse.BrowseInfo" %>
@@ -26,6 +26,8 @@
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="org.dspace.content.DCDate" %>
 <%@ page import="org.dspace.app.webui.util.UIUtil" %>
+<%@ page import="org.dspace.storage.rdbms.TableRowIterator" %>
+<%@ page import="org.dspace.storage.rdbms.TableRow" %>
 
 <%
     request.setAttribute("LanguageSwitch", "hide");
@@ -256,6 +258,15 @@
 <%
 	    }
 %><br/>
+<br />
+<%
+        for (char c = '\u0410'; c <= '\u042F'; c++)
+        {
+%>
+                            <a class="label label-default" href="<%= sharedLink %>&amp;starts_with=<%= c %>"><%= c %></a>
+<%
+        }
+%> <br><br>
 	    					<span><fmt:message key="browse.nav.enter"/></span>
 	    					<input type="text" name="starts_with"/>&nbsp;<input type="submit" class="btn btn-default" value="<fmt:message key="browse.nav.go"/>" />
 <%
@@ -267,7 +278,7 @@
 
 	<%-- Include a component for modifying sort by, order, results per page, and et-al limit --%>
 	<div id="browse_controls" class="well text-center">
-	<form method="get" action="<%= formaction %>">
+	<form method="get">
 		<input type="hidden" name="type" value="<%= bix.getName() %>"/>
 <%
 		if (bi.hasAuthority())
@@ -328,7 +339,7 @@
 	for (int i = 5; i <= 100 ; i += 5)
 	{
 		String selected = (i == rpp ? "selected=\"selected\"" : "");
-%>	
+%>
 			<option value="<%= i %>" <%= selected %>><%= i %></option>
 <%
 	}
@@ -357,7 +368,7 @@
 			String sel = (i + 1 == bi.getEtAl() ? "selected=\"selected\"" : "");
 			%><option value="1" <%= sel %>>1</option><%
 		}
-		
+
 		// if the current i is greated than that configured by the user,
 		// insert the one specified in the right place in the list
 		if (i > bi.getEtAl() && !insertedCurrent && bi.getEtAl() != -1 && bi.getEtAl() != 0 && bi.getEtAl() != 1)
@@ -365,7 +376,7 @@
 			%><option value="<%= bi.getEtAl() %>" selected="selected"><%= bi.getEtAl() %></option><%
 			insertedCurrent = true;
 		}
-		
+
 		// if the current i is greated than that configured by the administrator (dspace.cfg)
 		// insert the one specified in the right place in the list
 		if (i > cfgd && !insertedDefault && cfgd != -1 && cfgd != 0 && cfgd != 1 && bi.getEtAl() != cfgd)
@@ -373,14 +384,14 @@
 			%><option value="<%= cfgd %>"><%= cfgd %></option><%
 			insertedDefault = true;
 		}
-		
+
 		// determine if the current not-special case is selected
 		String selected = (i == bi.getEtAl() ? "selected=\"selected\"" : "");
-		
+
 		// do this for all other cases than the first and the current
 		if (i != 0 && i != bi.getEtAl())
 		{
-%>	
+%>
 			<option value="<%= i %>" <%= selected %>><%= i %></option>
 <%
 		}
@@ -393,11 +404,22 @@
 <%
     if (admin_button && !withdrawn && !privateitems)
     {
-        %><input type="submit" class="btn btn-default" name="submit_export_metadata" value="<fmt:message key="jsp.general.metadataexport.button"/>" /><%
+        %>
+        <%
+                            TableRowIterator name = (TableRowIterator) request.getAttribute("systems"); %>
+                            <select style="width:30%" id="system_to" name="path">
+                                <% while(name.hasNext()) {
+                                    TableRow row = name.next();%>
+                                <option value="<%=row.getStringColumn("folder_path")%>"><%=row.getStringColumn("system_name")%></option>
+                                <% } %>
+                            </select>
+        <input type="submit" id="metadata_check_all" class="btn btn-default" name="submit_export_metadata" value="<fmt:message key="jsp.general.metadataexport.button"/>" /><%
     }
 %>
 
 	</form>
+	<input type="submit" id="metadata_full_omg" class="btn btn-default" name="submit_export_metadata" value="Выбрать все"/>
+	<input type="submit" id="metadata_full_wtf" class="btn btn-default" name="submit_export_metadata" value="Снять выбор со всех элементов"/>
 	</div>
 <div class="panel panel-primary">
 	<%-- give us the top report on what we are looking at --%>

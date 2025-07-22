@@ -7,6 +7,7 @@
  */
 package org.dspace.app.webui.servlet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -20,79 +21,125 @@ import javax.servlet.http.HttpServletResponse;
 import org.dspace.app.webui.util.JSPManager;
 import org.dspace.app.webui.util.UIUtil;
 import org.dspace.app.bulkedit.MetadataExport;
+import org.dspace.app.itemexport.ItemExport;
 import org.dspace.app.bulkedit.DSpaceCSV;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.browse.*;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
+import org.dspace.storage.rdbms.DatabaseManager;
+import org.dspace.storage.rdbms.TableRowIterator;
 import org.dspace.content.ItemIterator;
 import org.apache.log4j.Logger;
+import org.dspace.content.Item;
 
 /**
- * Servlet for browsing through indices, as they are defined in 
- * the configuration.  This class can take a wide variety of inputs from
- * the user interface:
- * 
- * - type:	the type of browse (index name) being performed
- * - order: (ASC | DESC) the direction for result sorting
- * - value: A specific value to find items around.  For example the author name or subject
- * - month: integer specification of the month of a date browse
- * - year: integer specification of the year of a date browse
- * - starts_with: string value at which to start browsing
- * - vfocus: start browsing with a value of this string
- * - focus: integer id of the item at which to start browsing
- * - rpp: integer number of results per page to display
- * - sort_by: integer specification of the field to search on
- * - etal: integer number to limit multiple value items specified in config to
- * 
+ * Servlet for browsing through indices, as they are defined in the
+ * configuration. This class can take a wide variety of inputs from the user
+ * interface:
+ *
+ * - type:	the type of browse (index name) being performed - order: (ASC | DESC)
+ * the direction for result sorting - value: A specific value to find items
+ * around. For example the author name or subject - month: integer specification
+ * of the month of a date browse - year: integer specification of the year of a
+ * date browse - starts_with: string value at which to start browsing - vfocus:
+ * start browsing with a value of this string - focus: integer id of the item at
+ * which to start browsing - rpp: integer number of results per page to display
+ * - sort_by: integer specification of the field to search on - etal: integer
+ * number to limit multiple value items specified in config to
+ *
  * @author Richard Jones
  * @version $Revision$
  */
-public class BrowserServlet extends AbstractBrowserServlet
-{
+public class BrowserServlet extends AbstractBrowserServlet {
 
-    /** log4j category */
+    /**
+     * log4j category
+     */
     private static Logger log = Logger.getLogger(AbstractBrowserServlet.class);
 
     /**
-     * Do the usual DSpace GET method.  You will notice that browse does not currently
-     * respond to POST requests.
+     * Do the usual DSpace GET method. You will notice that browse does not
+     * currently respond to POST requests.
      */
     protected void doDSGet(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
-            AuthorizeException
-    {
+            AuthorizeException {
         // all browse requests currently come to GET.
         BrowserScope scope = getBrowserScopeForRequest(context, request, response);
 
-        if (scope == null || scope.getBrowseIndex() == null)
-        {
+        if (scope == null || scope.getBrowseIndex() == null) {
             String requestURL = request.getRequestURI();
-            if (request.getQueryString() != null)
-            {
+            if (request.getQueryString() != null) {
                 requestURL += "?" + request.getQueryString();
             }
             log.warn("We were unable to parse the browse request (e.g. an unconfigured index or sort option was used). Will send a 400 Bad Request. Requested URL was: " + requestURL);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-
+        //This is a custom insertion from 5.2 custom
+        TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM systems");
+        request.setAttribute("systems", tri);
+        //
         // Is this a request to export the metadata, or a normal browse request?
-        if ("submit_export_metadata".equals(UIUtil.getSubmitButton(request, "submit")))
-        {
+        if ("submit_export_metadata".equals(UIUtil.getSubmitButton(request, "submit"))) {
             exportMetadata(context, request, response, scope);
-        }
-        else
-        {
+        } else {
             // execute browse request
             processBrowse(context, scope, request, response);
         }
     }
 
-    
+    //from custom 5.11
+    protected void doDSPost(Context context, HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException,
+            AuthorizeException {
+
+        StringBuffer jb = new StringBuffer();
+        String line = "wtf";
+        try {
+
+            BufferedReader reader = request.getReader();
+            while ((line = reader.readLine()) != null) {
+                jb.append(line);
+            }
+        } catch (Exception e) {
+            /*report an error*/ }
+
+        String result = request.getParameter("items");
+        String path = request.getParameter("system_to");
+        result = result.replace("[", "");
+        result = result.replace("]", "");
+        result = result.replace("\"", "");
+        result = result.replace("%22", "");
+        log.info("OMGWTF: " + result);
+        log.info("OMGWTF: " + path);
+        String[] parts = result.split(",");
+        ArrayList<Item> items = new ArrayList<>();
+        for (String s : parts) {
+            Item item = null;
+            item = Item.find(context, Integer.parseInt(s));
+            items.add(item);
+        }
+
+        try {
+            ItemExport.exportItemToFolderMass(context, items, path, 0, false);
+        } catch (Exception e) {
+            log.trace(e);
+        }
+
+        response.setStatus(200);
+        PrintWriter out = response.getWriter();
+        out.write(jb.toString());
+        out.flush();
+        out.close();
+        return;
+        //response.setStatus(500);
+    }
+
     /**
      * Display the error page
-     * 
+     *
      * @param context
      * @param request
      * @param response
@@ -103,14 +150,13 @@ public class BrowserServlet extends AbstractBrowserServlet
      */
     protected void showError(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
-            AuthorizeException
-    {
+            AuthorizeException {
         JSPManager.showInternalError(request, response);
     }
 
     /**
      * Display the No Results page
-     * 
+     *
      * @param context
      * @param request
      * @param response
@@ -121,17 +167,16 @@ public class BrowserServlet extends AbstractBrowserServlet
      */
     protected void showNoResultsPage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
-            AuthorizeException
-    {
-        
+            AuthorizeException {
+
         JSPManager.showJSP(request, response, "/browse/no-results.jsp");
     }
 
     /**
-     * Display the single page.  This is the page which lists just the single values of a 
-     * metadata browse, not individual items.  Single values are links through to all the items
-     * that match that metadata value
-     * 
+     * Display the single page. This is the page which lists just the single
+     * values of a metadata browse, not individual items. Single values are
+     * links through to all the items that match that metadata value
+     *
      * @param context
      * @param request
      * @param response
@@ -142,15 +187,14 @@ public class BrowserServlet extends AbstractBrowserServlet
      */
     protected void showSinglePage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
-            AuthorizeException
-    {
-        
+            AuthorizeException {
+
         JSPManager.showJSP(request, response, "/browse/single.jsp");
     }
 
     /**
      * Display a full item listing.
-     * 
+     *
      * @param context
      * @param request
      * @param response
@@ -161,9 +205,8 @@ public class BrowserServlet extends AbstractBrowserServlet
      */
     protected void showFullPage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
-            AuthorizeException
-    {
-        
+            AuthorizeException {
+
         JSPManager.showJSP(request, response, "/browse/full.jsp");
     }
 
@@ -178,11 +221,9 @@ public class BrowserServlet extends AbstractBrowserServlet
      * @throws ServletException
      */
     protected void exportMetadata(Context context, HttpServletRequest request,
-                                  HttpServletResponse response, BrowserScope scope)
-            throws IOException, ServletException
-    {
-        try
-        {
+            HttpServletResponse response, BrowserScope scope)
+            throws IOException, ServletException {
+        try {
             // Log the attempt
             log.info(LogManager.getHeader(context, "metadataexport", "exporting_browse"));
 
@@ -194,8 +235,7 @@ public class BrowserServlet extends AbstractBrowserServlet
             BrowseEngine be = new BrowseEngine(context);
             BrowseInfo binfo = be.browse(scope);
             List<Integer> iids = new ArrayList<Integer>();
-            for (BrowseItem bi : binfo.getBrowseItemResults())
-            {
+            for (BrowseItem bi : binfo.getBrowseItemResults()) {
                 iids.add(bi.getID());
             }
             ItemIterator ii = new ItemIterator(context, iids);
@@ -213,9 +253,7 @@ public class BrowserServlet extends AbstractBrowserServlet
             out.close();
             log.info(LogManager.getHeader(context, "metadataexport", "exported_file:browse-results.csv"));
             return;
-        }
-        catch (BrowseException be)
-        {
+        } catch (BrowseException be) {
             // Not sure what happened here!
             JSPManager.showIntegrityError(request, response);
         }
