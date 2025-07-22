@@ -33,12 +33,14 @@ public class FoldersServlet extends DSpaceServlet{
 
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
+        log.info("FoldersServlet>>doDSGet>>start page");
 
 
         PrintWriter out = response.getWriter();
         //   out.write(tri.next().getStringColumn("name"));
         //     out.close();
         String ifAdd = request.getParameter("action");
+        log.info("FoldersServlet>>doDSGet>>action is:"+ifAdd);
         if(ifAdd == null) {
             TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM folders");
             request.setAttribute("systems", tri);
@@ -46,21 +48,26 @@ public class FoldersServlet extends DSpaceServlet{
             request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
         }
         if(ifAdd.equals("add")){
+            log.info("FoldersServlet>>doDSGet>>redirect to the folder-add");
             request.getRequestDispatcher("/folders/folder-add.jsp").forward(request, response);
         }
         if(ifAdd.equals("delete")){
+            log.info("FoldersServlet>>doDSGet>>redirect to the folder-delete");
             String id = request.getParameter("id");
+            log.info("FoldersServlet>>doDSGet>>Deleted id is:"+id);
             PreparedStatement statement = null;
             //      ResultSet rs = null;
             statement = context.getDBConnection().prepareStatement("DELETE FROM folders WHERE id="+id);
             int i = statement.executeUpdate();
             context.getDBConnection().commit();
             statement.close();
+            log.info("FoldersServlet>>doDSGet>>Statement executed");
             TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM folders");
             request.setAttribute("systems", tri);
             request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
         }
         if(ifAdd.equals("edit")){
+            log.info("FoldersServlet>>doDSGet>>action = edit>>redirect to the folder-add");
             String id = request.getParameter("id");
             TableRowIterator tri = DatabaseManager.queryTable(context, "folders", "SELECT * FROM folders");
             while(tri.hasNext()) {
@@ -85,6 +92,7 @@ public class FoldersServlet extends DSpaceServlet{
 
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
+        log.info("FoldersServlet>>doDSPost>>enter the void");
 
         String ee = "";
  /*     try {
@@ -115,6 +123,7 @@ public class FoldersServlet extends DSpaceServlet{
         }*/
         try {
             if (request.getParameter("submit").equals("Создать")) {
+                log.info("FoldersServlet>>doDSPost>>submit='Sozdat'");
                 PreparedStatement statement = null;
                 //      ResultSet rs = null;
                 statement = context.getDBConnection().prepareStatement("INSERT INTO folders (system_name, folder_path) VALUES (?,?)");
@@ -123,7 +132,9 @@ public class FoldersServlet extends DSpaceServlet{
                 int i = statement.executeUpdate();
                 context.getDBConnection().commit();
                 statement.close();
+                log.info("FoldersServlet>>doDSPost>>Inserted into folders db");
             } else {
+                log.info("FoldersServlet>>doDSPost>>submit is not = create");
                 PreparedStatement statement = null;
                 //      ResultSet rs = null;
                 Integer di = Integer.parseInt(request.getParameter("id"));
@@ -134,7 +145,7 @@ public class FoldersServlet extends DSpaceServlet{
                 int i = statement.executeUpdate();
                 context.getDBConnection().commit();
                 statement.close();
-
+                log.info("FoldersServlet>>doDSPost>>Updated");
             }
         } catch(Exception e){
             response.getWriter().write(e.getMessage());
