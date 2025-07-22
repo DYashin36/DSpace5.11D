@@ -55,7 +55,7 @@
         createOrEdit = "Изменить";
       }
       %>
-  <form action="/fold" method="post" name="edit_metadata" id="edit_metadata" onkeydown="return disableEnterKey(event);">
+  <form action="/fold/" method="post" name="edit_metadata" id="edit_metadata" onkeydown="return disableEnterKey(event);">
   <span class="col-md-5">
     <input class="form-control" id="author_name" type="text" name="system_name" placeholder="Наименование" size="23" value="<%=systemName%>"/>
   </span>
