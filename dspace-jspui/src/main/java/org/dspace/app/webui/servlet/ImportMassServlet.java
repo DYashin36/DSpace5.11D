@@ -138,9 +138,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                 if (filename.toLowerCase().endsWith(".xml")) {
                     try {
-
-                        // List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-
+                        log.info(".xml is founded");
                         BufferedReader inputReader = new BufferedReader(new FileReader(filepath + "/" + filename));
                         StringBuilder sb = new StringBuilder();
                         String inline = "";
@@ -161,6 +159,7 @@ public class ImportMassServlet extends DSpaceServlet {
                         NodeList records = doc.getElementsByTagName("Records");
                         if(records.getLength()>0) log.info("ImportMassServlet>>doDSPost>>length of records is "+ records.getLength());
                         howManyWasSubmited++;
+                        log.info("howManyWasSubmitted is "+howManyWasSubmited);
                         for (int i = 0; i < records.getLength(); i++) {
                             try {
                                 Element record = (Element) records.item(i);
@@ -169,13 +168,16 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
+                                    log.info("doDSPost>>Identifier is eq to "+ identifier.getLength());
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     for(int k = 0; k < identifier.getLength(); k++){
                                         Element subjectNode = (Element) identifier.item(k);
                                         Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
                                         Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
+                                        log.info("TextContent; textSubject:"+textSubject.getTextContent()+"; qulSubject:"+qulSubject.getTextContent());
                                         if(qulSubject.getTextContent().toLowerCase().equals("identifier")){
                                             TableRowIterator tri = DatabaseManager.queryTable(context, "metadatavalue", "SELECT resource_id, text_value FROM metadatavalue WHERE text_value='"+textSubject.getTextContent()+"'");
+                                            log.info("TableRowIterator is "+tri);
                                             if(tri.hasNext()){
                                                 log.info("OKIGOTIT: ");
 
@@ -185,9 +187,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                                 itemId = row.getIntColumn("resource_id");
                                                 log.info("OKIGOTIT: "+itemId.toString());
                                             }
-                                            //item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-                                            //SoapHelper sh = new SoapHelper();
-                                            //sh.writeLink(qualifier, "http://dspace.ssau.ru/jspui/handle/"+item.getHandle());
+                                        
                                         }
                                     }
                                     identifier = null;
@@ -199,6 +199,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 Item itemItem = null;
 
                                 if(exists == false) {
+                                    log.info("doDSPost>>createMass call");
                                      wsitem = WorkspaceItem.createMass(context, col, false);
                                      itemItem = wsitem.getItem();
                                     //response.getWriter().write("test");
@@ -217,26 +218,30 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList titleNode = record.getElementsByTagName("Title");
+                                    log.info("doDSPost>>received Title is "+titleNode);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseTitle(itemItem, "title", titleNode);
                                     titleNode = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
+                                    log.info("doDSPost>>received Identifier is "+Identifier);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseIdentifier(itemItem, "identifier", identifier);
                                     identifier = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
 
                                 try {
                                     Node author = record.getElementsByTagName("Creator").item(0);
+                                    log.info("doDSPost>>received Creator is "+author);
                                     String authorName = author.getTextContent();
+                                    log.info("doDSPost>>received authorName is "+authorName);
                                     if(!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
                                         String contribs[] = authorName.split(",");
                                         for (int l = 0; l < contribs.length; l++) {
@@ -246,12 +251,14 @@ public class ImportMassServlet extends DSpaceServlet {
                                     }
                                     author = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     Node contrib = record.getElementsByTagName("Contributor").item(0);
+                                    log.info("doDSPost>>received Contributor is "+contrib);
                                     String authorName = contrib.getTextContent();
+                                    log.info("doDSPost>>received authorName is "+authorName);
                                     if(!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
                                         String contribs[] = authorName.split(",");
                                         for (int l = 0; l < contribs.length; l++) {
@@ -261,136 +268,131 @@ public class ImportMassServlet extends DSpaceServlet {
                                     }
                                     contrib = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
 
                                 try {
                                     NodeList subjects = record.getElementsByTagName("Subject");
+                                    log.info("doDSPost>>received Subject is "+subjects);
                                     writeMetaDataToItemLowerCaseSubject(itemItem, "subject", subjects);
                                     subjects = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     NodeList descrs = record.getElementsByTagName("Description");
+                                    log.info("doDSPost>>received Description is "+descrs);
                                     writeMetaDataToItemLowerCase(itemItem, "description", descrs);
                                     descrs = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     Node date = record.getElementsByTagName("Date").item(0);
-
+                                    log.info("doDSPost>>received Date is "+date);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", "ru", date.getTextContent());
                                     date = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     Node publisher = record.getElementsByTagName("Publisher").item(0);
-
+                                    log.info("doDSPost>>received Publisher is "+publisher);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.getTextContent());
                                     publisher = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     Node type = record.getElementsByTagName("Type").item(0);
-
+                                    log.info("doDSPost>>received Type is "+type);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.getTextContent());
                                     type = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     Node source = record.getElementsByTagName("Source").item(0);
-
+                                    log.info("doDSPost>>received Source is "+source);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", source.getTextContent());
                                     source = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     Node rights = record.getElementsByTagName("Rights").item(0);
-
+                                    log.info("doDSPost>>received Rights is "+rights);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rights.getTextContent());
                                     rights = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                   log.info(e.getMessage());
                                 }
 
                                 try {
                                     NodeList formats = record.getElementsByTagName("Format");
+                                    log.info("doDSPost>>received Format is "+formats);
                                     writeMetaDataToItemLowerCase(itemItem, "format", formats);
                                     formats = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     NodeList languages = record.getElementsByTagName("Language");
+                                    log.info("doDSPost>>received Language is "+languages);
                                     writeMetaDataToItemLowerCase(itemItem, "language", languages);
                                     languages = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     NodeList relations = record.getElementsByTagName("Relation");
+                                    log.info("doDSPost>>received Relation is "+relations);
                                     writeMetaDataToItemLowerCase(itemItem, "relation", relations);
                                     relations = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                   log.info(e.getMessage());
                                 }
 
                                 try {
 
                                     NodeList coverages = record.getElementsByTagName("Coverage");
+                                    log.info("doDSPost>>received Coverage is "+coverages);
                                     writeMetaDataToItemLowerCase(itemItem, "coverage", coverages);
                                     coverages = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
 
                                     NodeList citation = record.getElementsByTagName("Citation");
+                                    log.info("doDSPost>>received Citation is "+citation);
                                     writeMetaDataToItemLowerCase(itemItem, "citation", citation);
                                     citation = null;
                                 } catch (Exception e) {
-                                    //response.getWriter().write(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 DateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
                                 Date today = Calendar.getInstance().getTime();
                                 String dateNow = df.format(today);
-
-//                                try {
-//                                    itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "date", "accessioned", "ru", dateNow);
-//                                } catch (Exception e1) {
-
-  //                              }
-    //                            try {
-      //                              itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "date", "available", "ru", dateNow);
-        //                        } catch (Exception e2) {
-
-          //                      }
+                                log.info("doDSPost>>df&today&dateNow was created");
 
                                 itemItem.setDiscoverable(true);
-
-                                //itemItem.update();
 
 
                                 try {
                                     Node link = record.getElementsByTagName("Link").item(0);
-
+                                    log.info("doDSPost>>received Link is "+link);
                                     String firstUrl = "http://lib.ssau.ru/download?fname=";
 
                                     String linkEncode = URLEncoder.encode(link.getTextContent(), "UTF-8");
@@ -437,11 +439,13 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                     if(exists == false) {
                                         itemItem.createBundle("ORIGINAL");
+                                        log.info("doDSPost>>Bundle 'ORIGINAL' created");
                                         Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
+                                        log.info("doDSPost>>Bitstream received");
                                         b.setName(filenamelel);
                                         b.setDescription("from 1C");
                                         b.setSource("1C");
-
+                                        
                                         itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
 
 
@@ -451,6 +455,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                         b.setFormat(bf);
 
                                         b.update();
+                                        log.info("doDSPost>>Bundle 'ORIGINAL' updated");
                                     }
                                     itemItem.update();
 
@@ -468,7 +473,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                             Item.ANY);
 
                                     Metadatum tit = dcorevalues2[0];
-
+                                    log.info("doDSPost>>Identifier metadatum received ant tit is not caused the exception");
                                     SoapHelper sh = new SoapHelper();
 
                                     sh.writeLink(tit.value, HandleManager.getCanonicalForm(itemItem.getHandle()));
@@ -488,23 +493,17 @@ public class ImportMassServlet extends DSpaceServlet {
                                     itemItem.inheritCollectionDefaultPolicies(col);
 
                                     itemItem.setArchived(true);
-
+                                    log.info("doDSPost>>Deletion executed and setArchived");
                                     
                                 } else{
                                     links.add(HandleManager.getCanonicalForm(itemItem.getHandle()));
                                 }
-
-
-
-
-
-
-
                                 request.setAttribute("updatedLinks", links);
 
                                 if(exists == false){
 
                                 if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
+                                    log.info("doDSPost>>workflow.framework property is equal to xmlworkflow");
                                     try{
                                         XmlWorkflowManager.start(context, wsitem);
                                     }catch (Exception e){
@@ -556,7 +555,7 @@ public class ImportMassServlet extends DSpaceServlet {
             try {
                 FileDeleteStrategy.FORCE.delete(file);
             } catch(Exception e){
-
+                log.info("doDSPost>>error occurred when FORCE.delete(file)");
             }
         }
         context.complete();

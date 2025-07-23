@@ -45,7 +45,7 @@ public class FoldersServlet extends DSpaceServlet{
             TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM folders");
             request.setAttribute("systems", tri);
             request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
-            request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
+            //request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
         }
         if(ifAdd.equals("add")){
             log.info("FoldersServlet>>doDSGet>>redirect to the folder-add");
@@ -82,7 +82,7 @@ public class FoldersServlet extends DSpaceServlet{
                 }
             }
 
-            request.getRequestDispatcher("/folders/folder-add.jsp").forward(request, response);
+            
         }
         //if no actions
         request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
