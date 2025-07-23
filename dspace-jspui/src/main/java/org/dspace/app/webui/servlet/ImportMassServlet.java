@@ -228,7 +228,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
-                                    log.info("doDSPost>>received Identifier is "+Identifier);
+                                    log.info("doDSPost>>received Identifier is "+identifier);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseIdentifier(itemItem, "identifier", identifier);
                                     identifier = null;
