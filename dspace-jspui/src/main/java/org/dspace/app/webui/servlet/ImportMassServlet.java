@@ -59,16 +59,14 @@ import java.util.List;
 /**
  * Created by root on 1/12/16.
  */
-
 public class ImportMassServlet extends DSpaceServlet {
 
     private static Logger log = Logger.getLogger(EditCommunitiesServlet.class);
 
-
     public static final String UTF8_BOM = "\uFEFF";
 
     protected void doDSGet(Context context, HttpServletRequest request,
-                           HttpServletResponse response) throws ServletException, IOException,
+            HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
         log.info("ImportMassServlet>>doDSGet>>Here is import-mass DSget enter");
         Collection[] col = Collection.findAllWithoutWorkflow(context);
@@ -78,10 +76,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
         ArrayList<String> ids = new ArrayList<>();
 
-
-
         request.setAttribute("ids", col);
-
 
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
@@ -90,20 +85,20 @@ public class ImportMassServlet extends DSpaceServlet {
     }
 
     protected void doDSPost(Context context, HttpServletRequest request,
-                            HttpServletResponse response) throws ServletException, IOException,
-            SQLException, AuthorizeException{
+            HttpServletResponse response) throws ServletException, IOException,
+            SQLException, AuthorizeException {
         log.info("ImportMassServlet>>doDSPost>>Here is import-mass DSPost enter");
         String folder = request.getParameter("folder_path");
         String collectionId = request.getParameter("collection_id");
-        log.info("ImportMassServlet>>doDSPost>>received params: folder="+folder+"; collectionId="+collectionId);
+        log.info("ImportMassServlet>>doDSPost>>received params: folder=" + folder + "; collectionId=" + collectionId);
 
         File dir = null;
         File[] directoryListing = null;
 
         try {
-             dir = new File(folder);
-             directoryListing = dir.listFiles();
-        } catch(Exception e){
+            dir = new File(folder);
+            directoryListing = dir.listFiles();
+        } catch (Exception e) {
             log.info("ImportMassServlet>>doDSPost>>error occurred when dir/file receiving");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
@@ -112,29 +107,27 @@ public class ImportMassServlet extends DSpaceServlet {
             log.info("ImportMassServlet>>doDSPost>>null directoryListing");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
-            log.info("ImportMassServlet>>doDSPost>>start to find a collection");
-            Collection col = Collection.find(context, Integer.parseInt(collectionId));
-            Integer lel = directoryListing.length;
-            log.info("ImportMassServlet>>doDSPost>>length of directoryListing is "+lel);
-            log.debug("WTFDIRECTO " + lel.toString());
-            int howManyWasSubmited = 0;
-
+        log.info("ImportMassServlet>>doDSPost>>start to find a collection");
+        Collection col = Collection.find(context, Integer.parseInt(collectionId));
+        Integer lel = directoryListing.length;
+        log.info("ImportMassServlet>>doDSPost>>length of directoryListing is " + lel);
+        log.debug("WTFDIRECTO " + lel.toString());
+        int howManyWasSubmited = 0;
 
         ArrayList<String> links = new ArrayList<String>();
 
-        if(directoryListing.length <= 0){
+        if (directoryListing.length <= 0) {
             log.info("ImportMassServlet>>doDSPost>>length of directoryListing is below 0");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
         if (directoryListing != null) {
-            log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to "+directoryListing.length);
+            log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to " + directoryListing.length);
             for (int j = 0; j < directoryListing.length; j++) {
                 String absolutePath = directoryListing[j].getAbsolutePath();
                 String filepath = absolutePath.
                         substring(0, absolutePath.lastIndexOf(File.separator));
                 String filename = directoryListing[j].getName();
-                log.info("IMS>>doDSPost>>now we seeing a "+filepath+"/"+filename);
-
+                log.info("IMS>>doDSPost>>now we seeing a " + filepath + "/" + filename);
 
                 if (filename.toLowerCase().endsWith(".xml")) {
                     try {
@@ -157,9 +150,11 @@ public class ImportMassServlet extends DSpaceServlet {
 
                         Document doc = db.parse(is);
                         NodeList records = doc.getElementsByTagName("Records");
-                        if(records.getLength()>0) log.info("ImportMassServlet>>doDSPost>>length of records is "+ records.getLength());
+                        if (records.getLength() > 0) {
+                            log.info("ImportMassServlet>>doDSPost>>length of records is " + records.getLength());
+                        }
                         howManyWasSubmited++;
-                        log.info("howManyWasSubmitted is "+howManyWasSubmited);
+                        log.info("howManyWasSubmitted is " + howManyWasSubmited);
                         for (int i = 0; i < records.getLength(); i++) {
                             try {
                                 Element record = (Element) records.item(i);
@@ -168,57 +163,54 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
-                                    log.info("doDSPost>>Identifier is eq to "+ identifier.getLength());
+                                    log.info("doDSPost>>Identifier is eq to " + identifier.getLength());
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
-                                    for(int k = 0; k < identifier.getLength(); k++){
+                                    for (int k = 0; k < identifier.getLength(); k++) {
                                         Element subjectNode = (Element) identifier.item(k);
                                         Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
                                         Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-                                        log.info("TextContent; textSubject:"+textSubject.getTextContent()+"; qulSubject:"+qulSubject.getTextContent());
-                                        if(qulSubject.getTextContent().toLowerCase().equals("identifier")){
-                                            TableRowIterator tri = DatabaseManager.queryTable(context, "metadatavalue", "SELECT resource_id, text_value FROM metadatavalue WHERE text_value='"+textSubject.getTextContent()+"'");
-                                            log.info("TableRowIterator is "+tri);
-                                            if(tri.hasNext()){
+                                        log.info("TextContent; textSubject:" + textSubject.getTextContent() + "; qulSubject:" + qulSubject.getTextContent());
+                                        if (qulSubject.getTextContent().toLowerCase().equals("identifier")) {
+                                            TableRowIterator tri = DatabaseManager.queryTable(context, "metadatavalue", "SELECT resource_id, text_value FROM metadatavalue WHERE text_value='" + textSubject.getTextContent() + "'");
+                                            log.info("TableRowIterator is " + tri);
+                                            if (tri.hasNext()) {
                                                 log.info("OKIGOTIT: ");
 
                                                 exists = true;
                                                 TableRow row = tri.next();
                                                 log.info(row);
                                                 itemId = row.getIntColumn("resource_id");
-                                                log.info("OKIGOTIT: "+itemId.toString());
+                                                log.info("OKIGOTIT: " + itemId.toString());
                                             }
-                                        
+
                                         }
                                     }
                                     identifier = null;
                                 } catch (Exception e) {
-                                    log.info("OKERROR: "+ e);
+                                    log.info("OKERROR: " + e);
                                 }
 
                                 WorkspaceItem wsitem = null;
                                 Item itemItem = null;
 
-                                if(exists == false) {
+                                if (exists == false) {
                                     log.info("doDSPost>>createMass call");
-                                     wsitem = WorkspaceItem.createMass(context, col, false);
-                                     itemItem = wsitem.getItem();
+                                    wsitem = WorkspaceItem.createMass(context, col, false);
+                                    itemItem = wsitem.getItem();
                                     //response.getWriter().write("test");
 
                                     itemItem.setOwningCollection(col);
-                                }
-                                else{
+                                } else {
                                     log.info("OKIGOTIT: " + itemId.toString());
-                                    itemItem = Item.find(context,itemId);
+                                    itemItem = Item.find(context, itemId);
                                     itemItem.clearDC(Item.ANY, Item.ANY, Item.ANY);
                                     log.info("OKIGOTIT: " + itemId.toString());
                                     itemItem.update();
                                 }
 
-
-
                                 try {
                                     NodeList titleNode = record.getElementsByTagName("Title");
-                                    log.info("doDSPost>>received Title is "+titleNode);
+                                    log.info("doDSPost>>received Title is " + titleNode);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseTitle(itemItem, "title", titleNode);
                                     titleNode = null;
@@ -228,7 +220,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
-                                    log.info("doDSPost>>received Identifier is "+identifier);
+                                    log.info("doDSPost>>received Identifier is " + identifier);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseIdentifier(itemItem, "identifier", identifier);
                                     identifier = null;
@@ -236,13 +228,12 @@ public class ImportMassServlet extends DSpaceServlet {
                                     log.info(e.getMessage());
                                 }
 
-
                                 try {
                                     Node author = record.getElementsByTagName("Creator").item(0);
-                                    log.info("doDSPost>>received Creator is "+author);
+                                    log.info("doDSPost>>received Creator is " + author);
                                     String authorName = author.getTextContent();
-                                    log.info("doDSPost>>received authorName is "+authorName);
-                                    if(!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
+                                    log.info("doDSPost>>received authorName is " + authorName);
+                                    if (!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
                                         String contribs[] = authorName.split(",");
                                         for (int l = 0; l < contribs.length; l++) {
                                             itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", contribs[l]);
@@ -256,10 +247,10 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node contrib = record.getElementsByTagName("Contributor").item(0);
-                                    log.info("doDSPost>>received Contributor is "+contrib);
+                                    log.info("doDSPost>>received Contributor is " + contrib);
                                     String authorName = contrib.getTextContent();
-                                    log.info("doDSPost>>received authorName is "+authorName);
-                                    if(!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
+                                    log.info("doDSPost>>received authorName is " + authorName);
+                                    if (!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
                                         String contribs[] = authorName.split(",");
                                         for (int l = 0; l < contribs.length; l++) {
                                             itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", contribs[l]);
@@ -271,10 +262,9 @@ public class ImportMassServlet extends DSpaceServlet {
                                     log.info(e.getMessage());
                                 }
 
-
                                 try {
                                     NodeList subjects = record.getElementsByTagName("Subject");
-                                    log.info("doDSPost>>received Subject is "+subjects);
+                                    log.info("doDSPost>>received Subject is " + subjects);
                                     writeMetaDataToItemLowerCaseSubject(itemItem, "subject", subjects);
                                     subjects = null;
                                 } catch (Exception e) {
@@ -283,7 +273,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList descrs = record.getElementsByTagName("Description");
-                                    log.info("doDSPost>>received Description is "+descrs);
+                                    log.info("doDSPost>>received Description is " + descrs);
                                     writeMetaDataToItemLowerCase(itemItem, "description", descrs);
                                     descrs = null;
                                 } catch (Exception e) {
@@ -292,7 +282,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node date = record.getElementsByTagName("Date").item(0);
-                                    log.info("doDSPost>>received Date is "+date);
+                                    log.info("doDSPost>>received Date is " + date);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", "ru", date.getTextContent());
                                     date = null;
                                 } catch (Exception e) {
@@ -301,7 +291,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node publisher = record.getElementsByTagName("Publisher").item(0);
-                                    log.info("doDSPost>>received Publisher is "+publisher);
+                                    log.info("doDSPost>>received Publisher is " + publisher);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.getTextContent());
                                     publisher = null;
                                 } catch (Exception e) {
@@ -310,7 +300,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node type = record.getElementsByTagName("Type").item(0);
-                                    log.info("doDSPost>>received Type is "+type);
+                                    log.info("doDSPost>>received Type is " + type);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.getTextContent());
                                     type = null;
                                 } catch (Exception e) {
@@ -319,7 +309,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node source = record.getElementsByTagName("Source").item(0);
-                                    log.info("doDSPost>>received Source is "+source);
+                                    log.info("doDSPost>>received Source is " + source);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", source.getTextContent());
                                     source = null;
                                 } catch (Exception e) {
@@ -328,16 +318,16 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node rights = record.getElementsByTagName("Rights").item(0);
-                                    log.info("doDSPost>>received Rights is "+rights);
+                                    log.info("doDSPost>>received Rights is " + rights);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rights.getTextContent());
                                     rights = null;
                                 } catch (Exception e) {
-                                   log.info(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
                                     NodeList formats = record.getElementsByTagName("Format");
-                                    log.info("doDSPost>>received Format is "+formats);
+                                    log.info("doDSPost>>received Format is " + formats);
                                     writeMetaDataToItemLowerCase(itemItem, "format", formats);
                                     formats = null;
                                 } catch (Exception e) {
@@ -346,7 +336,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList languages = record.getElementsByTagName("Language");
-                                    log.info("doDSPost>>received Language is "+languages);
+                                    log.info("doDSPost>>received Language is " + languages);
                                     writeMetaDataToItemLowerCase(itemItem, "language", languages);
                                     languages = null;
                                 } catch (Exception e) {
@@ -355,17 +345,17 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList relations = record.getElementsByTagName("Relation");
-                                    log.info("doDSPost>>received Relation is "+relations);
+                                    log.info("doDSPost>>received Relation is " + relations);
                                     writeMetaDataToItemLowerCase(itemItem, "relation", relations);
                                     relations = null;
                                 } catch (Exception e) {
-                                   log.info(e.getMessage());
+                                    log.info(e.getMessage());
                                 }
 
                                 try {
 
                                     NodeList coverages = record.getElementsByTagName("Coverage");
-                                    log.info("doDSPost>>received Coverage is "+coverages);
+                                    log.info("doDSPost>>received Coverage is " + coverages);
                                     writeMetaDataToItemLowerCase(itemItem, "coverage", coverages);
                                     coverages = null;
                                 } catch (Exception e) {
@@ -375,7 +365,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 try {
 
                                     NodeList citation = record.getElementsByTagName("Citation");
-                                    log.info("doDSPost>>received Citation is "+citation);
+                                    log.info("doDSPost>>received Citation is " + citation);
                                     writeMetaDataToItemLowerCase(itemItem, "citation", citation);
                                     citation = null;
                                 } catch (Exception e) {
@@ -389,95 +379,92 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 itemItem.setDiscoverable(true);
 
-
                                 try {
                                     Node link = record.getElementsByTagName("Link").item(0);
-                                    log.info("doDSPost>>received Link is "+link);
-                                    String firstUrl = "http://lib.ssau.ru/download?fname=";
+                                    log.info("doDSPost>>received Link is " + link);
+                                    if (link != null) {
+                                        String firstUrl = "http://lib.ssau.ru/download?fname=";
 
-                                    String linkEncode = URLEncoder.encode(link.getTextContent(), "UTF-8");
+                                        String linkEncode = URLEncoder.encode(link.getTextContent(), "UTF-8");
 
-                                    String filenamelel = link.getTextContent().substring(link.getTextContent().lastIndexOf('\\') + 1);
+                                        String filenamelel = link.getTextContent().substring(link.getTextContent().lastIndexOf('\\') + 1);
 
-                                    InputStream iss = new URL(firstUrl + linkEncode).openStream();
+                                        InputStream iss = new URL(firstUrl + linkEncode).openStream();
 
-                                    InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
+                                        InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
 
-                                    log.info("imgay: " + firstUrl + linkEncode);
+                                        log.info("imgay: " + firstUrl + linkEncode);
 
-                                    try {
-                                        PDFTextStripper pdfStripper = null;
-                                        PDDocument docum = null;
-                                        PDFParser parser = new PDFParser(issforPdf);
-                                        COSDocument cosDoc = null;
-
-                                        parser.parse();
-                                        cosDoc = parser.getDocument();
-                                        pdfStripper = new PDFTextStripper();
-                                        docum = new PDDocument(cosDoc);
-                                        //pdfStripper.getText(docum);
-                                        String parsedText = pdfStripper.getText(docum);
-                                        //log.info(parsedText);
-                                        Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-                                        if(fifty < 0){
-                                            fifty = fifty *(-1);
-                                        }
-                                        Integer toCut = 500;
-                                        if ((parsedText.length() - fifty) < 500) {
-                                            toCut = parsedText.length();
-                                        }
-                                        String subText = parsedText.substring(fifty, fifty + toCut - 1);
                                         try {
-                                            subText = subText.substring(subText.indexOf(".") + 1);
-                                        } catch(Exception e){
+                                            PDFTextStripper pdfStripper = null;
+                                            PDDocument docum = null;
+                                            PDFParser parser = new PDFParser(issforPdf);
+                                            COSDocument cosDoc = null;
+
+                                            parser.parse();
+                                            cosDoc = parser.getDocument();
+                                            pdfStripper = new PDFTextStripper();
+                                            docum = new PDDocument(cosDoc);
+                                            //pdfStripper.getText(docum);
+                                            String parsedText = pdfStripper.getText(docum);
+                                            //log.info(parsedText);
+                                            Integer fifty = (Integer) Math.round(parsedText.length() / 2);
+                                            if (fifty < 0) {
+                                                fifty = fifty * (-1);
+                                            }
+                                            Integer toCut = 500;
+                                            if ((parsedText.length() - fifty) < 500) {
+                                                toCut = parsedText.length();
+                                            }
+                                            String subText = parsedText.substring(fifty, fifty + toCut - 1);
+                                            try {
+                                                subText = subText.substring(subText.indexOf(".") + 1);
+                                            } catch (Exception e) {
+
+                                            }
+                                            itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
+                                        } catch (Exception e) {
 
                                         }
-                                        itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
-                                    } catch(Exception e){
 
+                                        if (exists == false) {
+                                            itemItem.createBundle("ORIGINAL");
+                                            log.info("doDSPost>>Bundle 'ORIGINAL' created");
+                                            Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
+                                            log.info("doDSPost>>Bitstream received");
+                                            b.setName(filenamelel);
+                                            b.setDescription("from 1C");
+                                            b.setSource("1C");
+
+                                            itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
+
+                                            BitstreamFormat bf = null;
+
+                                            bf = FormatIdentifier.guessFormat(context, b);
+                                            b.setFormat(bf);
+
+                                            b.update();
+                                            log.info("doDSPost>>Bundle 'ORIGINAL' updated");
+                                        }
+                                        itemItem.update();
+
+                                        iss.close();
                                     }
-
-                                    if(exists == false) {
-                                        itemItem.createBundle("ORIGINAL");
-                                        log.info("doDSPost>>Bundle 'ORIGINAL' created");
-                                        Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
-                                        log.info("doDSPost>>Bitstream received");
-                                        b.setName(filenamelel);
-                                        b.setDescription("from 1C");
-                                        b.setSource("1C");
-                                        
-                                        itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
-
-
-                                        BitstreamFormat bf = null;
-
-                                        bf = FormatIdentifier.guessFormat(context, b);
-                                        b.setFormat(bf);
-
-                                        b.update();
-                                        log.info("doDSPost>>Bundle 'ORIGINAL' updated");
-                                    }
-                                    itemItem.update();
-
-
-                                    iss.close();
                                 } catch (Exception e) {
                                     log.error("wtferror", e);
                                 }
 
-
-                                if(exists == false) {
-                                	log.error("OK I GOT HERE");
+                                if (exists == false) {
+                                    log.error("OK I GOT HERE");
                                     HandleManager.createHandle(context, itemItem);
                                     Metadatum[] dcorevalues2 = itemItem.getMetadata("dc", "identifier", null,
                                             Item.ANY);
 
                                     Metadatum tit = dcorevalues2[0];
                                     log.info("doDSPost>>Identifier metadatum received ant tit is not caused the exception");
-                                    SoapHelper sh = new SoapHelper();
+                                    //SoapHelper sh = new SoapHelper();
 
-                                    sh.writeLink(tit.value, HandleManager.getCanonicalForm(itemItem.getHandle()));
-
+                                    //sh.writeLink(tit.value, HandleManager.getCanonicalForm(itemItem.getHandle()));
                                     // Group groups = Group.findByName(context, "Anonymous");
                                     TableRow row = DatabaseManager.row("collection2item");
 
@@ -485,48 +472,51 @@ public class ImportMassServlet extends DSpaceServlet {
                                     //      ResultSet rs = null;
                                     statement = context.getDBConnection().prepareStatement("DELETE FROM workspaceitem WHERE workspace_item_id=" + wsitem.getID());
                                     int ij = statement.executeUpdate();
-                                   // row.setColumn("collection_id", col.getID());
-                                   // row.setColumn("item_id", itemItem.getID());
-                                   // DatabaseManager.insert(context, row);
-
+                                    // row.setColumn("collection_id", col.getID());
+                                    // row.setColumn("item_id", itemItem.getID());
+                                    // DatabaseManager.insert(context, row);
 
                                     itemItem.inheritCollectionDefaultPolicies(col);
 
                                     itemItem.setArchived(true);
                                     log.info("doDSPost>>Deletion executed and setArchived");
-                                    
-                                } else{
+
+                                } else {
                                     links.add(HandleManager.getCanonicalForm(itemItem.getHandle()));
                                 }
-                                request.setAttribute("updatedLinks", links);
+                                //request.setAttribute("updatedLinks", links);
 
-                                if(exists == false){
+                                if (exists == false) {
 
-                                if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
-                                    log.info("doDSPost>>workflow.framework property is equal to xmlworkflow");
-                                    try{
-                                        XmlWorkflowManager.start(context, wsitem);
-                                    }catch (Exception e){
-                                        log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: "), e);
-                                        throw new ServletException(e);
+                                    if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("xmlworkflow")) {
+                                        log.info("doDSPost>>workflow.framework property is equal to xmlworkflow");
+                                        try {
+                                            XmlWorkflowManager.start(context, wsitem);
+                                        } catch (Exception e) {
+                                            log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: "), e);
+                                            throw new ServletException(e);
+                                        }
+                                    } else {
+                                        WorkflowManager.start(context, wsitem);
                                     }
-                                }else{
-                                    WorkflowManager.start(context, wsitem);
                                 }
-                            }
 
                                 request.setAttribute("link", HandleManager.getCanonicalForm(col.getHandle()));
                                 itemItem.update();
                                 context.commit();
 
-
                                 //break;
                             } catch (Exception e) {
                                 log.error("omg error 1", e);
                             }
+                            finally
+                            {
+                                //moved to finally, cause without it page show system-error
+                                log.info("");
+                                request.setAttribute("updatedLinks", links);
+                            }
 
                         }
-
 
                     } catch (ParserConfigurationException e) {
                         log.error("omg error 2", e);
@@ -554,23 +544,23 @@ public class ImportMassServlet extends DSpaceServlet {
             }
             try {
                 FileDeleteStrategy.FORCE.delete(file);
-            } catch(Exception e){
+            } catch (Exception e) {
                 log.info("doDSPost>>error occurred when FORCE.delete(file)");
             }
         }
         context.complete();
-        if(howManyWasSubmited > 0){
+        if (howManyWasSubmited > 0) {
             log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-done");
             request.getRequestDispatcher("/import/mass-import-done.jsp").forward(request, response);
-        } else{
+        } else {
             log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-wrong");
             request.getRequestDispatcher("/import/mass-import-wrong.jsp").forward(request, response);
         }
 
     }
 
-    public void writeMetaDataToItem(Item item, String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItem(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
@@ -578,8 +568,8 @@ public class ImportMassServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCase(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
@@ -587,30 +577,30 @@ public class ImportMassServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCaseSubject(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseSubject(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("subject")){
+            if (qulSubject.getTextContent().toLowerCase().equals("subject")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseIdentifier(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseIdentifier(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("identifier")){
+            if (qulSubject.getTextContent().toLowerCase().equals("identifier")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
                 SoapHelper sh = new SoapHelper();
-               // sh.writeLink(textSubject.getTextContent(), HandleManager.getCanonicalForm(item.getHandle()));
-            }else {
-                if(qulSubject.getTextContent().toLowerCase().equals("doi")){
+                // sh.writeLink(textSubject.getTextContent(), HandleManager.getCanonicalForm(item.getHandle()));
+            } else {
+                if (qulSubject.getTextContent().toLowerCase().equals("doi")) {
                     item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, "uri", "ru", textSubject.getTextContent());
                 } else {
                     item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
@@ -619,14 +609,14 @@ public class ImportMassServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCaseTitle(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseTitle(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("title")){
+            if (qulSubject.getTextContent().toLowerCase().equals("title")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
