@@ -115,6 +115,7 @@ public class ImportMassServlet extends DSpaceServlet {
             log.info("ImportMassServlet>>doDSPost>>start to find a collection");
             Collection col = Collection.find(context, Integer.parseInt(collectionId));
             Integer lel = directoryListing.length;
+            log.info("ImportMassServlet>>doDSPost>>length of directoryListing is "+lel);
             log.debug("WTFDIRECTO " + lel.toString());
             int howManyWasSubmited = 0;
 
@@ -126,13 +127,13 @@ public class ImportMassServlet extends DSpaceServlet {
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
         if (directoryListing != null) {
-            log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to "+directoryListing);
+            log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to "+directoryListing.length);
             for (int j = 0; j < directoryListing.length; j++) {
                 String absolutePath = directoryListing[j].getAbsolutePath();
                 String filepath = absolutePath.
                         substring(0, absolutePath.lastIndexOf(File.separator));
                 String filename = directoryListing[j].getName();
-
+                log.info("IMS>>doDSPost>>now we seeing a "+filepath+"/"+filename);
 
 
                 if (filename.toLowerCase().endsWith(".xml")) {
@@ -566,7 +567,6 @@ public class ImportMassServlet extends DSpaceServlet {
             log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-wrong");
             request.getRequestDispatcher("/import/mass-import-wrong.jsp").forward(request, response);
         }
-
 
     }
 

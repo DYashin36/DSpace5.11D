@@ -84,6 +84,8 @@ public class FoldersServlet extends DSpaceServlet{
 
             request.getRequestDispatcher("/folders/folder-add.jsp").forward(request, response);
         }
+        //if no actions
+        request.getRequestDispatcher("/folders/folder-home.jsp").forward(request, response);
     }
 
     protected void doDSPost(Context context, HttpServletRequest request,
