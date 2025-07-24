@@ -1204,6 +1204,8 @@ public abstract class DSpaceObject
             int schemaID = getMetadataSchemaID(dcv);
             for (MetadataField field : allMetadataFields)
             {
+                log.info("DSpace Object>>getMetadataField>>element="+field.getElement());
+                log.info("DSpace Object>>getMetadataField>>element="+field.getElement());
                 if (field.getSchemaID() == schemaID &&
                         StringUtils.equals(field.getElement(), dcv.element) &&
                         StringUtils.equals(field.getQualifier(), dcv.qualifier))

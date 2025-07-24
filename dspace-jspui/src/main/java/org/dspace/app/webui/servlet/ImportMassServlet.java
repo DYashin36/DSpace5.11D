@@ -164,7 +164,6 @@ public class ImportMassServlet extends DSpaceServlet {
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
                                     log.info("doDSPost>>Identifier is eq to " + identifier.getLength());
-                                    //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     for (int k = 0; k < identifier.getLength(); k++) {
                                         Element subjectNode = (Element) identifier.item(k);
                                         Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
@@ -461,23 +460,15 @@ public class ImportMassServlet extends DSpaceServlet {
                                             Item.ANY);
 
                                     Metadatum tit = dcorevalues2[0];
-                                    log.info("doDSPost>>Identifier metadatum received ant tit is not caused the exception");
+                                    log.info("doDSPost>>Identifier metadatum received ant Metadatum tit is not caused the exception");
                                     //SoapHelper sh = new SoapHelper();
 
                                     //sh.writeLink(tit.value, HandleManager.getCanonicalForm(itemItem.getHandle()));
-                                    // Group groups = Group.findByName(context, "Anonymous");
                                     TableRow row = DatabaseManager.row("collection2item");
-
                                     PreparedStatement statement = null;
-                                    //      ResultSet rs = null;
                                     statement = context.getDBConnection().prepareStatement("DELETE FROM workspaceitem WHERE workspace_item_id=" + wsitem.getID());
                                     int ij = statement.executeUpdate();
-                                    // row.setColumn("collection_id", col.getID());
-                                    // row.setColumn("item_id", itemItem.getID());
-                                    // DatabaseManager.insert(context, row);
-
                                     itemItem.inheritCollectionDefaultPolicies(col);
-
                                     itemItem.setArchived(true);
                                     log.info("doDSPost>>Deletion executed and setArchived");
 
@@ -508,9 +499,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 //break;
                             } catch (Exception e) {
                                 log.error("omg error 1", e);
-                            }
-                            finally
-                            {
+                            } finally {
                                 //moved to finally, cause without it page show system-error
                                 log.info("");
                                 request.setAttribute("updatedLinks", links);
@@ -529,10 +518,6 @@ public class ImportMassServlet extends DSpaceServlet {
             }
 
         } else {
-            // Handle the case where dir is not really a directory.
-            // Checking dir.isDirectory() above would not be sufficient
-            // to avoid race conditions with another process that deletes
-            // directories.
         }
 
         for (File file : directoryListing) {
@@ -610,14 +595,28 @@ public class ImportMassServlet extends DSpaceServlet {
     }
 
     public void writeMetaDataToItemLowerCaseTitle(Item item, String qualifier, NodeList nodes) {
+        log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle was called");
         for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if (qulSubject.getTextContent().toLowerCase().equals("title")) {
+            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:"+textSubject.getTextContent());
+            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:"+qulSubject.getTextContent());
+            String normalizedQualifier = null;
+            if (qulSubject != null && qulSubject.getTextContent() != null) {
+                String q = qulSubject.getTextContent().trim().toLowerCase();
+                if (!q.isEmpty()) {
+                    normalizedQualifier = q;
+                    log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>normalizedQualifier is "+normalizedQualifier);
+                }
+            }
+
+            if ("title".equals(normalizedQualifier)) {
+                log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>call with null");
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
             } else {
-                item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
+                log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>call with normalizedQ");
+                item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, normalizedQualifier, "ru", textSubject.getTextContent());
             }
         }
     }

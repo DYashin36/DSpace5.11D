@@ -46,7 +46,7 @@
 <html>
     <head>
         <title><%= siteName %>: <%= title %></title>
-        <h1 style="color:maroon;">Сборка DSpace JSPUI 23.07-2</h1>
+        <h1 style="color:maroon;">Сборка DSpace JSPUI 24.07-0</h1>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="Generator" content="<%= generator %>" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
