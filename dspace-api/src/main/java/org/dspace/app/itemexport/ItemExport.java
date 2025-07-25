@@ -787,7 +787,7 @@ public class ItemExport {
     //ЭКСПОРТ ДЛЯ 1C ЗДЕСЬ
     private static void writeMetadata(Context c, String schema, Item i,
             File destDir, boolean migrate, Integer files) throws Exception {
-        log.info("start writing " + files);
+        log.info("new version start writing " + files);
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         Date date = new Date();
         String zeroes = "";
