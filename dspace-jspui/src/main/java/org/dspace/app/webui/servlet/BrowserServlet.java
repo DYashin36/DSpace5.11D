@@ -94,6 +94,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
     protected void doDSPost(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException {
+        log.info("This is a BrowserServlet doDSPost");
 
         StringBuffer jb = new StringBuffer();
         String line = "wtf";
@@ -123,6 +124,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
         }
 
         try {
+            log.info("BrowserServlet>>doDSPost>>Here we call exportItemToFolderMass");
             ItemExport.exportItemToFolderMass(context, items, path, 0, false);
         } catch (Exception e) {
             log.trace(e);
