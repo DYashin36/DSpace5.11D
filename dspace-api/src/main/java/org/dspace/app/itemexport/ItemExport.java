@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,6 +41,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import org.dspace.content.Bitstream;
@@ -849,20 +851,20 @@ public class ItemExport {
      * <Qualifier>/<Value>.
      */
     private static void writeElements(BufferedOutputStream out, Item i, String schema, String element, boolean simple) throws IOException {
-        Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
-        for (Metadatum dcv : values) {
-            String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
-            String value = (dcv.value == null) ? "" : Utils.addEntities(dcv.value);
-
-            String block;
-            if (simple) {
-                block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
-            } else {
-                block = "<" + capitalize(element) + "><Qualifier>" + qualifier + "</Qualifier><Value>" + value + "</Value></" + capitalize(element) + ">\n";
-            }
-            out.write(block.getBytes("UTF-8"));
+    Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
+    for (Metadatum dcv : values) {
+        String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
+        // Вместо Utils.addEntities:
+        String value = (dcv.value == null) ? "" : StringEscapeUtils.escapeXml11(dcv.value);
+        String block;
+        if (simple) {
+            block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
+        } else {
+            block = "<" + capitalize(element) + "><Qualifier>" + qualifier + "</Qualifier><Value>" + value + "</Value></" + capitalize(element) + ">\n";
         }
+        out.write(block.getBytes(StandardCharsets.UTF_8));
     }
+}
 
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) {

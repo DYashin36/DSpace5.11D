@@ -280,12 +280,24 @@ public class ImportMassServlet extends DSpaceServlet {
                                 }
 
                                 try {
-                                    Node date = record.getElementsByTagName("Date").item(0);
-                                    log.info("doDSPost>>received Date is " + date);
-                                    itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", "ru", date.getTextContent());
-                                    date = null;
+                                    NodeList dateNodes = record.getElementsByTagName("Date");
+                                    log.info("doDSPost>>received Date count: " + dateNodes.getLength());
+                                    for (int d = 0; d < dateNodes.getLength(); d++) {
+                                        Element dateElement = (Element) dateNodes.item(d);
+                                        Node valueNode = dateElement.getElementsByTagName("Value").item(0);
+
+                                        if (valueNode != null) {
+                                            String dateValue = valueNode.getTextContent().trim();
+                                            if (!dateValue.isEmpty()) {
+                                                itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", "ru", dateValue);
+                                                log.info("Added date.issued: " + dateValue);
+                                            } else {
+                                                log.info("Skipped empty date value");
+                                            }
+                                        }
+                                    }
                                 } catch (Exception e) {
-                                    log.info(e.getMessage());
+                                    log.warn("Error while processing Date field: " + e.getMessage());
                                 }
 
                                 try {
@@ -600,14 +612,14 @@ public class ImportMassServlet extends DSpaceServlet {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:"+textSubject.getTextContent());
-            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:"+qulSubject.getTextContent());
+            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:" + textSubject.getTextContent());
+            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:" + qulSubject.getTextContent());
             String normalizedQualifier = null;
             if (qulSubject != null && qulSubject.getTextContent() != null) {
                 String q = qulSubject.getTextContent().trim().toLowerCase();
                 if (!q.isEmpty()) {
                     normalizedQualifier = q;
-                    log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>normalizedQualifier is "+normalizedQualifier);
+                    log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>normalizedQualifier is " + normalizedQualifier);
                 }
             }
 

@@ -10,10 +10,8 @@ package org.dspace.app.webui.servlet;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URLEncoder;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -531,14 +529,14 @@ public class HandleServlet extends DSpaceServlet
 
 
         PreparedStatement statement = null;
-        //      ResultSet rs = null;
-        statement = context.getDBConnection().prepareStatement("INSERT INTO statistic (event, date_updated, parent_id) VALUES (?,?,?)");
-        statement.setString(1, "show_item");
-        statement.setDate(2, new Date(Calendar.getInstance().getTime().getTime()));
-        statement.setInt(3, item.getID());
-        int i = statement.executeUpdate();
-        context.getDBConnection().commit();
-        statement.close();
+        //Statistics wa removed, cause it seems useless
+        // statement = context.getDBConnection().prepareStatement("INSERT INTO statistic (event, date_updated, parent_id) VALUES (?,?,?)");
+        // statement.setString(1, "show_item");
+        // statement.setDate(2, new Date(Calendar.getInstance().getTime().getTime()));
+        // statement.setInt(3, item.getID());
+        // int i = statement.executeUpdate();
+        // context.getDBConnection().commit();
+        // statement.close();
 
         // Set attributes and display
         request.setAttribute("suggest.enable", Boolean.valueOf(suggestEnable));
