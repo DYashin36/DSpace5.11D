@@ -41,7 +41,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import org.dspace.content.Bitstream;
@@ -855,7 +855,7 @@ public class ItemExport {
     for (Metadatum dcv : values) {
         String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
         // Вместо Utils.addEntities:
-        String value = (dcv.value == null) ? "" : StringEscapeUtils.escapeXml11(dcv.value);
+        String value = (dcv.value == null) ? "" : StringEscapeUtils.escapeXml(dcv.value);
         String block;
         if (simple) {
             block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
