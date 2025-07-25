@@ -108,7 +108,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
                 jb.append(line);
             }
         } catch (Exception e) {
-            /*report an error*/ }
+            log.info("error occured:"+e.getMessage()); }
 
         String result = request.getParameter("items");
         String path = request.getParameter("system_to");
@@ -193,7 +193,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
     protected void showSinglePage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException {
-
+        log.info("BrowserServlet>>Redirect to browse/single");
         JSPManager.showJSP(request, response, "/browse/single.jsp");
     }
 
@@ -211,7 +211,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
     protected void showFullPage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException {
-
+        log.info("BrowserServlet>>Redirect to browse/full");
         JSPManager.showJSP(request, response, "/browse/full.jsp");
     }
 

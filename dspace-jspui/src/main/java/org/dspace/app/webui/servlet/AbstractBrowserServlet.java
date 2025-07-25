@@ -322,16 +322,13 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
         }
     }
 
-    /**
-     * Do the usual DSpace GET method.  You will notice that browse does not currently
-     * respond to POST requests.
-     */
     protected void processBrowse(Context context, BrowserScope scope, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException
     {
         try
         {
+            log.info("AbstractBrowserServlet>>processBrowse called");
             BrowseIndex bi = scope.getBrowseIndex();
 
             // now start up a browse engine and get it to do the work for us
@@ -344,10 +341,13 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             {
                 // Set a variable to create admin buttons
                 request.setAttribute("admin_button", Boolean.TRUE);
+                log.info("AbstractBrowserServlet>>admin_button set");
             }
 
             if (binfo.hasResults())
             {
+                log.info("AbstractBrowserServlet>>binfo has results");
+                log.info("AbstractBrowserServlet>>Parameters: bi.isMetadataIndex="+bi.isMetadataIndex()+" - !scope.isSecondLevel()="+!scope.isSecondLevel());
                 if (bi.isMetadataIndex() && !scope.isSecondLevel())
                 {
                 	if (bi.isTagCloudEnabled()){
@@ -367,6 +367,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             }
             else
             {
+                log.info("AbstractBrowserServlet>>binfo has NO results");
                 showNoResultsPage(context, request, response);
             }
         }
