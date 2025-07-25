@@ -442,8 +442,8 @@ public class ItemExport {
         Date date = new Date();
         String zeroes = "";
         if (files == null) {
-            files = 1; 
-        }else {
+            files = 1;
+        } else {
             files = files + 1;
         }
         Integer digits = (int) Math.log10(files) + 1;
@@ -794,8 +794,8 @@ public class ItemExport {
         Date date = new Date();
         String zeroes = "";
         if (files == null) {
-            files = 1; 
-        }else {
+            files = 1;
+        } else {
             files = files + 1;
         }
         Integer digits = (int) Math.log10(files) + 1;
@@ -835,7 +835,7 @@ public class ItemExport {
 
             // Добавляем Handle как <Link>
             String handle = HandleManager.getCanonicalForm(i.getHandle());
-            out.write(("<Link>" + Utils.addEntities(handle) + "</Link>\n").getBytes("UTF-8"));
+            out.write(("<Link>" + handle + "</Link>\n").getBytes(StandardCharsets.UTF_8));
 
             // Закрывающие теги
             out.write("</Records>\n".getBytes("UTF-8"));
@@ -851,20 +851,20 @@ public class ItemExport {
      * <Qualifier>/<Value>.
      */
     private static void writeElements(BufferedOutputStream out, Item i, String schema, String element, boolean simple) throws IOException {
-    Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
-    for (Metadatum dcv : values) {
-        String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
-        // Вместо Utils.addEntities:
-        String value = (dcv.value == null) ? "" : StringEscapeUtils.escapeXml(dcv.value);
-        String block;
-        if (simple) {
-            block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
-        } else {
-            block = "<" + capitalize(element) + "><Qualifier>" + qualifier + "</Qualifier><Value>" + value + "</Value></" + capitalize(element) + ">\n";
+        Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
+        for (Metadatum dcv : values) {
+            String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
+            // Вместо Utils.addEntities:
+            String value = (dcv.value == null) ? "" : StringEscapeUtils.escapeXml(dcv.value);
+            String block;
+            if (simple) {
+                block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
+            } else {
+                block = "<" + capitalize(element) + "><Qualifier>" + qualifier + "</Qualifier><Value>" + value + "</Value></" + capitalize(element) + ">\n";
+            }
+            out.write(block.getBytes(StandardCharsets.UTF_8));
         }
-        out.write(block.getBytes(StandardCharsets.UTF_8));
     }
-}
 
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) {
@@ -881,8 +881,8 @@ public class ItemExport {
         Date date = new Date();
         String zeroes = "";
         if (files == 0) {
-            files = 1; 
-        }else {
+            files = 1;
+        } else {
             files = files + 2;
         }
 

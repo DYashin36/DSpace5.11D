@@ -84,9 +84,11 @@ public class BrowserServlet extends AbstractBrowserServlet {
         //
         // Is this a request to export the metadata, or a normal browse request?
         if ("submit_export_metadata".equals(UIUtil.getSubmitButton(request, "submit"))) {
+            log.info("now we are going to exportMetadata");
             exportMetadata(context, request, response, scope);
         } else {
             // execute browse request
+            log.info("execute browse request");
             processBrowse(context, scope, request, response);
         }
     }
