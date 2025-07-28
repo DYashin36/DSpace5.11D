@@ -206,7 +206,7 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
-          <dc-qualifier>RuBBK</dc-qualifier>
+          <dc-qualifier>rubbk</dc-qualifier>
           <repeatable>true</repeatable>
           <label>RuBBK</label>
           <input-type>twobox</input-type>
@@ -218,7 +218,7 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
-          <dc-qualifier>RuGASNTI</dc-qualifier>
+          <dc-qualifier>rugasnti</dc-qualifier>
           <repeatable>true</repeatable>
           <label>RuGASNTI</label>
           <input-type>twobox</input-type>
@@ -230,7 +230,7 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
-          <dc-qualifier>UDC</dc-qualifier>
+          <dc-qualifier>udc</dc-qualifier>
           <repeatable>true</repeatable>
           <label>UDC</label>
           <input-type>twobox</input-type>
