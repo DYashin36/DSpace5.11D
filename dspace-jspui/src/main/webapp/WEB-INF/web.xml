@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!--
 
     The contents of this file are subject to the license and copyright
@@ -55,6 +55,25 @@
   <!-- Filters -->
   
   <!-- session/request filter (from util), handles setting up requests and sessions correctly -->
+  
+  <filter>
+    <filter-name>SetCharacterEncodingFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>ignore</param-name>
+      <param-value>false</param-value>
+    </init-param>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>SetCharacterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <filter>
     <filter-name>dspace.request</filter-name>
     <filter-class>org.dspace.utils.servlet.DSpaceWebappServletFilter</filter-class>
