@@ -855,7 +855,7 @@ public class ItemExport {
         for (Metadatum dcv : values) {
             String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
             // Вместо Utils.addEntities:
-            String value = (dcv.value == null) ? "" : StringEscapeUtils.escapeXml(dcv.value);
+            String value = (dcv.value == null) ? "" : safeXml(dcv.value);
             String block;
             if (simple) {
                 block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
@@ -872,6 +872,15 @@ public class ItemExport {
         }
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
+
+    private static String safeXml(String value) {
+    if (value == null) return "";
+    return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+}
 
     private static void writeMetadataMass(Context c, String schema, ArrayList<Item> items,
             File destDir, boolean migrate, Integer files) throws Exception {
