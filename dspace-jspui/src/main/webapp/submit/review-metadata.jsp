@@ -15,7 +15,7 @@
   -    submission.jump - the step and page number (e.g. stepNum.pageNum) to create a "jump-to" link
   --%>
 
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%>
 
 <%@ page import="java.io.IOException" %>
 
