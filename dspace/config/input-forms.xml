@@ -50,8 +50,8 @@
         </field>
 
         <field>
-          <dc-schema>contributor</dc-schema>
-          <dc-element>author</dc-element>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
           <dc-qualifier>department</dc-qualifier>
           <repeatable>false</repeatable>
           <label>Department</label>
@@ -61,8 +61,8 @@
         </field>
 
         <field>
-          <dc-schema>contributor</dc-schema>
-          <dc-element>author</dc-element>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
           <dc-qualifier>other</dc-qualifier>
           <repeatable>false</repeatable>
           <label>Other</label>
@@ -72,8 +72,8 @@
         </field>
 
         <field>
-          <dc-schema>contributor</dc-schema>
-          <dc-element>author</dc-element>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
           <dc-qualifier>subdepartment</dc-qualifier>
           <repeatable>false</repeatable>
           <label>Subdepartment</label>
@@ -187,7 +187,7 @@
           <required></required>
         </field>
       </page>
-      
+
 
       <page number="2">
         <field>
@@ -279,6 +279,8 @@
           <repeatable>false</repeatable>
           <label>Первая страница</label>
           <input-type>onebox</input-type>
+          <hint>Введите номер первой страницы</hint>
+          <required></required>
         </field>
 
         <field>
@@ -288,6 +290,8 @@
           <repeatable>false</repeatable>
           <label>Последняя страница</label>
           <input-type>onebox</input-type>
+          <hint>Введите номер последней страницы</hint>
+          <required></required>
         </field>
 
         <field>
@@ -297,6 +301,8 @@
           <repeatable>false</repeatable>
           <label>Ссылка на лицензию</label>
           <input-type>onebox</input-type>
+          <hint>Укажите URL лицензии</hint>
+          <required></required>
         </field>
       </page>
     </form>
