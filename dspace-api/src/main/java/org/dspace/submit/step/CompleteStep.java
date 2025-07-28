@@ -7,8 +7,6 @@
  */
 package org.dspace.submit.step;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -135,8 +133,12 @@ public class CompleteStep extends AbstractProcessingStep {
             // commit changes to database
             if (success) {
                 log.info(LogManager.getHeader(null, "submission_complete",
-                "here is completeStep commit"));
-                // context.commit();
+                        "here is completeStep commit"));
+                if (success) {
+                    context.commit();
+                } else {
+                    context.getDBConnection().rollback();
+                }
                 // try (BufferedWriter writer = new BufferedWriter(new FileWriter("/home/vboxuser/opt/dspace/1C/completion.txt", true))) {
                 //     writer.write("Submission complete!");
                 //     writer.newLine();
@@ -151,22 +153,23 @@ public class CompleteStep extends AbstractProcessingStep {
         log.info(LogManager.getHeader(context, "submission_complete",
                 "call try block"));
         try {
-            if(HandleManager.getCanonicalForm(item.getHandle()) != null) {
-                log.info("COMPLETE STEP CANONICAL ITEM IS: "+HandleManager.getCanonicalForm(item.getHandle()));
+            if (HandleManager.getCanonicalForm(item.getHandle()) != null) {
+                log.info("COMPLETE STEP CANONICAL ITEM IS: " + HandleManager.getCanonicalForm(item.getHandle()));
                 boolean forbiden = false;
                 try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
                     pstm.setInt(1, cc.getID());
                     try (ResultSet resultSet = pstm.executeQuery();) {
-        	            resultSet.next();
-        	            int cnt = resultSet.getInt(1);
-                        log.info("COMPLETE STEP CNT IS: "+cnt);
-        	            if (cnt > 0) forbiden = true;
+                        resultSet.next();
+                        int cnt = resultSet.getInt(1);
+                        log.info("COMPLETE STEP CNT IS: " + cnt);
+                        if (cnt > 0) {
+                            forbiden = true;
+                        }
                     }
                 } catch (SQLException | NumberFormatException e) {
                     log.error(e.getLocalizedMessage(), e);
                 }
-                if (!forbiden)
-                {
+                if (!forbiden) {
                     log.info("COMPLETE STEP EXPORT");
                     ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
                     ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
