@@ -140,21 +140,14 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>contributor</element>
     <qualifier>department</qualifier>
-    <description>Department</description>
+    <scope_note>Department</scope_note>
   </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>contributor</element>
     <qualifier>subdepartment</qualifier>
-    <description>Subdepartment</description>
-  </dc-type>
-
-  <dc-type>
-    <schema>dc</schema>
-    <element>contributor</element>
-    <qualifier>other</qualifier>
-    <description>Other contributor</description>
+    <scope_note>Subdepartment</scope_note>
   </dc-type>
 
   <dc-type>
@@ -308,13 +301,13 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>identifier</element>
     <qualifier>nps</qualifier>
-    <description>NPS identifier</description>
+    <scope_note>NPS identifier</scope_note>
   </dc-type>
   <dc-type>
     <schema>dc</schema>
     <element>identifier</element>
     <qualifier>orcid</qualifier>
-    <description>ORCID</description>
+    <scope_note>ORCID</scope_note>
   </dc-type>
 
 
@@ -378,20 +371,20 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>description</element>
     <qualifier>firstpage</qualifier>
-    <description>First page</description>
+    <scope_note>First page</scope_note>
   </dc-type>
   <dc-type>
     <schema>dc</schema>
     <element>description</element>
     <qualifier>lastpage</qualifier>
-    <description>Last page</description>
+    <scope_note>Last page</scope_note>
   </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>rights</element>
     <qualifier>uri</qualifier>
-    <description>License URL</description>
+    <scope_note>License URL</scope_note>
   </dc-type>
 
 
@@ -627,21 +620,21 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>subject</element>
     <qualifier>rubbk</qualifier>
-    <description>Russian BBK classification</description>
+    <scope_note>Russian BBK classification</scope_note>
   </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>subject</element>
     <qualifier>rugasnti</qualifier>
-    <description>Russian GOST classification</description>
+    <scope_note>Russian GOST classification</scope_note>
   </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>subject</element>
     <qualifier>udc</qualifier>
-    <description>UDC classification</description>
+    <scope_note>UDC classification</scope_note>
   </dc-type>
 
 
@@ -689,13 +682,13 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>thesis</element>
     <qualifier>level</qualifier>
-    <description>Thesis level</description>
+    <scope_note>Thesis level</scope_note>
   </dc-type>
   
   <dc-type>
     <schema>dc</schema>
     <element>thesis</element>
     <qualifier>speciality</qualifier>
-    <description>Thesis speciality</description>
+    <scope_note>Thesis speciality</scope_note>
   </dc-type>
 </dspace-dc-types>
