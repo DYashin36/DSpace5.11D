@@ -1215,6 +1215,7 @@
     <h1><fmt:message key="jsp.submit.edit-metadata.heading"/>
 <%
      //figure out which help page to display
+     boolean showMark=true;
      if (pageNum <= 1)
      {
 %>
@@ -1252,7 +1253,10 @@
           }
           if(!"thesis".equalsIgnoreCase(type))
           {
-            return;
+            showMark=false;
+            %>
+            <p><i>This page exists only for 'Thesis'.</i></p>
+            <%
           }
           else {
             %>
@@ -1265,7 +1269,7 @@
     
 <%
      }
- 
+     if(showMark){
 	 int pageIdx = pageNum - 1;
      DCInput[] inputs = inputSet.getPageRows(pageIdx, si.getSubmissionItem().hasMultipleTitles(),
                                                 si.getSubmissionItem().isPublishedBefore() );
@@ -1415,7 +1419,8 @@
                                  closedVocabulary, collectionID);
        }
        
-     } // end of 'for rows'
+     }
+    } // end of 'for rows'
 %>
         
 <%-- Hidden fields needed for SubmissionController servlet to know which item to deal with --%>
