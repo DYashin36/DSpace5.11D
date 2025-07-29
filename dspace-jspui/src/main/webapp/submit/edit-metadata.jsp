@@ -1242,31 +1242,24 @@
      {
 %>
         <p><fmt:message key="jsp.submit.edit-metadata.info2"/></p>
-    
+        if(pageNum==3)
+        {
+          String type = "";
+          org.dspace.content.Item currentItem = si.getSubmissionItem().getItem();
+          if (currentItem != null) {
+            org.dspace.content.Metadatum[] md = currentItem.getMetadata("dc", "type", null, org.dspace.content.Item.ANY);
+            if (md.length > 0) {
+              type = md[0].value;
+            }
+          }
+          if(!"thesis".equalsIgnoreCase(type))
+          {
+            return;
+          }
+          else {<p><i>This page exists only for 'Thesis' resource-type</i></p>}
+        }
 <%
      }
-     
-     <%
-    // For thesis only
-    String type = "";
-    org.dspace.content.Item currentItem = si.getSubmissionItem().getItem();
-    if (currentItem != null) {
-        org.dspace.content.Metadatum[] md = currentItem.getMetadata("dc", "type", null, org.dspace.content.Item.ANY);
-        if (md.length > 0) {
-            type = md[0].value;
-        }
-    }
-
-    //skip render of page
-    boolean skipPage = (pageNum == 3 && !"thesis".equalsIgnoreCase(type));
-    if (skipPage) {
-%>
-        <p><i>Эта страница доступна только для материалов типа "Thesis".</i></p>
-<%
-       
-    }
-    else{
-%>
  
 	 int pageIdx = pageNum - 1;
      DCInput[] inputs = inputSet.getPageRows(pageIdx, si.getSubmissionItem().hasMultipleTitles(),
@@ -1416,7 +1409,7 @@
                                  repeatable, required, readonly, fieldCountIncr, label, pageContext, vocabulary,
                                  closedVocabulary, collectionID);
        }
-      }
+       
      } // end of 'for rows'
 %>
         
