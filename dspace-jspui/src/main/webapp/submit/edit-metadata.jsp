@@ -1240,9 +1240,7 @@
      }
      else
      {
-%>
-        <p><fmt:message key="jsp.submit.edit-metadata.info2"/></p>
-        if(pageNum==3)
+      if(pageNum==3)
         {
           String type = "";
           org.dspace.content.Item currentItem = si.getSubmissionItem().getItem();
@@ -1256,8 +1254,15 @@
           {
             return;
           }
-          else {<p><i>This page exists only for 'Thesis' resource-type</i></p>}
+          else {
+            %>
+            <p><i>This page exists only for 'Thesis'.</i></p>
+            <%
+          }
         }
+%>
+        <p><fmt:message key="jsp.submit.edit-metadata.info2"/></p>
+    
 <%
      }
  
