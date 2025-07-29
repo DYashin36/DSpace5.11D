@@ -306,6 +306,25 @@
         </field>
       </page>
     </form>
+    <page number="3">
+      <field>
+        <dc-schema>dc</dc-schema>
+        <dc-element>thesis</dc-element>
+        <dc-qualifier>level</dc-qualifier>
+        <label>Thesis Level</label>
+        <input-type>onebox</input-type>
+        <hint>Введите уровень диссертации</hint>
+      </field>
+      <field>
+        <dc-schema>dc</dc-schema>
+        <dc-element>thesis</dc-element>
+        <dc-qualifier>speciality</dc-qualifier>
+        <label>Thesis Speciality</label>
+        <input-type>onebox</input-type>
+        <hint>Введите специальность</hint>
+      </field>
+    </page>
+    </form>
 
     <form name="one">
       <page number="1">
