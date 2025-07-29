@@ -296,6 +296,17 @@
 
         <field>
           <dc-schema>dc</dc-schema>
+          <dc-element>source</dc-element>
+          <dc-qualifier></dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Источник публикации</label>
+          <input-type>onebox</input-type>
+          <hint>Укажите источник (например: журнал, выпуск, страницы)</hint>
+          <required>false</required>
+        </field>
+
+        <field>
+          <dc-schema>dc</dc-schema>
           <dc-element>rights</dc-element>
           <dc-qualifier>uri</dc-qualifier>
           <repeatable>false</repeatable>

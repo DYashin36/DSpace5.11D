@@ -831,7 +831,7 @@ public class ItemExport {
             writeElements(out, i, schema, "title", false);
             writeElements(out, i, schema, "type", true);
             writeElements(out, i, schema, "thesis", false);
-            writeElements(out, i, schema, "source", true);
+            writeElements(out, i, schema, "source", false);
 
             // Добавляем Handle как <Link>
             String handle = HandleManager.getCanonicalForm(i.getHandle());
@@ -874,13 +874,15 @@ public class ItemExport {
     }
 
     private static String safeXml(String value) {
-    if (value == null) return "";
-    return value.replace("&", "&amp;")
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
-}
+    }
 
     private static void writeMetadataMass(Context c, String schema, ArrayList<Item> items,
             File destDir, boolean migrate, Integer files) throws Exception {

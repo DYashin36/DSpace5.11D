@@ -561,6 +561,13 @@ org.dspace.content.MetadataValue instead.
   <dc-type>
     <schema>dc</schema>
     <element>source</element>
+    <qualifier></qualifier>
+    <scope_note>Источник публикации (например: журнал, выпуск, страницы)</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>source</element>
     <qualifier>uri</qualifier>
     <scope_note>Do not use; only for harvested metadata.</scope_note>
   </dc-type>
@@ -684,11 +691,12 @@ org.dspace.content.MetadataValue instead.
     <qualifier>level</qualifier>
     <scope_note>Thesis level</scope_note>
   </dc-type>
-  
+
   <dc-type>
     <schema>dc</schema>
     <element>thesis</element>
     <qualifier>speciality</qualifier>
     <scope_note>Thesis speciality</scope_note>
   </dc-type>
+
 </dspace-dc-types>
