@@ -67,7 +67,7 @@
     <br>
     <br>
     <input class="btn btn-primary pull-left col-md-3" id="metadata_import_name_wtf" type="submit" name="submit" value="<%=createOrEdit%>">
-  </form> <a href="/fold/"> <input class="btn btn-primary pull-left col-md-3" type="submit" name="submit" value="Назад"></a>
+  </form> <a href="<%=request.getContextPath()%>/fold"> <input class="btn btn-primary pull-left col-md-3" type="submit" name="submit" value="Назад"></a>
 
 
 </dspace:layout>

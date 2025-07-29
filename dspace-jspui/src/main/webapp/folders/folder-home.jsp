@@ -43,10 +43,12 @@
         TableRow row = name.next();
         Integer i = row.getIntColumn("id");%>
     <tr>
-    <th class="oddRowEvenCol"><%=row.getStringColumn("system_name") %></th><th class="oddRowEvenCol"><%=row.getStringColumn("folder_path") %></th><th class="oddRowEvenCol"><a href="fold?action=edit&id=<%=i%>">Редактировать</a></th><th class="oddRowEvenCol"><a class="deleteText" href="fold?action=delete&id=<%=i%>">Удалить</a></th></tr>
+    <th class="oddRowEvenCol"><%=row.getStringColumn("system_name") %></th><th class="oddRowEvenCol"><%=row.getStringColumn("folder_path") %></th><th class="oddRowEvenCol">
+        <a href="<%=request.getContextPath()%>/fold?action=edit&id=<%=i%>">>Редактировать</a></th><th class="oddRowEvenCol">
+            <a class="deleteText" href="<%=request.getContextPath()%>/fold?action=delete&id=<%=i%>"Удалить</a></th></tr>
     <% } %>
     </table>
-<a href="/fold?action=add"> <input class="btn btn-primary pull-left col-md-3" type="submit" name="submit" value="Добавить"></a>
+<a href="<%=request.getContextPath()%>/fold?action=add"> <input class="btn btn-primary pull-left col-md-3" type="submit" name="submit" value="Добавить"></a>
 
 
 </dspace:layout>

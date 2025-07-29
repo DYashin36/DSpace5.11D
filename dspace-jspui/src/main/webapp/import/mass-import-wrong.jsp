@@ -45,8 +45,5 @@ String colId = (String) request.getAttribute("collection_id");
 <dspace:layout style="submission" titlekey="jsp.register.edit-profile.title" nocache="true">
     <b>Файл неправильного расширения или формата <br>
     <br>
-    <a href="/import-mass">Повторить загрузку</a> </b><br>
-
-
-
+    <a href="<%=request.getContextPath()%>/import-mass">Повторить загрузку</a> </b><br>
 </dspace:layout>
