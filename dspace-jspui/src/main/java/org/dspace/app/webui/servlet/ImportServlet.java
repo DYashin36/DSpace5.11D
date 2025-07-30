@@ -59,50 +59,54 @@ import org.w3c.dom.NodeList;
  */
 public class ImportServlet extends DSpaceServlet {
 
-    /** Logger */
+    /**
+     * Logger
+     */
     private static Logger log = Logger.getLogger(ImportServlet.class);
 
     protected void doDSGet(Context context, HttpServletRequest request,
-                           HttpServletResponse response) throws ServletException, IOException,
+            HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
 
         String community_id = request.getParameter("community_id");
         request.setAttribute("community_id", community_id);
-	    String collection_id = request.getParameter("collection_id");
-	    request.setAttribute("collection_id", collection_id);
-        log.info("ImportServlet>>>doDSGET>>comm:"+community_id+"; coll"+collection_id);
-	    boolean forbiden = false;
-	    if (collection_id != null) {
-		    try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")){
-			    pstm.setInt(1, Integer.valueOf(collection_id));
-			    try (ResultSet resultSet = pstm.executeQuery();){
-				    resultSet.next();
-				    int cnt = resultSet.getInt(1);
-                    log.info("ImportServlet>>>doDSGET>>result of sql query is cnt:"+cnt);
-				    if (cnt > 0) forbiden = true;
-			    }
-		    } catch (SQLException | NumberFormatException e) {
-			    log.error(e.getLocalizedMessage(), e);
-		    }
-	    }
-	    request.setAttribute("forbiden", forbiden);
+        String collection_id = request.getParameter("collection_id");
+        request.setAttribute("collection_id", collection_id);
+        log.info("ImportServlet>>>doDSGET>>comm:" + community_id + "; coll" + collection_id);
+        boolean forbiden = false;
+        if (collection_id != null) {
+            try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
+                pstm.setInt(1, Integer.valueOf(collection_id));
+                try (ResultSet resultSet = pstm.executeQuery();) {
+                    resultSet.next();
+                    int cnt = resultSet.getInt(1);
+                    log.info("ImportServlet>>>doDSGET>>result of sql query is cnt:" + cnt);
+                    if (cnt > 0) {
+                        forbiden = true;
+                    }
+                }
+            } catch (SQLException | NumberFormatException e) {
+                log.error(e.getLocalizedMessage(), e);
+            }
+        }
+        request.setAttribute("forbiden", forbiden);
 
-	    response.setCharacterEncoding("UTF-8");
-	    request.setCharacterEncoding("UTF-8");
-	    request.getRequestDispatcher("/import/import-home.jsp").forward(request, response);
+        response.setCharacterEncoding("UTF-8");
+        request.setCharacterEncoding("UTF-8");
+        request.getRequestDispatcher("/import/import-home.jsp").forward(request, response);
 
     }
 
     protected void doDSPost(Context context, HttpServletRequest request,
-                            HttpServletResponse response) throws ServletException, IOException,
-            SQLException, AuthorizeException{
+            HttpServletResponse response) throws ServletException, IOException,
+            SQLException, AuthorizeException {
         log.info("ImportServlet>>>doDSPOST>>enter");
         SoapHelper sh = new SoapHelper();
 
         String collectionId = request.getParameter("collection_id");
-        
+
         Collection col = Collection.find(context, Integer.parseInt(collectionId));
-        log.info("ImportServlet>>>doDSPOST>>collection_id:"+collectionId+"; collection itself"+col);
+        log.info("ImportServlet>>>doDSPOST>>collection_id:" + collectionId + "; collection itself" + col);
         request.setAttribute("collection_id", collectionId);
 
         WorkspaceItem wsitem = WorkspaceItem.createMass(context, col, false);
@@ -111,21 +115,19 @@ public class ImportServlet extends DSpaceServlet {
 
         itemItem.setOwningCollection(col);
 
-
         String test = request.getParameter("action");
         String item_id = request.getParameter("import_item");
-        log.info("ImportServlet>>>doDSPost>>action:"+test+"; item_id"+item_id);
-        if(test != null) {
+        log.info("ImportServlet>>>doDSPost>>action:" + test + "; item_id" + item_id);
+        if (test != null) {
             log.info("doDSPost>>action is not null");
             Document docMeta = null;
 
-
             if (test.equals("write_ident")) {
                 String iden = request.getParameter("identifier");
-                log.info("ImportServlet>>>doDSPost>>write_ident identifier:"+iden);
+                log.info("ImportServlet>>>doDSPost>>write_ident identifier:" + iden);
                 try {
                     docMeta = sh.getRecordById(iden);
-                } catch(Exception e){
+                } catch (Exception e) {
                     docMeta = sh.getRecordById(iden);
                 }
                 createItem(docMeta, itemItem, request, context, col, wsitem);
@@ -138,12 +140,12 @@ public class ImportServlet extends DSpaceServlet {
                 NodeList idNode = bullshit_doc.getElementsByTagName("m:BiblId");
 
                 String idItem = idNode.item(0).getTextContent();
-                log.info("ImportServlet>>>doDSPost>>write_name identifier:"+idItem);
+                log.info("ImportServlet>>>doDSPost>>write_name identifier:" + idItem);
 
                 //request.setAttribute(idItem, "identifier");
                 try {
                     docMeta = sh.getRecordById(idItem);
-                } catch(Exception e){
+                } catch (Exception e) {
                     docMeta = sh.getRecordById(idItem);
                 }
                 createItem(docMeta, itemItem, request, context, col, wsitem);
@@ -151,18 +153,17 @@ public class ImportServlet extends DSpaceServlet {
             }
         }
 
-        if(test == null) {
+        if (test == null) {
             log.info("doDSPost>>action is null");
             String uuid = request.getParameter("uuid_search");
             Document doc = null;
-            log.info("ImportServlet>>>doDSPost>getRecordById-uuid>uuid:"+uuid+";");
-            try{
+            log.info("ImportServlet>>>doDSPost>getRecordById-uuid>uuid:" + uuid + ";");
+            try {
                 doc = sh.getRecordById(uuid);
                 log.info("ImportServlet>>>doDSPost>doc received");
-            } catch(Exception e){
+            } catch (Exception e) {
                 doc = sh.getRecordById(uuid);
             }
-
 
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer transformer = null;
@@ -180,49 +181,47 @@ public class ImportServlet extends DSpaceServlet {
                 e.printStackTrace();
             }
             String output = writer.getBuffer().toString().replaceAll("\n|\r", "");
-            log.info("dsPost>>here is final version of output:"+output);
+            log.info("dsPost>>here is final version of output:" + output);
 
             request.setAttribute("community_id", request.getParameter("community_id"));
             request.setAttribute("collection_id", request.getParameter("collection_id"));
             request.setAttribute("uuid_search", uuid);
             request.setAttribute("document", doc);
 
-
-
             NodeList testWow = doc.getElementsByTagName("Records");
-            try{
-                if(testWow.getLength() > 0) {
+            try {
+                if (testWow.getLength() > 0) {
                     log.info("ImportServlet>>>doDSPost>>length>0 - REDIRECT TO IMPORT/IMPORT-ITEM");
                     request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
                 } else {
                     log.info("ImportServlet>>>doDSPost>>length==0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
-            } catch (Exception e){
-                log.info("error occured when select the recordS:"+e.getMessage());
+            } catch (Exception e) {
+                log.info("error occured when select the recordS:" + e.getMessage());
                 e.printStackTrace();
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
 
-            }
-            else {
-                log.info("doDSPost>>Second branch for action is not null (?)");
+        } else {
+            log.info("doDSPost>>Second branch for action is not null (?)");
             String name = request.getParameter("name");
             String title = request.getParameter("title");
-            log.info("ImportServlet>>>doDSPost>getRecordByName>name:"+name+"; title:"+title);
+            log.info("ImportServlet>>>doDSPost>getRecordByName>name:" + name + "; title:" + title);
 
-            if (name != null && name.equals(""))
+            if (name != null && name.equals("")) {
                 name = null;
+            }
 
-            if(title != null && title.equals(""))
+            if (title != null && title.equals("")) {
                 title = null;
+            }
             Document doc = null;
             try {
                 doc = sh.getRecordByName(name, title);
-            } catch(Exception e){
+            } catch (Exception e) {
                 doc = sh.getRecordByName(name, title);
             }
-
 
             TransformerFactory tf = TransformerFactory.newInstance();
             log.info("SH>>doDSPost>>TransformerFactory was created");
@@ -243,22 +242,21 @@ public class ImportServlet extends DSpaceServlet {
             }
             String output = writer.getBuffer().toString().replaceAll("\n|\r", "");
 
-
             request.setAttribute("community_id", request.getParameter("community_id"));
             request.setAttribute("collection_id", request.getParameter("collection_id"));
             request.setAttribute("document", doc);
 
             NodeList testWow = doc.getElementsByTagName("m:BiblRecords");
-            try{
-                if(testWow.getLength() > 0) {
+            try {
+                if (testWow.getLength() > 0) {
                     log.info("SH>>doDSPost>>BiblRecoreds number is more than 0; redirect to import-items");
                     request.getRequestDispatcher("/import/import-items.jsp").forward(request, response);
                 } else {
                     log.info("SH>>doDSPost>>BiblRecoreds number is lesser than 0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
-            } catch (Exception e){
-                log.info("SH>>doDSPost>>Error occured; Open import-no:"+e.getMessage());
+            } catch (Exception e) {
+                log.info("SH>>doDSPost>>Error occured; Open import-no:" + e.getMessage());
                 e.printStackTrace();
                 request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
             }
@@ -268,7 +266,6 @@ public class ImportServlet extends DSpaceServlet {
 
     private void createItem(Document docMeta, Item ti, HttpServletRequest request, Context context, Collection col, WorkspaceItem wsitem) throws SQLException, AuthorizeException {
 
-
         Boolean exists = false;
         Integer itemId = 0;
         XPathFactory xpathFactory = XPathFactory.newInstance();
@@ -276,12 +273,9 @@ public class ImportServlet extends DSpaceServlet {
         // Create XPath object
         XPath xpath = xpathFactory.newXPath();
 
-
         //Node nodeValue = nodeTitle.getChildNodes().item(3);
-
-        XPathExpression expr =
-                null;
-
+        XPathExpression expr
+                = null;
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Identifier']");
@@ -289,28 +283,26 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList identsToCheck = null;
         try {
             identsToCheck = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-        for(int k = 0; k < identsToCheck.getLength(); k++){
+        for (int k = 0; k < identsToCheck.getLength(); k++) {
             Element subjectNode = (Element) identsToCheck.item(k);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("identifier")){
-                TableRowIterator tri = DatabaseManager.queryTable(context, "metadatavalue", "SELECT resource_id, text_value FROM metadatavalue WHERE text_value='"+textSubject.getTextContent()+"'");
-                if(tri.hasNext()){
+            if (qulSubject.getTextContent().toLowerCase().equals("identifier")) {
+                TableRowIterator tri = DatabaseManager.queryTable(context, "metadatavalue", "SELECT resource_id, text_value FROM metadatavalue WHERE text_value='" + textSubject.getTextContent() + "'");
+                if (tri.hasNext()) {
                     log.info("OKIGOTIT: ");
 
                     exists = true;
                     TableRow row = tri.next();
                     log.info(row);
                     itemId = row.getIntColumn("resource_id");
-                    log.info("OKIGOTIT: "+itemId.toString());
+                    log.info("OKIGOTIT: " + itemId.toString());
                 }
                 //item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
                 //SoapHelper sh = new SoapHelper();
@@ -318,7 +310,7 @@ public class ImportServlet extends DSpaceServlet {
             }
         }
 
-        if(exists == true) {
+        if (exists == true) {
             ti = Item.find(context, itemId);
             ti.clearDC(Item.ANY, Item.ANY, Item.ANY);
         }
@@ -329,7 +321,6 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
         NodeList subject = null;
         try {
             subject = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -337,7 +328,6 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
         writeMetaDataToItemLowerCaseSubject(ti, "subject", subject);
-
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Creator']");
@@ -355,14 +345,14 @@ public class ImportServlet extends DSpaceServlet {
             Node creator = creators.item(0);
 
             String creatorsString = creator.getTextContent();
-            if((!creatorsString.equals("|||")) && (creatorsString != null) && (!creatorsString.equals(""))) {
+            if ((!creatorsString.equals("|||")) && (creatorsString != null) && (!creatorsString.equals(""))) {
                 ti.addMetadata(MetadataSchema.DC_SCHEMA, "creator", null, "ru", creatorsString);
                 String[] creatorsAr = creatorsString.split(",");
                 for (int i = 0; i < creatorsAr.length; i++) {
                     ti.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", creatorsAr[i]);
                 }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -371,8 +361,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList dates = null;
         try {
@@ -383,7 +371,7 @@ public class ImportServlet extends DSpaceServlet {
 
         try {
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", "ru", dates.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -392,8 +380,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList idents = null;
         try {
@@ -409,8 +395,6 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList nodes = null;
         try {
             nodes = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -420,7 +404,7 @@ public class ImportServlet extends DSpaceServlet {
 
         try {
             writeMetaDataToItemLowerCaseTitle(ti, "title", nodes);
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -430,16 +414,12 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList descrs = null;
         try {
             descrs = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         writeMetaDataToItemLowerCaseDescr(ti, "description", descrs);
 
@@ -448,8 +428,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             log.error("lang error:", e);
         }
-
-
 
         NodeList langs = null;
         try {
@@ -460,15 +438,11 @@ public class ImportServlet extends DSpaceServlet {
 
         writeMetaDataToItemLowerCaseLang(ti, "language", langs, request);
 
-
-
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Coverage']");
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList cover = null;
         try {
@@ -479,14 +453,11 @@ public class ImportServlet extends DSpaceServlet {
 
         writeMetaDataToItemLowerCase(ti, "coverage", cover);
 
-
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Source']");
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList sources = null;
         try {
@@ -497,7 +468,7 @@ public class ImportServlet extends DSpaceServlet {
 
         try {
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sources.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -506,8 +477,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList type = null;
         try {
@@ -518,7 +487,7 @@ public class ImportServlet extends DSpaceServlet {
 
         try {
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -527,8 +496,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList rughts = null;
         try {
@@ -539,7 +506,7 @@ public class ImportServlet extends DSpaceServlet {
 
         try {
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rughts.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -548,8 +515,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList publisher = null;
         try {
@@ -560,7 +525,7 @@ public class ImportServlet extends DSpaceServlet {
 
         try {
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -569,8 +534,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList contributor = null;
         try {
@@ -583,10 +546,10 @@ public class ImportServlet extends DSpaceServlet {
             String creatorsString = contributor.item(0).getTextContent();
             String[] creatorsAr = creatorsString.split(",");
 
-            for(int i = 0; i<creatorsAr.length; i++){
+            for (int i = 0; i < creatorsAr.length; i++) {
                 ti.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", creatorsAr[i]);
             }
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -595,8 +558,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList citation = null;
         try {
@@ -612,8 +573,6 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList format = null;
         try {
             format = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -628,8 +587,6 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList relation = null;
         try {
             relation = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -641,7 +598,6 @@ public class ImportServlet extends DSpaceServlet {
 //        DateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
 //        Date today = Calendar.getInstance().getTime();
 //        String dateNow = df.format(today);
-
 //        try {
 //            ti.addMetadata(MetadataSchema.DC_SCHEMA, "date", "accessioned", "ru", dateNow);
 //        }
@@ -653,13 +609,9 @@ public class ImportServlet extends DSpaceServlet {
 //        } catch(Exception e2){
 //
 //        }
-
         ti.setDiscoverable(true);
 
         //itemItem.update();
-
-
-
         try {
             try {
                 expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Link']");
@@ -667,23 +619,23 @@ public class ImportServlet extends DSpaceServlet {
                 e.printStackTrace();
             }
 
-           // HandleManager.
-            if(exists == false) {
+            // HandleManager.
+            if (exists == false) {
                 HandleManager.createHandle(context, ti);
                 Metadatum[] dcorevalues2 = ti.getMetadata("dc", "identifier", null,
                         Item.ANY);
 
                 Metadatum tit = dcorevalues2[0];
-
-                SoapHelper sh = new SoapHelper();
-
-                sh.writeLink(tit.value, HandleManager.getCanonicalForm(ti.getHandle()));
+                try {
+                    SoapHelper sh = new SoapHelper();
+                    sh.writeLink(tit.value, HandleManager.getCanonicalForm(ti.getHandle()));
+                } catch (Exception ex) {
+                    log.error("error occured in process of writeLink to webService : " + ex.getMessage());
+                    log.info("error occured in process of writeLink to webService : " + ex.getMessage());
+                }
             }
 
             ti.addMetadata("dc", "identifier", "uri", "ru", HandleManager.getCanonicalForm(ti.getHandle()));
-
-
-
 
             NodeList linkList = null;
             try {
@@ -699,8 +651,8 @@ public class ImportServlet extends DSpaceServlet {
 
             String filenamelel = link.getTextContent().substring(link.getTextContent().lastIndexOf('\\') + 1);
 
-            InputStream iss  = new URL(firstUrl+linkEncode).openStream();
-            InputStream issforPdf  = new URL(firstUrl+linkEncode).openStream();
+            InputStream iss = new URL(firstUrl + linkEncode).openStream();
+            InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
 
             try {
                 PDFTextStripper pdfStripper = null;
@@ -717,27 +669,27 @@ public class ImportServlet extends DSpaceServlet {
                 //log.info(parsedText);
 
                 Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-                if(fifty < 0){
-                    fifty = fifty *(-1);
+                if (fifty < 0) {
+                    fifty = fifty * (-1);
                 }
                 Integer toCut = 500;
                 if ((parsedText.length() - fifty) < 500) {
                     toCut = parsedText.length();
                 }
-                String subText = parsedText.substring(fifty, fifty +toCut - 1);
+                String subText = parsedText.substring(fifty, fifty + toCut - 1);
                 try {
                     subText = subText.substring(subText.indexOf(".") + 1);
-                } catch(Exception e){
+                } catch (Exception e) {
 
                 }
                 ti.addMetadata("dc", "textpart", null, null, subText + "...");
-            } catch(Exception e){
+            } catch (Exception e) {
 
             }
 
-            log.info("wowlol: "+firstUrl+linkEncode);
+            log.info("wowlol: " + firstUrl + linkEncode);
 
-            if(exists == false) {
+            if (exists == false) {
                 ti.createBundle("ORIGINAL");
                 Bitstream b = ti.getBundles("ORIGINAL")[0].createBitstream(iss);
                 b.setName(filenamelel);
@@ -745,7 +697,6 @@ public class ImportServlet extends DSpaceServlet {
                 b.setSource("1C");
 
                 ti.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
-
 
                 BitstreamFormat bf = null;
 
@@ -755,54 +706,46 @@ public class ImportServlet extends DSpaceServlet {
                 b.update();
             }
 
-
             ti.update();
 
             iss.close();
-
 
         } catch (Exception e) {
             log.error("wtferror", e);
         }
 
-
-        if(exists == false){
-        if(ConfigurationManager.getProperty("workflow","workflow.framework").equals("xmlworkflow")){
-            try{
-                XmlWorkflowManager.start(context, wsitem);
-            }catch (Exception e){
-                log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: "), e);
+        if (exists == false) {
+            if (ConfigurationManager.getProperty("workflow", "workflow.framework").equals("xmlworkflow")) {
                 try {
-                    throw new ServletException(e);
-                } catch (ServletException e1) {
-                    e1.printStackTrace();
+                    XmlWorkflowManager.start(context, wsitem);
+                } catch (Exception e) {
+                    log.error(LogManager.getHeader(context, "Error while starting xml workflow", "Item id: "), e);
+                    try {
+                        throw new ServletException(e);
+                    } catch (ServletException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            } else {
+                try {
+                    WorkflowManager.start(context, wsitem);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        }else{
-            try {
-                WorkflowManager.start(context, wsitem);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-    }
-
 
         // Group groups = Group.findByName(context, "Anonymous");
-        if(exists == false ) {
+        if (exists == false) {
             TableRow row = DatabaseManager.row("collection2item");
-
 
             PreparedStatement statement = null;
             //      ResultSet rs = null;
             statement = context.getDBConnection().prepareStatement("DELETE FROM workspaceitem WHERE workspace_item_id=" + wsitem.getID());
             int ij = statement.executeUpdate();
 
-
             row.setColumn("collection_id", col.getID());
             row.setColumn("item_id", ti.getID());
-
-
 
             DatabaseManager.insert(context, row);
 
@@ -812,12 +755,11 @@ public class ImportServlet extends DSpaceServlet {
 
         }
 
-
-        try{
+        try {
             PreparedStatement statement = null;
             statement = context.getDBConnection().prepareStatement("DELETE FROM workflowitem WHERE item_id=" + ti.getID());
             int ij = statement.executeUpdate();
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -828,18 +770,18 @@ public class ImportServlet extends DSpaceServlet {
 
         log.info(LogManager.getHeader(context, "submission_complete",
                 "Completed submission with id="
-                        + ti.getID()));
+                + ti.getID()));
 
         try {
             String link = ti.getHandle();
             request.setAttribute("link", HandleManager.getCanonicalForm(link));
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
     }
 
-    public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
@@ -850,62 +792,62 @@ public class ImportServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCaseSubject(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseSubject(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("subject")){
+            if (qulSubject.getTextContent().toLowerCase().equals("subject")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseIdentifier(Item item,  String qualifier, NodeList nodes, HttpServletRequest request){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseIdentifier(Item item, String qualifier, NodeList nodes, HttpServletRequest request) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("identifier")){
-               // request.setAttribute("identifier", textSubject.getTextContent());
+            if (qulSubject.getTextContent().toLowerCase().equals("identifier")) {
+                // request.setAttribute("identifier", textSubject.getTextContent());
                 //item.addMetadata(MetadataSchema.DC_SCHEMA, "subject", "lcc", "ru", textSubject.getTextContent());
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
                 SoapHelper sh = new SoapHelper();
 
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseTitle(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseTitle(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("title")){
+            if (qulSubject.getTextContent().toLowerCase().equals("title")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseDescr(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseDescr(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("abstract")){
+            if (qulSubject.getTextContent().toLowerCase().equals("abstract")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, "abstract", "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseLang(Item item,  String qualifier, NodeList nodes, HttpServletRequest request){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseLang(Item item, String qualifier, NodeList nodes, HttpServletRequest request) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
@@ -915,6 +857,5 @@ public class ImportServlet extends DSpaceServlet {
             //item.addMetadata(MetadataSchema.DC_SCHEMA, "subject", "lcsh", "ru", textSubject.getTextContent());
         }
     }
-
 
 }

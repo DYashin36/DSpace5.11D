@@ -473,9 +473,14 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                     Metadatum tit = dcorevalues2[0];
                                     log.info("doDSPost>>Identifier metadatum received ant Metadatum tit is not caused the exception");
-                                    //SoapHelper sh = new SoapHelper();
+                                    try {
+                                        SoapHelper sh = new SoapHelper();
+                                        sh.writeLink(tit.value, HandleManager.getCanonicalForm(itemItem.getHandle()));
+                                    } catch (Exception ex) {
+                                        log.error("error occured in process of writeLink to webService : " + ex.getMessage());
+                                        log.info("error occured in process of writeLink to webService : " + ex.getMessage());
+                                    }
 
-                                    //sh.writeLink(tit.value, HandleManager.getCanonicalForm(itemItem.getHandle()));
                                     TableRow row = DatabaseManager.row("collection2item");
                                     PreparedStatement statement = null;
                                     statement = context.getDBConnection().prepareStatement("DELETE FROM workspaceitem WHERE workspace_item_id=" + wsitem.getID());
@@ -594,8 +599,13 @@ public class ImportMassServlet extends DSpaceServlet {
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
             if (qulSubject.getTextContent().toLowerCase().equals("identifier")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-                SoapHelper sh = new SoapHelper();
-                // sh.writeLink(textSubject.getTextContent(), HandleManager.getCanonicalForm(item.getHandle()));
+                try {
+                    SoapHelper sh = new SoapHelper();
+                    sh.writeLink(textSubject.getTextContent(), HandleManager.getCanonicalForm(item.getHandle()));
+                } catch (Exception ex) {
+                    log.error("error occured in process of writeLink to webService : " + ex.getMessage());
+                    log.info("error occured in process of writeLink to webService : " + ex.getMessage());
+                }
             } else {
                 if (qulSubject.getTextContent().toLowerCase().equals("doi")) {
                     item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, "uri", "ru", textSubject.getTextContent());

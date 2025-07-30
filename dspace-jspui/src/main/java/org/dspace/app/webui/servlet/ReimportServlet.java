@@ -1,5 +1,17 @@
 package org.dspace.app.webui.servlet;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.log4j.Logger;
 import org.dspace.app.webui.util.SoapHelper;
 import org.dspace.authorize.AuthorizeException;
@@ -13,61 +25,53 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.xpath.*;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Date;
-
 /**
  * Created by root on 1/25/16.
  */
 public class ReimportServlet extends DSpaceServlet {
 
-    /** Logger */
+    /**
+     * Logger
+     */
     private static Logger log = Logger.getLogger(ReimportServlet.class);
 
     protected void doDSGet(Context context, HttpServletRequest request,
-                           HttpServletResponse response) throws ServletException, IOException,
+            HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
 
     }
 
-
     protected void doDSPost(Context context, HttpServletRequest request,
-                           HttpServletResponse response) throws ServletException, IOException,
+            HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
 
         Item ti = Item.find(context, Integer.parseInt(request.getParameter("item_id")));
 
         Metadatum[] specs = ti.getDC("identifier", null, Item.ANY);
         String iden = specs[0].value;
-
-        SoapHelper sh = new SoapHelper();
-
         Document docMeta = null;
-        docMeta = sh.getRecordById(iden);
+        try {
+            SoapHelper sh = new SoapHelper();
+            docMeta = sh.getRecordById(iden);
+        } catch (Exception ex) {
+            log.error("error occured in process of getRecordById to webService : " + ex.getMessage());
+            log.info("error occured in process of getRecordById to webService : " + ex.getMessage());
+        }
 
         XPathFactory xpathFactory = XPathFactory.newInstance();
 
         // Create XPath object
         XPath xpath = xpathFactory.newXPath();
 
-
         //Node nodeValue = nodeTitle.getChildNodes().item(3);
-
-        XPathExpression expr =
-                null;
+        XPathExpression expr
+                = null;
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Subject']");
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList subject = null;
         try {
@@ -77,7 +81,6 @@ public class ReimportServlet extends DSpaceServlet {
         }
         ti.clearMetadata(MetadataSchema.DC_SCHEMA, "subject", Item.ANY, Item.ANY);
         writeMetaDataToItemLowerCaseSubject(ti, "subject", subject);
-
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Creator']");
@@ -99,10 +102,10 @@ public class ReimportServlet extends DSpaceServlet {
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "creator", null, "ru", creatorsString);
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "contributor", Item.ANY, Item.ANY);
             String[] creatorsAr = creatorsString.split(",");
-            for(int i = 0; i<creatorsAr.length; i++){
+            for (int i = 0; i < creatorsAr.length; i++) {
                 ti.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", creatorsAr[i]);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -111,8 +114,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList dates = null;
         try {
@@ -124,7 +125,7 @@ public class ReimportServlet extends DSpaceServlet {
         try {
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", Item.ANY);
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "date", "issued", "ru", dates.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -133,8 +134,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList idents = null;
         try {
@@ -151,8 +150,6 @@ public class ReimportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList nodes = null;
         try {
             nodes = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -163,7 +160,7 @@ public class ReimportServlet extends DSpaceServlet {
         try {
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "title", Item.ANY, Item.ANY);
             writeMetaDataToItemLowerCaseTitle(ti, "title", nodes);
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -173,15 +170,12 @@ public class ReimportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList descrs = null;
         try {
             descrs = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
 
         ti.clearMetadata(MetadataSchema.DC_SCHEMA, "description", Item.ANY, Item.ANY);
         writeMetaDataToItemLowerCaseDescr(ti, "description", descrs);
@@ -192,8 +186,6 @@ public class ReimportServlet extends DSpaceServlet {
             log.error("lang error:", e);
         }
 
-
-
         NodeList langs = null;
         try {
             langs = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -203,15 +195,11 @@ public class ReimportServlet extends DSpaceServlet {
         ti.clearMetadata(MetadataSchema.DC_SCHEMA, "language", Item.ANY, Item.ANY);
         writeMetaDataToItemLowerCaseLang(ti, "language", langs, request);
 
-
-
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Coverage']");
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList cover = null;
         try {
@@ -222,14 +210,11 @@ public class ReimportServlet extends DSpaceServlet {
         ti.clearMetadata(MetadataSchema.DC_SCHEMA, "coverage", Item.ANY, Item.ANY);
         writeMetaDataToItemLowerCase(ti, "coverage", cover);
 
-
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Source']");
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList sources = null;
         try {
@@ -241,7 +226,7 @@ public class ReimportServlet extends DSpaceServlet {
         try {
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "source", Item.ANY, Item.ANY);
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sources.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -250,8 +235,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList type = null;
         try {
@@ -263,7 +246,7 @@ public class ReimportServlet extends DSpaceServlet {
         try {
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "type", Item.ANY, Item.ANY);
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -272,8 +255,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList rughts = null;
         try {
@@ -285,7 +266,7 @@ public class ReimportServlet extends DSpaceServlet {
         try {
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "rights", Item.ANY, Item.ANY);
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rughts.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -294,8 +275,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList publisher = null;
         try {
@@ -307,7 +286,7 @@ public class ReimportServlet extends DSpaceServlet {
         try {
             ti.clearMetadata(MetadataSchema.DC_SCHEMA, "publisher", Item.ANY, Item.ANY);
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.item(0).getTextContent());
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -316,8 +295,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList contributor = null;
         try {
@@ -330,10 +307,10 @@ public class ReimportServlet extends DSpaceServlet {
             String creatorsString = contributor.item(0).getTextContent();
             String[] creatorsAr = creatorsString.split(",");
 
-            for(int i = 0; i<creatorsAr.length; i++){
+            for (int i = 0; i < creatorsAr.length; i++) {
                 ti.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", creatorsAr[i]);
             }
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -342,8 +319,6 @@ public class ReimportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-
 
         NodeList citation = null;
         try {
@@ -360,8 +335,6 @@ public class ReimportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList format = null;
         try {
             format = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -377,8 +350,6 @@ public class ReimportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-
-
         NodeList relation = null;
         try {
             relation = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
@@ -388,20 +359,16 @@ public class ReimportServlet extends DSpaceServlet {
         ti.clearMetadata(MetadataSchema.DC_SCHEMA, "relation", Item.ANY, Item.ANY);
         writeMetaDataToItemLowerCase(ti, "relation", relation);
 
-
-
         ti.update();
         context.commit();
-
-
 
         request.setAttribute("link", HandleManager.getCanonicalForm(ti.getHandle()));
 
         request.getRequestDispatcher("/import/reimport-item.jsp").forward(request, response);
     }
 
-    public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
@@ -412,60 +379,60 @@ public class ReimportServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCaseSubject(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseSubject(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("subject")){
+            if (qulSubject.getTextContent().toLowerCase().equals("subject")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseIdentifier(Item item,  String qualifier, NodeList nodes, HttpServletRequest request){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseIdentifier(Item item, String qualifier, NodeList nodes, HttpServletRequest request) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("identifier")){
+            if (qulSubject.getTextContent().toLowerCase().equals("identifier")) {
                 // request.setAttribute("identifier", textSubject.getTextContent());
                 //item.addMetadata(MetadataSchema.DC_SCHEMA, "subject", "lcc", "ru", textSubject.getTextContent());
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseTitle(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseTitle(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("title")){
+            if (qulSubject.getTextContent().toLowerCase().equals("title")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            }else {
+            } else {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseDescr(Item item,  String qualifier, NodeList nodes){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseDescr(Item item, String qualifier, NodeList nodes) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if(qulSubject.getTextContent().toLowerCase().equals("abstract")){
+            if (qulSubject.getTextContent().toLowerCase().equals("abstract")) {
                 item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, "abstract", "ru", textSubject.getTextContent());
             }
         }
     }
 
-    public void writeMetaDataToItemLowerCaseLang(Item item,  String qualifier, NodeList nodes, HttpServletRequest request){
-        for(int j = 0; j < nodes.getLength(); j++){
+    public void writeMetaDataToItemLowerCaseLang(Item item, String qualifier, NodeList nodes, HttpServletRequest request) {
+        for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);

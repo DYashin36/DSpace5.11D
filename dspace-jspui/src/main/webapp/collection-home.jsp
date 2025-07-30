@@ -329,6 +329,13 @@
                 </form>
 <% } %>
 
+<form method="get" action="/import-item/">
+                    <input type="hidden" name="collection_id" value="<%= collection.getID() %>" />
+                    <input type="hidden" name="community_id" value="<%= community.getID() %>" />
+                    <input class="btn btn-default col-md-12" type="submit" value="Импортировать" />
+                </form>
+                <% } %>
+
 <% if( admin_button ) { %>
                  <form method="post" action="<%=request.getContextPath()%>/tools/itemmap">
                   <input type="hidden" name="cid" value="<%= collection.getID() %>" />

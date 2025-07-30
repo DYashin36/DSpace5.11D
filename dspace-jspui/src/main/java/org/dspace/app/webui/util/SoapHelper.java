@@ -36,7 +36,7 @@ public class SoapHelper {
         URL url = null;
         log.info("SH>>getRecordByCode>>ID:"+id);
         try {
-            url = new URL("http://localhost:8888/soap");
+            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/BiblRecords.1cws");
             log.info("SUCCESSFULL CONNECTING SOAP");
         } catch (MalformedURLException e) {
             log.info("ERROR CONNECTING SOAP");
@@ -164,7 +164,7 @@ public class SoapHelper {
 
 
         try {
-            url = new URL("http://localhost:8888/soap");
+            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/BiblRecords.1cws");
             log.info("SH>>getRecordByName>>SUCCESSFULL CREATING URL");
         } catch (MalformedURLException e) {
             log.info("SH>>getRecordByName>>ERROR occurred when creating an url");
@@ -285,7 +285,7 @@ public class SoapHelper {
         URL url = null;
         log.info("SH>>getRecordById>> id="+id);
         try {
-            url = new URL("http://localhost:8888/soap");
+            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/DspaceIntegration.1cws");
             log.info("SUCCESSFULL CREATING URL");
         } catch (MalformedURLException e) {
             log.info("ERROR CREATING URL");
@@ -411,7 +411,7 @@ public class SoapHelper {
         HttpURLConnection connection = null;
         URL url = null;
         try {
-            url = new URL("http://localhost:8888/soap");
+            url = new URL("https://doc.ssau.ru/ssau_biblioteka/ws/DspaceIntegration.1cws");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
