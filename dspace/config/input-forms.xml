@@ -296,6 +296,17 @@
 
         <field>
           <dc-schema>dc</dc-schema>
+          <dc-element>textpart</dc-element>
+          <dc-qualifier></dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Extracted Text</label>
+          <input-type>textarea</input-type>
+          <hint>Текстовое описание (textpart)</hint>
+          <required>false</required>
+        </field>
+
+        <field>
+          <dc-schema>dc</dc-schema>
           <dc-element>source</dc-element>
           <dc-qualifier></dc-qualifier>
           <repeatable>true</repeatable>
