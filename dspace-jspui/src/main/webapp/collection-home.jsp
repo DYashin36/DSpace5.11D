@@ -327,7 +327,7 @@
                   <input type="hidden" name="action" value="<%= EditCommunitiesServlet.START_EDIT_COLLECTION %>" />
                   <input class="btn btn-default col-md-12" type="submit" value="<fmt:message key="jsp.general.edit.button"/>" />
                 </form>
-<% } %>
+
 
 <form method="get" action="/import-item/">
                     <input type="hidden" name="collection_id" value="<%= collection.getID() %>" />
