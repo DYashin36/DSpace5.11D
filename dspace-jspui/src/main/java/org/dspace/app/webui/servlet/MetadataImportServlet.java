@@ -18,34 +18,43 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.dspace.app.bulkedit.MetadataImportInvalidHeadingException;
+import org.dspace.app.itemexport.ItemExport;
 import org.dspace.app.webui.util.JSPManager;
 import org.dspace.app.webui.util.FileUploadRequest;
 import org.dspace.app.bulkedit.MetadataImport;
 import org.dspace.app.bulkedit.DSpaceCSV;
 import org.dspace.app.bulkedit.BulkEditChange;
 import org.dspace.authorize.AuthorizeException;
+
 import org.dspace.core.*;
+
+import org.dspace.content.Item;
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.ItemService;
 
 /**
  * Servlet to import metadata as CSV (comma separated values)
  *
  * @author Stuart Lewis
  */
-public class MetadataImportServlet extends DSpaceServlet
-{
-    /** Upload limit */
+public class MetadataImportServlet extends DSpaceServlet {
+
+    /**
+     * Upload limit
+     */
     private int limit;
 
-    /** log4j category */
+    /**
+     * log4j category
+     */
     private static Logger log = Logger.getLogger(MetadataImportServlet.class);
 
     /**
      * Initalise the servlet
      */
-    public void init()
-    {
-        // Set the lmimt to the number of items that may be changed in one go, default to 20
-        limit = ConfigurationManager.getIntProperty("bulkedit", "gui-item-limit", 20);
+    public void init() {
+        // Set the lmimt to the number of items that may be changed in one go, default to 20 (upped to 50)
+        limit = ConfigurationManager.getIntProperty("bulkedit", "gui-item-limit", 50);
         log.debug("Setting bulk edit limit to " + limit + " items");
     }
 
@@ -63,102 +72,90 @@ public class MetadataImportServlet extends DSpaceServlet
      */
     protected void doDSPost(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
-            SQLException, AuthorizeException
-    {
+            SQLException, AuthorizeException {
         // First, see if we have a multipart request (uploading a metadata file)
         String contentType = request.getContentType();
-        HttpSession session = request.getSession(true);        
-        if ((contentType != null) && (contentType.indexOf("multipart/form-data") != -1))
-        {
+        HttpSession session = request.getSession(true);
+        if ((contentType != null) && (contentType.indexOf("multipart/form-data") != -1)) {
             // Process the file uploaded
-            try
-            {
+            try {
                 // Get the changes
                 log.info(LogManager.getHeader(context, "metadataimport", "loading file"));
                 List<BulkEditChange> changes = processUpload(context, request);
-                log.debug(LogManager.getHeader(context, "metadataimport", changes.size() + " items with changes identified"));                
+                log.debug(LogManager.getHeader(context, "metadataimport", changes.size() + " items with changes identified"));
 
                 // Were there any changes detected?
-                if (changes.size() != 0)
-                {
+                if (changes.size() != 0) {
                     request.setAttribute("changes", changes);
                     request.setAttribute("changed", false);
 
                     // Is the user allowed to make this many changes?
-                    if (changes.size() <= limit)
-                    {
+                    if (changes.size() <= limit) {
                         request.setAttribute("allow", true);
-                    }
-                    else
-                    {
+                    } else {
                         request.setAttribute("allow", false);
                         session.removeAttribute("csv");
-                        log.info(LogManager.getHeader(context, "metadataimport", "too many changes: " +
-                                                      changes.size() + " (" + limit + " allowed)"));
+                        log.info(LogManager.getHeader(context, "metadataimport", "too many changes: "
+                                + changes.size() + " (" + limit + " allowed)"));
                     }
 
                     JSPManager.showJSP(request, response, "/dspace-admin/metadataimport-showchanges.jsp");
-                }
-                else
-                {
+                } else {
                     request.setAttribute("message", "No changes detected");
                     JSPManager.showJSP(request, response, "/dspace-admin/metadataimport.jsp");
                 }
-            }
-            catch (MetadataImportInvalidHeadingException mihe) {
+            } catch (MetadataImportInvalidHeadingException mihe) {
                 request.setAttribute("message", mihe.getBadHeader());
                 request.setAttribute("badheading", mihe.getType());
-                log.info(LogManager.getHeader(context, "metadataimport", "Error encountered while looking for changes: " + mihe.getMessage()));                
+                log.info(LogManager.getHeader(context, "metadataimport", "Error encountered while looking for changes: " + mihe.getMessage()));
                 JSPManager.showJSP(request, response, "/dspace-admin/metadataimport-error.jsp");
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 request.setAttribute("message", e.getMessage());
-                log.info(LogManager.getHeader(context, "metadataimport", "Error encountered while looking for changes: " + e.getMessage()));                
+                log.info(LogManager.getHeader(context, "metadataimport", "Error encountered while looking for changes: " + e.getMessage()));
                 JSPManager.showJSP(request, response, "/dspace-admin/metadataimport-error.jsp");
             }
-        }
-        else if ("confirm".equals(request.getParameter("type")))
-        {
-            // Get the csv lines from the session
-            DSpaceCSV csv = (DSpaceCSV)session.getAttribute("csv");
-
-            // Make the changes
-            try
-            {
+        } else if ("confirm".equals(request.getParameter("type"))) {
+            DSpaceCSV csv = (DSpaceCSV) session.getAttribute("csv");
+            //Custom save to 1C after import-metadata thing in
+            //Administer->Content
+            try {
                 MetadataImport mImport = new MetadataImport(context, csv);
                 List<BulkEditChange> changes = mImport.runImport(true, false, false, false);
 
-                // Commit the changes
+                int seq = 1;
+                for (BulkEditChange change : changes) {
+                    Item item = change.getItem();
+                    if (item != null) {
+                        try {
+                            //saving every new and every changed item to 1C
+                            ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1С", seq++, false);
+                        } catch (Exception ex) {
+                            log.error("Ошибка экспорта Item ID=" + item.getID(), ex);
+                        }
+                    }
+                }
+
                 context.commit();
                 log.debug(LogManager.getHeader(context, "metadataimport", changes.size() + " items changed"));
 
-                // Blank out the session data
                 session.removeAttribute("csv");
-
                 request.setAttribute("changes", changes);
                 request.setAttribute("changed", true);
                 request.setAttribute("allow", true);
                 JSPManager.showJSP(request, response, "/dspace-admin/metadataimport-showchanges.jsp");
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 request.setAttribute("message", e.getMessage());
                 log.debug(LogManager.getHeader(context, "metadataimport", "Error encountered while making changes: " + e.getMessage()));
                 JSPManager.showJSP(request, response, "/dspace-admin/metadataimport-error.jsp");
             }
-        }
-        else if ("cancel".equals(request.getParameter("type")))
-        {
+        } else if ("cancel".equals(request.getParameter("type"))) {
             // Blank out the session data
             session.removeAttribute("csv");
 
             request.setAttribute("message", "Changes cancelled. No items have been modified.");
             log.debug(LogManager.getHeader(context, "metadataimport", "Changes cancelled"));
             JSPManager.showJSP(request, response, "/dspace-admin/metadataimport.jsp");
-        }
-        else
-        {
+        } else {
             // Show the upload screen
             JSPManager.showJSP(request, response, "/dspace-admin/metadataimport.jsp");
         }
@@ -166,13 +163,10 @@ public class MetadataImportServlet extends DSpaceServlet
 
     /**
      * GET request is only ever used to show the upload form
-     * 
-     * @param context
-     *            a DSpace Context object
-     * @param request
-     *            the HTTP request
-     * @param response
-     *            the HTTP response
+     *
+     * @param context a DSpace Context object
+     * @param request the HTTP request
+     * @param response the HTTP response
      *
      * @throws ServletException
      * @throws IOException
@@ -181,8 +175,7 @@ public class MetadataImportServlet extends DSpaceServlet
      */
     protected void doDSGet(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
-            SQLException, AuthorizeException
-    {
+            SQLException, AuthorizeException {
         // Show the upload screen
         JSPManager.showJSP(request, response, "/dspace-admin/metadataimport.jsp");
     }
@@ -196,8 +189,7 @@ public class MetadataImportServlet extends DSpaceServlet
      * @throws Exception Thrown if an error occurs
      */
     private List<BulkEditChange> processUpload(Context context,
-                                                    HttpServletRequest request) throws Exception
-    {
+            HttpServletRequest request) throws Exception {
         // Wrap multipart request to get the submission info
         FileUploadRequest wrapper = new FileUploadRequest(request);
         File f = wrapper.getFile("file");
@@ -212,8 +204,7 @@ public class MetadataImportServlet extends DSpaceServlet
         session.setAttribute("csv", csv);
 
         // Remove temp file
-        if (!f.delete())
-        {
+        if (!f.delete()) {
             log.error("Unable to delete upload file");
         }
 
