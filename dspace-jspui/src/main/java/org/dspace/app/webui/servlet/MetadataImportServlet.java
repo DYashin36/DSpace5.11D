@@ -72,10 +72,13 @@ public class MetadataImportServlet extends DSpaceServlet {
     protected void doDSPost(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
+        log.info("MetadataImportServlet>>doDSPost>>enter");
         // First, see if we have a multipart request (uploading a metadata file)
         String contentType = request.getContentType();
         HttpSession session = request.getSession(true);
+        log.info("MetadataImportServlet>>doDSPost>>contentType:"+(contentType!=null)+"; content.indexOf(...):"+(contentType.indexOf("multipart/form-data") != -1));
         if ((contentType != null) && (contentType.indexOf("multipart/form-data") != -1)) {
+            log.info("MetadataImportServlet>>doDSPost>>Process the file upload");
             // Process the file uploaded
             try {
                 // Get the changes
@@ -85,6 +88,7 @@ public class MetadataImportServlet extends DSpaceServlet {
 
                 // Were there any changes detected?
                 if (changes.size() != 0) {
+                    log.info("MetadataImportServlet>>doDSPost>>changes!=0");
                     request.setAttribute("changes", changes);
                     request.setAttribute("changed", false);
 
@@ -114,19 +118,22 @@ public class MetadataImportServlet extends DSpaceServlet {
                 JSPManager.showJSP(request, response, "/dspace-admin/metadataimport-error.jsp");
             }
         } else if ("confirm".equals(request.getParameter("type"))) {
+            log.info("MetadataImportServlet>>doDSPost>>else if branch>>export is here");
             DSpaceCSV csv = (DSpaceCSV) session.getAttribute("csv");
             //Custom save to 1C after import-metadata thing in
             //Administer->Content
             try {
                 MetadataImport mImport = new MetadataImport(context, csv);
                 List<BulkEditChange> changes = mImport.runImport(true, false, false, false);
-
+                log.info("MetadataImportServlet>>doDSPost>>else if branch>>export is here");
                 int seq = 1;
                 for (BulkEditChange change : changes) {
+                    log.info("MetadataImportServlet>>doDSPost>>else if branch>>change #"+seq);
                     Item item = change.getItem();
                     if (item != null) {
                         try {
                             //saving every new and every changed item to 1C
+                            log.info("MetadataImportServlet>>doDSPost>>Import Item to folder");
                             ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1С", seq++, false);
                         } catch (Exception ex) {
                             log.error("Ошибка экспорта Item ID=" + item.getID(), ex);
