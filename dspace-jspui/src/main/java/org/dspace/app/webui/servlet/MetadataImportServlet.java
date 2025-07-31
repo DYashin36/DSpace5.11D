@@ -7,7 +7,8 @@
  */
 package org.dspace.app.webui.servlet;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -17,20 +18,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.dspace.app.bulkedit.BulkEditChange;
+import org.dspace.app.bulkedit.DSpaceCSV;
+import org.dspace.app.bulkedit.MetadataImport;
 import org.dspace.app.bulkedit.MetadataImportInvalidHeadingException;
 import org.dspace.app.itemexport.ItemExport;
-import org.dspace.app.webui.util.JSPManager;
 import org.dspace.app.webui.util.FileUploadRequest;
-import org.dspace.app.bulkedit.MetadataImport;
-import org.dspace.app.bulkedit.DSpaceCSV;
-import org.dspace.app.bulkedit.BulkEditChange;
+import org.dspace.app.webui.util.JSPManager;
 import org.dspace.authorize.AuthorizeException;
-
-import org.dspace.core.*;
-
 import org.dspace.content.Item;
-import org.dspace.content.factory.ContentServiceFactory;
-import org.dspace.content.service.ItemService;
+import org.dspace.core.ConfigurationManager;
+import org.dspace.core.Context;
+import org.dspace.core.LogManager;
 
 /**
  * Servlet to import metadata as CSV (comma separated values)
