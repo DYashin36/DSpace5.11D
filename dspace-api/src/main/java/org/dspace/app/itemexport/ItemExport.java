@@ -315,11 +315,12 @@ public class ItemExport {
     public static void exportItemToFolder(Context c, Item myItem, String destDirName,
             int seqStart, boolean migrate) throws Exception {
         File destDir = new File(destDirName);
+        log.info("destDirName is "+destDirName);
 
         destDir.setExecutable(true, false);
         destDir.setWritable(true, false);
         destDir.setReadable(true, false);
-
+        log.info("destDir existing is "+destDir.exists());
         if (destDir.exists()) {
             //create a subdirectory
             File itemDir = new File(destDir + "/");

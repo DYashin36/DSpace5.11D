@@ -133,8 +133,9 @@ public class MetadataImportServlet extends DSpaceServlet {
                     if (item != null) {
                         try {
                             //saving every new and every changed item to 1C
-                            log.info("MetadataImportServlet>>doDSPost>>Import Item to folder");
-                            ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1С", seq++, false);
+                            log.info("MetadataImportServlet>>doDSPost>>Export Item to folder");
+                            ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                            ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
                         } catch (Exception ex) {
                             log.error("Ошибка экспорта Item ID=" + item.getID(), ex);
                         }
