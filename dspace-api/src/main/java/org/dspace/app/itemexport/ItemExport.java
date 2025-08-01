@@ -315,12 +315,12 @@ public class ItemExport {
     public static void exportItemToFolder(Context c, Item myItem, String destDirName,
             int seqStart, boolean migrate) throws Exception {
         File destDir = new File(destDirName);
-        log.info("destDirName is "+destDirName);
+        log.info("destDirName is " + destDirName);
 
         destDir.setExecutable(true, false);
         destDir.setWritable(true, false);
         destDir.setReadable(true, false);
-        log.info("destDir existing is "+destDir.exists());
+        log.info("destDir existing is " + destDir.exists());
         if (destDir.exists()) {
             //create a subdirectory
             File itemDir = new File(destDir + "/");
@@ -811,37 +811,39 @@ public class ItemExport {
         File outFile2 = new File(destDir, filename2);
 
         if (outFile2.createNewFile()) {
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outFile2));
+            try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outFile2))) {
 
-            // Заголовок
-            out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes("UTF-8"));
-            out.write("<ExchangeXML xmlns=\"http://www.imc-dspace-new.org\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n".getBytes("UTF-8"));
-            out.write("<Records>\n".getBytes("UTF-8"));
+                // Заголовок (без экранирования)
+                out.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                        + "<ExchangeXML xmlns=\"http://www.imc-dspace-new.org\" "
+                        + "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
+                        + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n").getBytes(StandardCharsets.UTF_8));
+                out.write("<Records>\n".getBytes(StandardCharsets.UTF_8));
 
-            // Порядок тегов
-            writeElements(out, i, schema, "contributor", false);
-            writeElements(out, i, schema, "date", true);
-            writeElements(out, i, schema, "identifier", false);
-            writeElements(out, i, schema, "description", false);
-            writeElements(out, i, schema, "format", false);
-            writeElements(out, i, schema, "language", true);
-            writeElements(out, i, schema, "publisher", true);
-            writeElements(out, i, schema, "relation", false);
-            writeElements(out, i, schema, "rights", true);
-            writeElements(out, i, schema, "subject", false);
-            writeElements(out, i, schema, "title", false);
-            writeElements(out, i, schema, "type", true);
-            writeElements(out, i, schema, "thesis", false);
-            writeElements(out, i, schema, "source", false);
+                // Порядок тегов
+                writeElements(out, i, schema, "contributor", false);
+                writeElements(out, i, schema, "date", true);
+                writeElements(out, i, schema, "identifier", false);
+                writeElements(out, i, schema, "description", false);
+                writeElements(out, i, schema, "format", false);
+                writeElements(out, i, schema, "language", true);
+                writeElements(out, i, schema, "publisher", true);
+                writeElements(out, i, schema, "relation", false);
+                writeElements(out, i, schema, "rights", true);
+                writeElements(out, i, schema, "subject", false);
+                writeElements(out, i, schema, "title", false);
+                writeElements(out, i, schema, "type", true);
+                writeElements(out, i, schema, "thesis", false);
+                writeElements(out, i, schema, "source", false);
 
-            // Добавляем Handle как <Link>
-            String handle = HandleManager.getCanonicalForm(i.getHandle());
-            out.write(("<Link>" + handle + "</Link>\n").getBytes(StandardCharsets.UTF_8));
+                // Добавляем Handle как <Link>
+                String handle = HandleManager.getCanonicalForm(i.getHandle());
+                out.write(("<Link>" + safeXml(handle) + "</Link>\n").getBytes(StandardCharsets.UTF_8));
 
-            // Закрывающие теги
-            out.write("</Records>\n".getBytes("UTF-8"));
-            out.write("</ExchangeXML>\n".getBytes("UTF-8"));
-            out.close();
+                // Закрывающие теги
+                out.write("</Records>\n".getBytes(StandardCharsets.UTF_8));
+                out.write("</ExchangeXML>\n".getBytes(StandardCharsets.UTF_8));
+            }
         } else {
             throw new Exception("Cannot create " + filename2 + " in " + destDir);
         }
@@ -854,8 +856,7 @@ public class ItemExport {
     private static void writeElements(BufferedOutputStream out, Item i, String schema, String element, boolean simple) throws IOException {
         Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
         for (Metadatum dcv : values) {
-            String qualifier = (dcv.qualifier == null) ? "" : dcv.qualifier;
-            // Вместо Utils.addEntities:
+            String qualifier = (dcv.qualifier == null) ? "" : safeXml(dcv.qualifier);
             String value = (dcv.value == null) ? "" : safeXml(dcv.value);
             String block;
             if (simple) {
@@ -873,16 +874,15 @@ public class ItemExport {
         }
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
-
+    
     private static String safeXml(String value) {
         if (value == null) {
             return "";
         }
-        return value.replace("&", "&amp;")
+        return value
+                .replace("&", "&amp;")
                 .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&apos;");
+                .replace(">", "&gt;");
     }
 
     private static void writeMetadataMass(Context c, String schema, ArrayList<Item> items,
