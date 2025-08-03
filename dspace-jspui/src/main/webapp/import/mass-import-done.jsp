@@ -46,11 +46,12 @@ ArrayList<String> updatedLinks = (ArrayList<String>) request.getAttribute("updat
 <dspace:layout navbar="admin" style="submission" titlekey="jsp.register.edit-profile.title" nocache="true">
     <b>Данные загружены в коллекцию!</b><br>
     <br>
-    <a href="<%=request.getContextPath() + link%>">Перейти в коллекцию</a><br>
+    <a href="<%=link%>">Перейти в коллекцию</a><br>
     <br>
     <% if(updatedLinks.size() > 0){ %>
         Ранее загруженные ресурсы были обновлены:<br>
       <% for(String links : updatedLinks){ %>
-            <a href="<%=request.getContextPath() + links%>"><%=links%></a> <br>
+            <a href="<%=links%>"><%=links%></a> <br>
     <% } } %>
+
 </dspace:layout>
