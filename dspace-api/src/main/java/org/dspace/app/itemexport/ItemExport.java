@@ -821,24 +821,24 @@ public class ItemExport {
                 out.write("<Records>\n".getBytes(StandardCharsets.UTF_8));
 
                 // Порядок тегов
-                writeElements(out, i, schema, "contributor", false);
-                writeElements(out, i, schema, "date", true);
-                writeElements(out, i, schema, "identifier", false);
-                writeElements(out, i, schema, "description", false);
-                writeElements(out, i, schema, "format", false);
-                writeElements(out, i, schema, "language", true);
-                writeElements(out, i, schema, "publisher", true);
-                writeElements(out, i, schema, "relation", false);
-                writeElements(out, i, schema, "rights", true);
-                writeElements(out, i, schema, "subject", false);
-                writeElements(out, i, schema, "title", false);
-                writeElements(out, i, schema, "type", true);
-                writeElements(out, i, schema, "thesis", false);
-                writeElements(out, i, schema, "source", false);
+                writeElements(out, i, schema, "contributor");
+                writeElements(out, i, schema, "date");
+                writeElements(out, i, schema, "identifier");
+                writeElements(out, i, schema, "description");
+                writeElements(out, i, schema, "format");
+                writeElements(out, i, schema, "language");
+                writeElements(out, i, schema, "publisher");
+                writeElements(out, i, schema, "relation");
+                writeElements(out, i, schema, "rights");
+                writeElements(out, i, schema, "subject");
+                writeElements(out, i, schema, "title");
+                writeElements(out, i, schema, "type");
+                writeElements(out, i, schema, "thesis");
+                writeElements(out, i, schema, "source");
 
                 // Добавляем Handle как <Link>
                 String handle = HandleManager.getCanonicalForm(i.getHandle());
-                out.write(("<Link>" + safeXml(handle) + "</Link>\n").getBytes(StandardCharsets.UTF_8));
+                out.write(("<Link><Qualifier></Qualifier><Value>" + safeXml(handle) + "</Value></Link>\n").getBytes(StandardCharsets.UTF_8));
 
                 // Закрывающие теги
                 out.write("</Records>\n".getBytes(StandardCharsets.UTF_8));
@@ -853,20 +853,18 @@ public class ItemExport {
      * element — элемент метаданных, simple — писать ли простую форму без
      * <Qualifier>/<Value>.
      */
-    private static void writeElements(BufferedOutputStream out, Item i, String schema, String element, boolean simple) throws IOException {
-        Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
-        for (Metadatum dcv : values) {
-            String qualifier = (dcv.qualifier == null) ? "" : safeXml(dcv.qualifier);
-            String value = (dcv.value == null) ? "" : safeXml(dcv.value);
-            String block;
-            if (simple) {
-                block = "<" + capitalize(element) + ">" + value + "</" + capitalize(element) + ">\n";
-            } else {
-                block = "<" + capitalize(element) + "><Qualifier>" + qualifier + "</Qualifier><Value>" + value + "</Value></" + capitalize(element) + ">\n";
-            }
-            out.write(block.getBytes(StandardCharsets.UTF_8));
-        }
+    private static void writeElements(BufferedOutputStream out, Item i, String schema, String element) throws IOException {
+    Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
+    for (Metadatum dcv : values) {
+        String qualifier = (dcv.qualifier == null) ? "" : safeXml(dcv.qualifier);
+        String value = (dcv.value == null) ? "" : safeXml(dcv.value);
+        String block = "<" + capitalize(element) + ">"
+                + "<Qualifier>" + qualifier + "</Qualifier>"
+                + "<Value>" + value + "</Value>"
+                + "</" + capitalize(element) + ">\n";
+        out.write(block.getBytes(StandardCharsets.UTF_8));
     }
+}
 
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) {
