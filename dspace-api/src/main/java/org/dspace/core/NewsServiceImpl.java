@@ -23,6 +23,7 @@ public class NewsServiceImpl implements NewsService {
 		if (acceptableFilenames != null) {
 			return acceptableFilenames.contains(newsName);
 		}
+		if(newsName.contains("news-side")||newsName.contains("news-top")) return true;
 		return false;
 	}
 
