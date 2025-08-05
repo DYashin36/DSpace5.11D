@@ -34,6 +34,8 @@ public class NewsManager
     /** Not instantiable. */
     private NewsManager() {}
 
+
+    
     /**
      * Reads news from a text file.
      *
@@ -42,10 +44,10 @@ public class NewsManager
      */
     public static String readNewsFile(String newsFile)
     {
-    	NewsService newsService = new DSpace().getSingletonService(NewsService.class);
-    	if (!newsService.validate(newsFile)) {
-    		throw new IllegalArgumentException("The file "+ newsFile + " is not a valid news file");
-    	}
+    	// NewsService newsService = new DSpace().getSingletonService(NewsService.class);
+    	// if (!newsService.validate(newsFile)) {
+    	// 	throw new IllegalArgumentException("The file "+ newsFile + " is not a valid news file");
+    	// }
         String fileName = getNewsFilePath();
 
         fileName += newsFile;
@@ -88,10 +90,10 @@ public class NewsManager
      */
     public static String writeNewsFile(String newsFile, String news)
     {
-    	NewsService newsService = new DSpace().getSingletonService(NewsService.class);
-    	if (!newsService.validate(newsFile)) {
-    		throw new IllegalArgumentException("The file "+ newsFile + " is not a valid news file");
-    	}
+    	// NewsService newsService = new DSpace().getSingletonService(NewsService.class);
+    	// if (!newsService.validate(newsFile)) {
+    	// 	throw new IllegalArgumentException("The file "+ newsFile + " is not a valid news file");
+    	// }
         String fileName = getNewsFilePath();
 
         fileName += newsFile;
