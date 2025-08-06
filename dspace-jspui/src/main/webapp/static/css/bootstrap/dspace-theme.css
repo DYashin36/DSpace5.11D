@@ -5,104 +5,181 @@
  *
  * http://www.dspace.org/license/
  */
-.banner img {background-color: #FFFFFF;padding:15px;margin:20px;}
-.brand {padding-top: 30px;}
-.brand h4 {color: #999999}
-ol.breadcrumb li {color: white; font-style: italic;}
-ol.breadcrumb li a {color: white; font-weight: bold; font-style: normal;}
-body.undernavigation {overflow-x: hidden; padding-top: 65px;}
-#content {padding-bottom:60px;}
-#designedby {padding: 5px;}
-#footer_feedback {padding-top: 12px;}
-input[type="file"] {display: block;height: auto;}
-div.panel-primary div.panel-heading a {color: white;}
-/* This magic gets the 16x16 icon to show up.. setting height/width didn't
-   do it, but adding padding actually made it show up. */
+.banner img {
+    background-color: #FFFFFF;
+    padding: 15px;
+    margin: 20px;
+}
+
+.brand {
+    padding-top: 30px;
+}
+
+.brand h4 {
+    color: #2780E3; /* был #999999 */
+}
+
+ol.breadcrumb li {
+    color: white;
+    font-style: italic;
+}
+
+ol.breadcrumb li a {
+    color: #248FED; /* яркий голубой */
+    font-weight: bold;
+    font-style: normal;
+}
+
+body.undernavigation {
+    overflow-x: hidden;
+    padding-top: 65px;
+}
+
+#content {
+    padding-bottom: 60px;
+}
+
+#designedby {
+    padding: 5px;
+}
+
+#footer_feedback {
+    padding-top: 12px;
+}
+
+input[type="file"] {
+    display: block;
+    height: auto;
+}
+
+div.panel-primary div.panel-heading a {
+    color: white;
+    background-color: #0D47A1; /* тёмно-синий */
+}
+
+/* Иконки confidence */
 img.ds-authority-confidence,
-span.ds-authority-confidence
-{ width: 16px; height: 16px; margin: 5px; background-repeat: no-repeat;
-  padding: 0px 2px; vertical-align: bottom; color: transparent;}
+span.ds-authority-confidence {
+    width: 16px;
+    height: 16px;
+    margin: 5px;
+    background-repeat: no-repeat;
+    padding: 0px 2px;
+    vertical-align: bottom;
+    color: transparent;
+}
+
 img.ds-authority-confidence.cf-unset,
-span.ds-authority-confidence.cf-unset
-  { background-image: url(../../../image/authority/bug.png);}
+span.ds-authority-confidence.cf-unset {
+    background-image: url(../../../image/authority/bug.png);
+}
+
 img.ds-authority-confidence.cf-novalue,
-span.ds-authority-confidence.cf-novalue
-  { background-image: url(../../../image/confidence/0-unauthored.gif);}
+span.ds-authority-confidence.cf-novalue {
+    background-image: url(../../../image/confidence/0-unauthored.gif);
+}
+
 img.ds-authority-confidence.cf-rejected,
 img.ds-authority-confidence.cf-failed,
 span.ds-authority-confidence.cf-rejected,
-span.ds-authority-confidence.cf-failed
-  { background-image: url(../../../image/confidence/2-errortriangle.gif); }
+span.ds-authority-confidence.cf-failed {
+    background-image: url(../../../image/confidence/2-errortriangle.gif);
+}
+
 img.ds-authority-confidence.cf-notfound,
-span.ds-authority-confidence.cf-notfound
-  { background-image: url(../../../image/confidence/3-thumb1.gif); }
+span.ds-authority-confidence.cf-notfound {
+    background-image: url(../../../image/confidence/3-thumb1.gif);
+}
+
 img.ds-authority-confidence.cf-ambiguous,
-span.ds-authority-confidence.cf-ambiguous
-  { background-image: url(../../../image/confidence/4-question.gif); }
+span.ds-authority-confidence.cf-ambiguous {
+    background-image: url(../../../image/confidence/4-question.gif);
+}
+
 img.ds-authority-confidence.cf-uncertain,
-span.ds-authority-confidence.cf-uncertain
-  { background-image: url(../../../image/confidence/5-pinion.gif); }
+span.ds-authority-confidence.cf-uncertain {
+    background-image: url(../../../image/confidence/5-pinion.gif);
+}
+
 img.ds-authority-confidence.cf-accepted,
-span.ds-authority-confidence.cf-accepted
-  { background-image: url(../../../image/confidence/6-greencheck.gif); }
+span.ds-authority-confidence.cf-accepted {
+    background-image: url(../../../image/confidence/6-greencheck.gif);
+}
 
-/* hide authority-value inputs in forms */
-input.ds-authority-value { display:none; }
+/* скрытие authority-value */
+input.ds-authority-value {
+    display: none;
+}
 
-/** XXX Change to this to get the authority value to show up for debugging:
- input.ds-authority-value { display:inline; }
-**/
+/* кнопка блокировки */
+input.ds-authority-lock {
+    vertical-align: bottom;
+    height: 24px;
+    width: 24px;
+    margin-right: 8px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
 
-/* for edit-item-form lock button */
-input.ds-authority-lock
-  { vertical-align: bottom; height: 24px; width: 24px; margin-right: 8px;
-    background-repeat: no-repeat; background-color: transparent; }
-input.ds-authority-lock.is-locked
-  { background-image: url(../../../image/lock24.png); }
-input.ds-authority-lock.is-unlocked
-  { background-image: url(../../../image/unlock24.png); }
+input.ds-authority-lock.is-locked {
+    background-image: url(../../../image/lock24.png);
+}
 
-/* field required in submission */
-.label-required:after { content:" *"; }
-.browse_range { text-align: center; }
-.prev-next-links { text-align: center; }
+input.ds-authority-lock.is-unlocked {
+    background-image: url(../../../image/unlock24.png);
+}
 
+/* обязательные поля */
+.label-required:after {
+    content: " *";
+    color: #FF3D00; /* красный маркер */
+}
+
+.browse_range {
+    text-align: center;
+}
+
+.prev-next-links {
+    text-align: center;
+}
+
+/* тег-клауд */
 div.tagcloud {
-	width:100%;
-	text-align:center
+    width: 100%;
+    text-align: center;
 }
 
-div.tagcloud .tagcloud_1{
-	color: rgb(217, 108, 39); 
-	font-weight: normal; 
-	margin-right: 5px;
+div.tagcloud .tagcloud_1 {
+    color: #FF3D00; /* заменён оранжевый */
+    font-weight: normal;
+    margin-right: 5px;
 }
 
-div.tagcloud .tagcloud_2{
-	color: rgb(66, 66, 66); 
-	font-weight: normal; 
-	margin-right: 5px;
+div.tagcloud .tagcloud_2 {
+    color: #0D47A1; /* заменён тёмно-серый */
+    font-weight: normal;
+    margin-right: 5px;
 }
 
-div.tagcloud .tagcloud_3{
-	color: rgb(129, 129, 131); 
-	font-weight: normal; 
-	margin-right: 5px;
+div.tagcloud .tagcloud_3 {
+    color: #248FED; /* светло-голубой */
+    font-weight: normal;
+    margin-right: 5px;
 }
 
 div.batchimport-info {
-	color: gray;
+    color: #0D47A1;
 }
 
-div.batchimport-info  a {
-	color:#47a447; 
-	font-weight: bold;
+div.batchimport-info a {
+    color: #248FED; /* заменён зелёный */
+    font-weight: bold;
 }
 
 span.batchimport-error-tab {
-	padding-left:10px;
+    padding-left: 10px;
 }
 
 span.batchimport-error-caused {
-	font-weight:bold;
+    font-weight: bold;
 }

@@ -149,17 +149,7 @@
           <required></required>
         </field>
 
-        <field>
-          <dc-schema>dc</dc-schema>
-          <dc-element>identifier</dc-element>
-          <dc-qualifier>identifier</dc-qualifier>
-          <!-- An input-type of qualdrop_value MUST be marked as repeatable -->
-          <repeatable>true</repeatable>
-          <label>Обязательнй идентификатор</label>
-          <input-type>onebox</input-type>
-          <hint>Универсальный идентификатор</hint>
-          <required></required>
-        </field>
+        
 
         <field>
           <dc-schema>dc</dc-schema>
@@ -171,7 +161,7 @@
           <input-type value-pairs-name="common_identifiers">qualdrop_value</input-type>
           <hint>Если ресурс имеет какие-либо идентификаторы, ассоциированные с ним, пожалуйста,
             выберите тип идентификатора и введите его значение</hint>
-          <required></required>
+          <required>true</required>
         </field>
 
         <field>
@@ -183,7 +173,7 @@
           <input-type value-pairs-name="common_types">dropdown</input-type>
           <hint>Выберите тип контента ресурса. Для выбора более одного значения в списке требуется
             зажать "CTRL" или "Shift" клавишу.</hint>
-          <required></required>
+          <required>true</required>
         </field>
 
         <field>
@@ -281,13 +271,14 @@
           <label>Описание</label>
           <input-type>textarea</input-type>
           <hint>Введите другие описания или комментарии </hint>
-          <required></required>
+          <required>true</required>
         </field>
 
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>firstpagelastpage</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Диапазон страниц</label>
           <input-type>onebox</input-type>
           <hint>Например: 5-10</hint>
@@ -297,16 +288,20 @@
           <dc-schema>dc</dc-schema>
           <dc-element>format</dc-element>
           <dc-qualifier>extent</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Объем (страницы, размер)</label>
           <input-type>onebox</input-type>
+          <hint></hint>
         </field>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>format</dc-element>
           <dc-qualifier>mimetype</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>MIME-тип</label>
           <input-type>onebox</input-type>
           <hint>MIME-тип</hint>
+          <required>true</required>
         </field>
 
 
@@ -318,7 +313,7 @@
           <label>Источник публикации</label>
           <input-type>onebox</input-type>
           <hint>Укажите источник (например: журнал, выпуск, страницы)</hint>
-          <required>false</required>
+          <required>true</required>
         </field>
 
         <field>
