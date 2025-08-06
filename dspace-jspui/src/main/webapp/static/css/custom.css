@@ -1,37 +1,54 @@
-
-.navbar-default {
+/* ===== Навбар (DSpace 5.11 использует navbar-inverse) ===== */
+.navbar-inverse {
     background-color: #0D47A1 !important;
     border-color: #0D47A1 !important;
 }
 
-.navbar-default .navbar-brand,
-.navbar-default .navbar-nav > li > a {
+.navbar-inverse .navbar-brand,
+.navbar-inverse .navbar-nav > li > a,
+.navbar-inverse .navbar-text,
+.navbar-inverse .navbar-link {
     color: white !important;
 }
 
-/* ===== Зеленая кнопка (Отправить новый ресурс → теперь #2780E3) ===== */
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+    color: #D3EBFD !important;
+}
+
+/* ===== Основные кнопки ===== */
+.btn-primary,
+.btn-default,
 .btn-success {
     background-color: #2780E3 !important;
     border-color: #2780E3 !important;
+    color: white !important;
 }
 
+.btn-primary:hover,
+.btn-default:hover,
 .btn-success:hover,
+.btn-primary:focus,
+.btn-default:focus,
 .btn-success:focus,
+.btn-primary:active,
+.btn-default:active,
 .btn-success:active {
     background-color: #0D47A1 !important;
     border-color: #0D47A1 !important;
 }
 
-/* ===== Красная кнопка (Удалить → #FF5B27) ===== */
+/* ===== Красная кнопка (Удалить) ===== */
 .btn-danger {
     background-color: #FF5B27 !important;
     border-color: #FF5B27 !important;
+    color: white !important;
 }
 
 .btn-danger:hover,
 .btn-danger:focus,
 .btn-danger:active {
-    background-color: #FF3D00 !important;  /* чуть темнее при наведении */
+    background-color: #FF3D00 !important;
     border-color: #FF3D00 !important;
 }
 
@@ -54,8 +71,10 @@
 
 /* ===== Ссылки ===== */
 a {
-    color: #2780E3;
+    color: #2780E3 !important;
 }
-a:hover, a:focus {
-    color: #0D47A1;
+
+a:hover,
+a:focus {
+    color: #0D47A1 !important;
 }
