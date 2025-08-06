@@ -1,0 +1,61 @@
+v/* ===== Верхняя панель ===== */
+.navbar-default {
+    background-color: #0D47A1 !important;
+    border-color: #0D47A1 !important;
+}
+
+.navbar-default .navbar-brand,
+.navbar-default .navbar-nav > li > a {
+    color: white !important;
+}
+
+/* ===== Зеленая кнопка (Отправить новый ресурс → теперь #2780E3) ===== */
+.btn-success {
+    background-color: #2780E3 !important;
+    border-color: #2780E3 !important;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+    background-color: #0D47A1 !important;
+    border-color: #0D47A1 !important;
+}
+
+/* ===== Красная кнопка (Удалить → #FF5B27) ===== */
+.btn-danger {
+    background-color: #FF5B27 !important;
+    border-color: #FF5B27 !important;
+}
+
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+    background-color: #FF3D00 !important;  /* чуть темнее при наведении */
+    border-color: #FF3D00 !important;
+}
+
+/* ===== "Мой архив" и др. подобные блоки ===== */
+.panel-primary {
+    border-color: #673AB7 !important;
+}
+
+.panel-primary > .panel-heading {
+    background-color: #673AB7 !important;
+    border-color: #673AB7 !important;
+    color: white !important;
+}
+
+/* ===== Цвет фона таблиц, списков и блоков ===== */
+.table > thead > tr > th,
+.table > tbody > tr > td {
+    background-color: #D3EBFD !important;
+}
+
+/* ===== Ссылки ===== */
+a {
+    color: #2780E3;
+}
+a:hover, a:focus {
+    color: #0D47A1;
+}
