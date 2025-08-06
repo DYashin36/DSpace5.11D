@@ -573,9 +573,21 @@ public class ImportMassServlet extends DSpaceServlet {
     public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes) {
         for (int j = 0; j < nodes.getLength(); j++) {
             Element subjectNode = (Element) nodes.item(j);
-            Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
-            Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
+
+            Node valueNode = subjectNode.getElementsByTagName("Value").item(0);
+            Node qualifierNode = subjectNode.getElementsByTagName("Qualifier").item(0);
+
+            if (valueNode == null || qualifierNode == null) {
+                continue;
+            }
+
+            String valueText = valueNode.getTextContent();
+            String qualifierText = qualifierNode.getTextContent().toLowerCase();
+
+            // FOR FIELDS LIKE ds.title.title => dc.title в самом 
+            String finalQualifier = qualifierText.equals(qualifier.toLowerCase()) ? null : qualifierText;
+
+            item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, finalQualifier, "ru", valueText);
         }
     }
 

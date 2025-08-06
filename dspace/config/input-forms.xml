@@ -152,6 +152,18 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
+          <dc-qualifier>identifier</dc-qualifier>
+          <!-- An input-type of qualdrop_value MUST be marked as repeatable -->
+          <repeatable>true</repeatable>
+          <label>Обязательнй идентификатор</label>
+          <input-type>onebox</input-type>
+          <hint>Универсальный идентификатор</hint>
+          <required></required>
+        </field>
+
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>identifier</dc-element>
           <dc-qualifier></dc-qualifier>
           <!-- An input-type of qualdrop_value MUST be marked as repeatable -->
           <repeatable>true</repeatable>
@@ -275,23 +287,26 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
-          <dc-qualifier>firstpage</dc-qualifier>
-          <repeatable>false</repeatable>
-          <label>Первая страница</label>
+          <dc-qualifier>firstpagelastpage</dc-qualifier>
+          <label>Диапазон страниц</label>
           <input-type>onebox</input-type>
-          <hint>Введите номер первой страницы</hint>
-          <required></required>
+          <hint>Например: 5-10</hint>
         </field>
 
         <field>
           <dc-schema>dc</dc-schema>
-          <dc-element>description</dc-element>
-          <dc-qualifier>lastpage</dc-qualifier>
-          <repeatable>false</repeatable>
-          <label>Последняя страница</label>
+          <dc-element>format</dc-element>
+          <dc-qualifier>extent</dc-qualifier>
+          <label>Объем (страницы, размер)</label>
           <input-type>onebox</input-type>
-          <hint>Введите номер последней страницы</hint>
-          <required></required>
+        </field>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>format</dc-element>
+          <dc-qualifier>mimetype</dc-qualifier>
+          <label>MIME-тип</label>
+          <input-type>onebox</input-type>
+          <hint>MIME-тип</hint>
         </field>
 
 
@@ -306,6 +321,26 @@
           <required>false</required>
         </field>
 
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>rights</dc-element>
+          <dc-qualifier>rights</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Права</label>
+          <input-type>onebox</input-type>
+          <hint>Права</hint>
+          <required></required>
+        </field>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>rights</dc-element>
+          <dc-qualifier>license</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Лицензия</label>
+          <input-type>onebox</input-type>
+          <hint>Лицензия</hint>
+          <required></required>
+        </field>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>rights</dc-element>

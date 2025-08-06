@@ -850,21 +850,26 @@ public class ItemExport {
     }
 
     /**
-     * element — элемент метаданных, simple — писать ли простую форму без
      * <Qualifier>/<Value>.
      */
     private static void writeElements(BufferedOutputStream out, Item i, String schema, String element) throws IOException {
-    Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
-    for (Metadatum dcv : values) {
-        String qualifier = (dcv.qualifier == null) ? "" : safeXml(dcv.qualifier);
-        String value = (dcv.value == null) ? "" : safeXml(dcv.value);
-        String block = "<" + capitalize(element) + ">"
-                + "<Qualifier>" + qualifier + "</Qualifier>"
-                + "<Value>" + value + "</Value>"
-                + "</" + capitalize(element) + ">\n";
-        out.write(block.getBytes(StandardCharsets.UTF_8));
+        Metadatum[] values = i.getMetadata(schema, element, Item.ANY, Item.ANY);
+        for (Metadatum dcv : values) {
+            // If qualifier is empty - we use a name of tag
+            String qualifier = (dcv.qualifier == null || dcv.qualifier.trim().isEmpty())
+                    ? capitalize(element)
+                    : safeXml(dcv.qualifier);
+
+            String value = (dcv.value == null) ? "" : safeXml(dcv.value);
+
+            String block = "<" + capitalize(element) + ">"
+                    + "<Qualifier>" + qualifier + "</Qualifier>"
+                    + "<Value>" + value + "</Value>"
+                    + "</" + capitalize(element) + ">\n";
+
+            out.write(block.getBytes(StandardCharsets.UTF_8));
+        }
     }
-}
 
     private static String capitalize(String s) {
         if (s == null || s.isEmpty()) {
@@ -872,7 +877,7 @@ public class ItemExport {
         }
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
-    
+
     private static String safeXml(String value) {
         if (value == null) {
             return "";

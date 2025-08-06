@@ -103,6 +103,14 @@ org.dspace.content.MetadataValue instead.
   <dc-type>
     <schema>dc</schema>
     <element>contributor</element>
+    <qualifier>contributor</qualifier>
+    <scope_note>A person, organization, or service responsible for the content of the resource.
+      Catch-all for unspecified contributors.</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>contributor</element>
     <qualifier>advisor</qualifier>
     <scope_note>Use primarily for thesis advisor.</scope_note>
   </dc-type>
@@ -170,11 +178,23 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Do not use; only for harvested metadata.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>creator</element>
+    <qualifier>creator</qualifier>
+    <scope_note>Do not use; only for harvested metadata.</scope_note>
+  </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>date</element>
     <!-- unqualified -->
+    <scope_note>Use qualified form if possible.</scope_note>
+  </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>date</element>
+    <qualifier>date</qualifier>
     <scope_note>Use qualified form if possible.</scope_note>
   </dc-type>
 
@@ -231,6 +251,12 @@ org.dspace.content.MetadataValue instead.
     <scope_note>Catch-all for unambiguous identifiers not defined by
       qualified form; use identifier.other for a known identifier common
       to a local collection instead of unqualified form.</scope_note>
+  </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>identifier</element>
+    <qualifier>identifier</qualifier>
+    <scope_note>This is an universal id</scope_note>
   </dc-type>
 
   <!-- Used by system: do not remove -->
@@ -318,6 +344,12 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Catch-all for any description not defined by qualifiers.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>description</element>
+    <qualifier>description</qualifier>
+    <scope_note>Catch-all for any description not defined by qualifiers.</scope_note>
+  </dc-type>
 
   <!-- Used by system: do not remove -->
   <dc-type>
@@ -395,6 +427,12 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Catch-all for any format information not defined by qualifiers.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>format</element>
+    <qualifier>format</qualifier>
+    <scope_note>Catch-all for any format information not defined by qualifiers.</scope_note>
+  </dc-type>
 
   <!-- Used by system: do not remove -->
   <dc-type>
@@ -426,6 +464,13 @@ org.dspace.content.MetadataValue instead.
     <scope_note>Catch-all for non-ISO forms of the language of the
       item, accommodating harvested values.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>language</element>
+    <qualifier>language</qualifier>
+    <scope_note>Catch-all for non-ISO forms of the language of the
+      item, accommodating harvested values.</scope_note>
+  </dc-type>
 
   <!-- Used by system: do not remove -->
   <dc-type>
@@ -443,11 +488,23 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Entity responsible for publication, distribution, or imprint.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>publisher</element>
+    <qualifier>publisher</qualifier>
+    <scope_note>Entity responsible for publication, distribution, or imprint.</scope_note>
+  </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>relation</element>
     <!-- unqualified -->
+    <scope_note>Catch-all for references to other related items.</scope_note>
+  </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>relation</element>
+    <qualifier>relation</qualifier>
     <scope_note>Catch-all for references to other related items.</scope_note>
   </dc-type>
 
@@ -543,6 +600,12 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Terms governing use and reproduction.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>rights</element>
+    <qualifier>rights</qualifier>
+    <scope_note>Terms governing use and reproduction.</scope_note>
+  </dc-type>
 
   <dc-type>
     <schema>dc</schema>
@@ -555,6 +618,12 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>source</element>
     <!-- unqualified -->
+    <scope_note>Do not use; only for harvested metadata.</scope_note>
+  </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>source</element>
+     <qualifier>source</qualifier>
     <scope_note>Do not use; only for harvested metadata.</scope_note>
   </dc-type>
 
@@ -584,6 +653,12 @@ org.dspace.content.MetadataValue instead.
     <schema>dc</schema>
     <element>subject</element>
     <!-- unqualified -->
+    <scope_note>Uncontrolled index term.</scope_note>
+  </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>subject</element>
+    <qualifier>subject</qualifier>
     <scope_note>Uncontrolled index term.</scope_note>
   </dc-type>
 
@@ -659,6 +734,12 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Title statement/title proper.</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>title</element>
+    <qualifier>title</qualifier>
+    <scope_note>Title statement/title proper.</scope_note>
+  </dc-type>
 
   <!-- Used by system: do not remove -->
   <dc-type>
@@ -676,12 +757,23 @@ org.dspace.content.MetadataValue instead.
     <!-- unqualified -->
     <scope_note>Nature or genre of content.</scope_note>
   </dc-type>
-
+  <dc-type>
+    <schema>dc</schema>
+    <element>type</element>
+    <qualifier>type</qualifier>
+    <scope_note>Nature or genre of content.</scope_note>
+  </dc-type>
 
   <dc-type>
     <schema>dc</schema>
     <element>provenance</element>
     <!-- unqualified -->
+    <scope_note></scope_note>
+  </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>provenance</element>
+    <qualifier>provenance</qualifier>
     <scope_note></scope_note>
   </dc-type>
 
@@ -705,5 +797,15 @@ org.dspace.content.MetadataValue instead.
     <qualifier>speciality</qualifier>
     <scope_note>Thesis speciality</scope_note>
   </dc-type>
+
+  <!-- final correction for dspace-1C format-->
+   <!-- ВАЖНО: ВСЕ НЕ-КВАЛИФАЙЕР-НЫЕ ЭЛЕМЕНТЫ СНАБЖЕНЫ АНАЛОГИЧНЫМИ КВАЛИФАЕР-НЫМИ ДЛЯ СОВМЕСТИМОСТИ-->
+  <dc-type>
+    <schema>dc</schema>
+    <element>description</element>
+    <qualifier>firstpagelastpage</qualifier>
+    <scope_note>Диапазон страниц ресурса</scope_note>
+  </dc-type>
+
 
 </dspace-dc-types>
