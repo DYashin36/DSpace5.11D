@@ -225,7 +225,7 @@
 }
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
-    color: #D3EBFD !important;
+    color: white !important;
 }
 
 .navbar-static-top,
@@ -440,12 +440,3 @@
     color: black !important; /* чтобы текст оставался читаемым */
 }
 
-/* ===== Ссылки ===== */
-a {
-    color: #2780E3 !important;
-}
-
-a:hover,
-a:focus {
-    color: #0D47A1 !important;
-}

@@ -63,18 +63,3 @@
     color: white !important;
 }
 
-/* ===== Цвет фона таблиц, списков и блоков ===== */
-.table > thead > tr > th,
-.table > tbody > tr > td {
-    background-color: #D3EBFD !important;
-}
-
-/* ===== Ссылки ===== */
-a {
-    color: #2780E3 !important;
-}
-
-a:hover,
-a:focus {
-    color: #0D47A1 !important;
-}
