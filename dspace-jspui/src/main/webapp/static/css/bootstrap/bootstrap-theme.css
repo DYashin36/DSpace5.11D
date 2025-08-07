@@ -225,7 +225,7 @@
 }
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
-    color: white !important;
+    color: #D3EBFD !important;
 }
 
 .navbar-static-top,
