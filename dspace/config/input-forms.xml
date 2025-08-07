@@ -161,7 +161,7 @@
           <input-type value-pairs-name="common_identifiers">qualdrop_value</input-type>
           <hint>Если ресурс имеет какие-либо идентификаторы, ассоциированные с ним, пожалуйста,
             выберите тип идентификатора и введите его значение</hint>
-          <required>true</required>
+          <required>false</required>
         </field>
 
         <field>
