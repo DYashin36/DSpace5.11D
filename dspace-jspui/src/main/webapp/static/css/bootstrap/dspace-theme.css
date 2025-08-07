@@ -73,7 +73,7 @@ div.tagcloud {
 }
 
 div.tagcloud .tagcloud_1{
-	color: rgb(217, 108, 39); 
+	color: #FF5B27; 
 	font-weight: normal; 
 	margin-right: 5px;
 }
@@ -95,7 +95,7 @@ div.batchimport-info {
 }
 
 div.batchimport-info  a {
-	color:#47a447; 
+	color:#2780E3; 
 	font-weight: bold;
 }
 
