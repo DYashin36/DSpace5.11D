@@ -838,7 +838,7 @@ public class ItemExport {
 
                 // Добавляем Handle как <Link>
                 String handle = HandleManager.getCanonicalForm(i.getHandle());
-                out.write(("<Link><Qualifier></Qualifier><Value>" + safeXml(handle) + "</Value></Link>\n").getBytes(StandardCharsets.UTF_8));
+                out.write(("<Link><Qualifier>Link</Qualifier><Value>" + safeXml(handle) + "</Value></Link>\n").getBytes(StandardCharsets.UTF_8));
 
                 // Закрывающие теги
                 out.write("</Records>\n".getBytes(StandardCharsets.UTF_8));
@@ -863,7 +863,7 @@ public class ItemExport {
             String value = (dcv.value == null) ? "" : safeXml(dcv.value);
 
             String block = "<" + capitalize(element) + ">"
-                    + "<Qualifier>" + qualifier + "</Qualifier>"
+                    + "<Qualifier>" + capitalize(qualifier) + "</Qualifier>"
                     + "<Value>" + value + "</Value>"
                     + "</" + capitalize(element) + ">\n";
 
