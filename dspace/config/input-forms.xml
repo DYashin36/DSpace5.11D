@@ -277,22 +277,22 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
-          <dc-qualifier>firstpagelastpage</dc-qualifier>
+          <dc-qualifier>firstpage</dc-qualifier>
           <repeatable>false</repeatable>
-          <label>Диапазон страниц</label>
-          <input-type>onebox</input-type>
-          <hint>Например: 5-10</hint>
-        </field>
-
-        <field>
-          <dc-schema>dc</dc-schema>
-          <dc-element>format</dc-element>
-          <dc-qualifier>extent</dc-qualifier>
-          <repeatable>false</repeatable>
-          <label>Объем (страницы, размер)</label>
+          <label>Первая страница</label>
           <input-type>onebox</input-type>
           <hint></hint>
         </field>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>description</dc-element>
+          <dc-qualifier>lastpage</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Последняя страница</label>
+          <input-type>onebox</input-type>
+          <hint></hint>
+        </field>
+
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>format</dc-element>

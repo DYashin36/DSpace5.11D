@@ -800,12 +800,6 @@ org.dspace.content.MetadataValue instead.
 
   <!-- final correction for dspace-1C format-->
    <!-- ВАЖНО: ВСЕ НЕ-КВАЛИФАЙЕР-НЫЕ ЭЛЕМЕНТЫ СНАБЖЕНЫ АНАЛОГИЧНЫМИ КВАЛИФАЕР-НЫМИ ДЛЯ СОВМЕСТИМОСТИ-->
-  <dc-type>
-    <schema>dc</schema>
-    <element>description</element>
-    <qualifier>firstpagelastpage</qualifier>
-    <scope_note>Диапазон страниц ресурса</scope_note>
-  </dc-type>
 
 
 </dspace-dc-types>
