@@ -60,6 +60,7 @@
 .btn-warning.active {
     background-color: #EAAA00;
     border-color: #d89a00;
+    color: white;
 }
 
  .btn-danger {
@@ -273,6 +274,7 @@
 
 .panel-warning>.panel-heading {
     background-image: linear-gradient(to bottom, #eaaa00 0, #eaaa00 100%);
+    color:white;
 }
 
 .panel-danger>.panel-heading {

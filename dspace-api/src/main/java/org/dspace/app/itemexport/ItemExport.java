@@ -88,6 +88,43 @@ public class ItemExport {
 
     private static final int SUBDIR_LIMIT = 0;
 
+    private static final Set<String> ALLOWED_FIELDS = new HashSet<>(Arrays.asList(
+            "contributor:advisor",
+            "contributor:author",
+            "contributor:editor",
+            "contributor:illustrator",
+            "contributor:other",
+            "contributor:department",
+            "contributor:subdepartment",
+            "date:issued",
+            "description:abstract",
+            "description:firstpage",
+            "description:lastpage",
+            "format:mimetype",
+            "identifier:citation",
+            "identifier:isbn",
+            "identifier:uri",
+            "identifier:identifier",
+            "identifier:issn",
+            "identifier:orcid",
+            "identifier:nps",
+            "language:iso",
+            "publisher:publisher",
+            "relation:ispartof",
+            "rights:rights",
+            "rights:uri",
+            "rights:license",
+            "source:source",
+            "subject:subject",
+            "subject:rugasnti",
+            "subject:subject",
+            "subject:udc",
+            "thesis:level",
+            "thesis:speciality",
+            "title:title",
+            "title:alternative"
+    ));
+
     /**
      * used for export download
      */
@@ -859,6 +896,9 @@ public class ItemExport {
             String qualifier = (dcv.qualifier == null || dcv.qualifier.trim().isEmpty())
                     ? capitalize(element)
                     : safeXml(dcv.qualifier);
+            if (!ALLOWED_FIELDS.contains(element + ":" + qualifier)) {
+                continue;
+            }
 
             String value = (dcv.value == null) ? "" : safeXml(dcv.value);
 
