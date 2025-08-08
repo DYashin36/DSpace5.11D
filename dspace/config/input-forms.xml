@@ -313,7 +313,7 @@
           <label>Источник публикации</label>
           <input-type>onebox</input-type>
           <hint>Укажите источник (например: журнал, выпуск, страницы)</hint>
-          <required>true</required>
+          <required></required>
         </field>
 
         <field>
