@@ -897,9 +897,11 @@ public class ItemExport {
             String qualifier = (dcv.qualifier == null || dcv.qualifier.trim().isEmpty())
                     ? capitalize(element)
                     : safeXml(dcv.qualifier);
-            if (!ALLOWED_FIELDS.contains(element + ":" + qualifier)) {
-                continue;
-            }
+            String key = (element + ":" + qualifier).toLowerCase();
+        if (!ALLOWED_FIELDS.contains(key)) {
+            log.info("ItemExport>>"+element+":"+qualifier);
+            continue;
+        }
 
             String value = (dcv.value == null) ? "" : safeXml(dcv.value);
 
@@ -916,7 +918,8 @@ public class ItemExport {
         if (s == null || s.isEmpty()) {
             return s;
         }
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
+        return s.toLowerCase();
+        //return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
     private static String safeXml(String value) {
