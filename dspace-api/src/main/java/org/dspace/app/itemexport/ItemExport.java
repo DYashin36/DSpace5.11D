@@ -876,7 +876,7 @@ public class ItemExport {
 
                 // Добавляем Handle как <Link>
                 String handle = HandleManager.getCanonicalForm(i.getHandle());
-                out.write(("<Link><Qualifier>Link</Qualifier><Value>" + safeXml(handle) + "</Value></Link>\n").getBytes(StandardCharsets.UTF_8));
+                out.write(("<link><Qualifier>Link</Qualifier><Value>" + safeXml(handle) + "</Value></link>\n").getBytes(StandardCharsets.UTF_8));
 
                 // Закрывающие теги
                 out.write("</Records>\n".getBytes(StandardCharsets.UTF_8));
