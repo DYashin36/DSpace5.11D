@@ -167,6 +167,7 @@
 .alert-danger {
     background-image: linear-gradient(to bottom, #E4002B 0, #E4002B 100%);
     border-color: #E4002B;
+    color: white;
 }
 
 .progress {
@@ -213,7 +214,7 @@
 .progress-bar-danger {
     background-image: linear-gradient(to bottom, #E4002B 0, #c90026 100%);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffE4002B', endColorstr='#ffc90026', GradientType=0);
-
+    color:white;
 }
 
 .list-group {
@@ -279,6 +280,7 @@
 
 .panel-danger>.panel-heading {
     background-image: linear-gradient(to bottom, #E4002B 0, #E4002B 100%);
+    color:white;
 }
 
 .well {
