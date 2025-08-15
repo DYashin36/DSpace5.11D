@@ -153,6 +153,7 @@ public class CompleteStep extends AbstractProcessingStep {
         log.info(LogManager.getHeader(context, "submission_complete",
                 "call try block"));
         try {
+            String dspaceDir = ConfigurationManager.getProperty("dspace.dir");
             if (HandleManager.getCanonicalForm(item.getHandle()) != null) {
                 log.info("COMPLETE STEP CANONICAL ITEM IS: " + HandleManager.getCanonicalForm(item.getHandle()));
                 boolean forbiden = false;
@@ -171,8 +172,8 @@ public class CompleteStep extends AbstractProcessingStep {
                 }
                 if (!forbiden) {
                     log.info("COMPLETE STEP EXPORT");
-                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
-                    ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
+                    //ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                    ItemExport.exportItemToFolder(context, item, dspaceDir+"/1C", 0, false);
                 }
             }
         } catch (Exception e) {

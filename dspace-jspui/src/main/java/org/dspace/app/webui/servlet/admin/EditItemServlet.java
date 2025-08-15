@@ -916,10 +916,11 @@ public class EditItemServlet extends DSpaceServlet
         {
             if (itIs == false) {
                 try {
-                    log.info("This is a part where we export changed item in 1C");
-                    ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
+                    String dspaceDir = ConfigurationManager.getProperty("dspace.dir");
+                    //log.info("This is a part where we export changed item in 1C");
+                    //ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
                     log.info("This is a part where we export changed item in opt 1C");
-                    ItemExport.exportItemToFolder(context, item, "/home/vboxuser/opt/dspace/1C", 0, false);
+                    ItemExport.exportItemToFolder(context, item, dspaceDir+"/1C", 0, false);
                 } catch (Exception e) {
                     log.info("GOD DAMMIT: " + e.toString());
                 }
