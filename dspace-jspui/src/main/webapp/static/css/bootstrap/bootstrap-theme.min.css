@@ -54,6 +54,7 @@
 .btn-warning {
    background-image: linear-gradient(to bottom, rgb(234, 170, 0) 0, #EAAA00 100%);
     border-color: #d89a00;
+    color: white;
 }
 
 .btn-warning:active,
@@ -162,6 +163,7 @@
 .alert-warning {
     background-image: linear-gradient(to bottom, #eaaa00 0, #eaaa00 100%);
     border-color: #EAAA00;
+    color: white;
 }
 
 .alert-danger {
@@ -209,6 +211,7 @@
 .progress-bar-warning {
     background-image: linear-gradient(to bottom, #EAAA00 0, #cc9700 100%);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffEAAA00', endColorstr='#ffcc9700', GradientType=0);
+    color:white;
 }
 
 .progress-bar-danger {
