@@ -341,6 +341,12 @@ org.dspace.content.MetadataValue instead.
     <qualifier>lbc</qualifier>
     <scope_note>LBC</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>identifier</element>
+    <qualifier>udc</qualifier>
+    <scope_note>UDC</scope_note>
+  </dc-type>
 
 
   <!-- Used by system: do not remove -->
