@@ -1581,6 +1581,7 @@ public class Item extends DSpaceObject
     public void adjustItemPolicies(Collection c) throws SQLException, AuthorizeException {
         // read collection's default READ policies
         log.info("TRY GET A POLICIES : type - "+ c.getType() +"; id - "+c.getID() +"; "+Constants.DEFAULT_ITEM_READ);
+        String querData = "type - "+ c.getType() +"; id - "+c.getID() +"; "+Constants.DEFAULT_ITEM_READ;
         List<ResourcePolicy> defaultCollectionPolicies = AuthorizeManager.getPoliciesActionFilter(ourContext, c, Constants.DEFAULT_ITEM_READ);
 
         // MUST have default policies
@@ -1588,7 +1589,7 @@ public class Item extends DSpaceObject
         {
             throw new SQLException("Collection " + c.getID()
                     + " (" + c.getHandle() + ")"
-                    + " has no default item READ policies");
+                    + " has no default item READ policies; "+querData);
         }
 
         // if come from InstallItem: remove all submission/workflow policies
