@@ -347,6 +347,12 @@ org.dspace.content.MetadataValue instead.
     <qualifier>udc</qualifier>
     <scope_note>UDC</scope_note>
   </dc-type>
+  <dc-type>
+    <schema>dc</schema>
+    <element>identifier</element>
+    <qualifier>scsti</qualifier>
+    <scope_note>SCSTI</scope_note>
+  </dc-type>
 
 
   <!-- Used by system: do not remove -->
@@ -812,6 +818,69 @@ org.dspace.content.MetadataValue instead.
 
   <!-- final correction for dspace-1C format-->
    <!-- ВАЖНО: ВСЕ НЕ-КВАЛИФАЙЕР-НЫЕ ЭЛЕМЕНТЫ СНАБЖЕНЫ АНАЛОГИЧНЫМИ КВАЛИФАЕР-НЫМИ ДЛЯ СОВМЕСТИМОСТИ-->
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>citation</element>
+    <qualifier>epage</qualifier>
+    <scope_note>EPAGE</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>citation</element>
+    <qualifier>issue</qualifier>
+    <scope_note>Issue</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>citation</element>
+    <qualifier>spage</qualifier>
+    <scope_note>Spage</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>citation</element>
+    <qualifier>volume</qualifier>
+    <scope_note>Volume</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>eperson</element>
+    <qualifier>firstname</qualifier>
+    <scope_note>First name</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>eperson</element>
+    <qualifier>language</qualifier>
+    <scope_note>Lang</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>eperson</element>
+    <qualifier>lastname</qualifier>
+    <scope_note>Last name</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dc</schema>
+    <element>eperson</element>
+    <qualifier>phone</qualifier>
+    <scope_note>Phone</scope_note>
+  </dc-type>
+
+  <dc-type>
+    <schema>dcterms</schema>
+    <element>title</element>
+    <!-- unqualified -->
+    <scope_note></scope_note>
+  </dc-type>
 
 
 </dspace-dc-types>
