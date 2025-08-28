@@ -44,7 +44,7 @@
     Locale sessionLocale = UIUtil.getSessionLocale(request);
     Config.set(request.getSession(), Config.FMT_LOCALE, sessionLocale);
     String topNews = NewsManager.readNewsFile(LocaleSupport.getLocalizedMessage(pageContext, "news-top.html"));
-    String sideNews = NewsManager.readNewsFile(LocaleSupport.getLocalizedMessage(pageContext, "news-side.html"));
+    //String sideNews = NewsManager.readNewsFile(LocaleSupport.getLocalizedMessage(pageContext, "news-side.html"));
 
     boolean feedEnabled = ConfigurationManager.getBooleanProperty("webui.feed.enable");
     String feedData = "NONE";
@@ -154,7 +154,7 @@ if (submissions != null && submissions.count() > 0)
 }
 %>
 <div class="col-md-4">
-    <%= sideNews %>
+    <%=  %>
 </div>
 </div>
 <div class="container row">
