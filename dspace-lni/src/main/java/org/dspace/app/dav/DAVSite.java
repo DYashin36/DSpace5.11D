@@ -145,7 +145,7 @@ class DAVSite extends DAVResource
         }
         else if (elementsEqualIsh(property, news_topProperty))
         {
-            value = NewsManager.readNewsFile("news-top.html");
+            //value = NewsManager.readNewsFile("news-top.html");
         }
         else if (elementsEqualIsh(property, news_sideProperty))
         {
@@ -188,7 +188,7 @@ class DAVSite extends DAVResource
                 throw new DAVStatusException(HttpServletResponse.SC_FORBIDDEN,
                         "Not authorized to modify this property.");
             }
-            NewsManager.writeNewsFile("news-top.html", newValue);
+            //NewsManager.writeNewsFile("news-top.html", newValue);
         }
         else if (elementsEqualIsh(prop, news_sideProperty))
         {
