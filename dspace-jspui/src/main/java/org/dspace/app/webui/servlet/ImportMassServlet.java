@@ -68,7 +68,7 @@ public class ImportMassServlet extends DSpaceServlet {
     protected void doDSGet(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
-        log.info("ImportMassServlet>>doDSGet>>Here is import-mass DSget enter");
+        //log.info("ImportMassServlet>>doDSGet>>Here is import-mass DSget enter");
         Collection[] col = Collection.findAllWithoutWorkflow(context);
 
         TableRowIterator tri = DatabaseManager.queryTable(context, "folders", "SELECT * FROM folders");
@@ -80,17 +80,17 @@ public class ImportMassServlet extends DSpaceServlet {
 
         response.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
-        log.info("ImportMassServlet>>doDSGet>>Redirect to import/import-mass-home");
+        //log.info("ImportMassServlet>>doDSGet>>Redirect to import/import-mass-home");
         request.getRequestDispatcher("/import/import-mass-home.jsp").forward(request, response);
     }
 
     protected void doDSPost(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
-        log.info("ImportMassServlet>>doDSPost>>Here is import-mass DSPost enter");
+        //log.info("ImportMassServlet>>doDSPost>>Here is import-mass DSPost enter");
         String folder = request.getParameter("folder_path");
         String collectionId = request.getParameter("collection_id");
-        log.info("ImportMassServlet>>doDSPost>>received params: folder=" + folder + "; collectionId=" + collectionId);
+        //log.info("ImportMassServlet>>doDSPost>>received params: folder=" + folder + "; collectionId=" + collectionId);
 
         File dir = null;
         File[] directoryListing = null;
@@ -99,29 +99,29 @@ public class ImportMassServlet extends DSpaceServlet {
             dir = new File(folder);
             directoryListing = dir.listFiles();
         } catch (Exception e) {
-            log.info("ImportMassServlet>>doDSPost>>error occurred when dir/file receiving");
+            //log.info("ImportMassServlet>>doDSPost>>error occurred when dir/file receiving");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
 
         if (directoryListing == null) {
-            log.info("ImportMassServlet>>doDSPost>>null directoryListing");
+            //log.info("ImportMassServlet>>doDSPost>>null directoryListing");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
-        log.info("ImportMassServlet>>doDSPost>>start to find a collection");
+        //log.info("ImportMassServlet>>doDSPost>>start to find a collection");
         Collection col = Collection.find(context, Integer.parseInt(collectionId));
         Integer lel = directoryListing.length;
-        log.info("ImportMassServlet>>doDSPost>>length of directoryListing is " + lel);
+        //log.info("ImportMassServlet>>doDSPost>>length of directoryListing is " + lel);
         log.debug("WTFDIRECTO " + lel.toString());
         int howManyWasSubmited = 0;
 
         ArrayList<String> links = new ArrayList<String>();
 
         if (directoryListing.length <= 0) {
-            log.info("ImportMassServlet>>doDSPost>>length of directoryListing is below 0");
+            //log.info("ImportMassServlet>>doDSPost>>length of directoryListing is below 0");
             request.getRequestDispatcher("/import/import-no-file.jsp").forward(request, response);
         }
         if (directoryListing != null) {
-            log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to " + directoryListing.length);
+            //log.info("ImportMassServlet>>doDSPost>>directoryListing is not null and eq to " + directoryListing.length);
             for (int j = 0; j < directoryListing.length; j++) {
                 String absolutePath = directoryListing[j].getAbsolutePath();
                 String filepath = absolutePath.
@@ -151,7 +151,7 @@ public class ImportMassServlet extends DSpaceServlet {
                         Document doc = db.parse(is);
                         NodeList records = doc.getElementsByTagName("Records");
                         if (records.getLength() > 0) {
-                            log.info("ImportMassServlet>>doDSPost>>length of records is " + records.getLength());
+                            //log.info("ImportMassServlet>>doDSPost>>length of records is " + records.getLength());
                         }
                         howManyWasSubmited++;
                         log.info("howManyWasSubmitted is " + howManyWasSubmited);
@@ -209,7 +209,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList titleNode = record.getElementsByTagName("Title");
-                                    log.info("doDSPost>>received Title is " + titleNode);
+                                    //log.info("doDSPost>>received Title is " + titleNode);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseTitle(itemItem, "title", titleNode);
                                     titleNode = null;
@@ -219,7 +219,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList identifier = record.getElementsByTagName("Identifier");
-                                    log.info("doDSPost>>received Identifier is " + identifier);
+                                    //log.info("doDSPost>>received Identifier is " + identifier);
                                     //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
                                     writeMetaDataToItemLowerCaseIdentifier(itemItem, "identifier", identifier);
                                     identifier = null;
@@ -229,9 +229,9 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node author = record.getElementsByTagName("Creator").item(0);
-                                    log.info("doDSPost>>received Creator is " + author);
+                                    //log.info("doDSPost>>received Creator is " + author);
                                     String authorName = author.getTextContent();
-                                    log.info("doDSPost>>received authorName is " + authorName);
+                                    //log.info("doDSPost>>received authorName is " + authorName);
                                     if (!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
                                         String contribs[] = authorName.split(",");
                                         for (int l = 0; l < contribs.length; l++) {
@@ -246,9 +246,9 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node contrib = record.getElementsByTagName("Contributor").item(0);
-                                    log.info("doDSPost>>received Contributor is " + contrib);
+                                    //log.info("doDSPost>>received Contributor is " + contrib);
                                     String authorName = contrib.getTextContent();
-                                    log.info("doDSPost>>received authorName is " + authorName);
+                                    //log.info("doDSPost>>received authorName is " + authorName);
                                     if (!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
                                         String contribs[] = authorName.split(",");
                                         for (int l = 0; l < contribs.length; l++) {
@@ -263,7 +263,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList subjects = record.getElementsByTagName("Subject");
-                                    log.info("doDSPost>>received Subject is " + subjects);
+                                    //log.info("doDSPost>>received Subject is " + subjects);
                                     writeMetaDataToItemLowerCaseSubject(itemItem, "subject", subjects);
                                     subjects = null;
                                 } catch (Exception e) {
@@ -272,7 +272,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList descrs = record.getElementsByTagName("Description");
-                                    log.info("doDSPost>>received Description is " + descrs);
+                                    //log.info("doDSPost>>received Description is " + descrs);
                                     writeMetaDataToItemLowerCase(itemItem, "description", descrs);
                                     descrs = null;
                                 } catch (Exception e) {
@@ -281,7 +281,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList dateNodes = record.getElementsByTagName("Date");
-                                    log.info("doDSPost>>received Date count: " + dateNodes.getLength());
+                                    //log.info("doDSPost>>received Date count: " + dateNodes.getLength());
                                     for (int d = 0; d < dateNodes.getLength(); d++) {
                                         Element dateElement = (Element) dateNodes.item(d);
                                         Node valueNode = dateElement.getElementsByTagName("Value").item(0);
@@ -302,7 +302,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node publisher = record.getElementsByTagName("Publisher").item(0);
-                                    log.info("doDSPost>>received Publisher is " + publisher);
+                                    //log.info("doDSPost>>received Publisher is " + publisher);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.getTextContent());
                                     publisher = null;
                                 } catch (Exception e) {
@@ -311,7 +311,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node type = record.getElementsByTagName("Type").item(0);
-                                    log.info("doDSPost>>received Type is " + type);
+                                    //log.info("doDSPost>>received Type is " + type);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.getTextContent());
                                     type = null;
                                 } catch (Exception e) {
@@ -320,7 +320,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node source = record.getElementsByTagName("Source").item(0);
-                                    log.info("doDSPost>>received Source is " + source);
+                                    //log.info("doDSPost>>received Source is " + source);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", source.getTextContent());
                                     source = null;
                                 } catch (Exception e) {
@@ -329,7 +329,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node rights = record.getElementsByTagName("Rights").item(0);
-                                    log.info("doDSPost>>received Rights is " + rights);
+                                    //log.info("doDSPost>>received Rights is " + rights);
                                     itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rights.getTextContent());
                                     rights = null;
                                 } catch (Exception e) {
@@ -338,7 +338,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList formats = record.getElementsByTagName("Format");
-                                    log.info("doDSPost>>received Format is " + formats);
+                                    //log.info("doDSPost>>received Format is " + formats);
                                     writeMetaDataToItemLowerCase(itemItem, "format", formats);
                                     formats = null;
                                 } catch (Exception e) {
@@ -347,7 +347,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList languages = record.getElementsByTagName("Language");
-                                    log.info("doDSPost>>received Language is " + languages);
+                                    //log.info("doDSPost>>received Language is " + languages);
                                     writeMetaDataToItemLowerCase(itemItem, "language", languages);
                                     languages = null;
                                 } catch (Exception e) {
@@ -356,7 +356,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     NodeList relations = record.getElementsByTagName("Relation");
-                                    log.info("doDSPost>>received Relation is " + relations);
+                                    //log.info("doDSPost>>received Relation is " + relations);
                                     writeMetaDataToItemLowerCase(itemItem, "relation", relations);
                                     relations = null;
                                 } catch (Exception e) {
@@ -366,7 +366,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 try {
 
                                     NodeList coverages = record.getElementsByTagName("Coverage");
-                                    log.info("doDSPost>>received Coverage is " + coverages);
+                                    //log.info("doDSPost>>received Coverage is " + coverages);
                                     writeMetaDataToItemLowerCase(itemItem, "coverage", coverages);
                                     coverages = null;
                                 } catch (Exception e) {
@@ -376,7 +376,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 try {
 
                                     NodeList citation = record.getElementsByTagName("Citation");
-                                    log.info("doDSPost>>received Citation is " + citation);
+                                    //log.info("doDSPost>>received Citation is " + citation);
                                     writeMetaDataToItemLowerCase(itemItem, "citation", citation);
                                     citation = null;
                                 } catch (Exception e) {
@@ -392,7 +392,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node link = record.getElementsByTagName("Link").item(0);
-                                    log.info("doDSPost>>received Link is " + link);
+                                    //log.info("doDSPost>>received Link is " + link);
                                     if (link != null) {
                                         String firstUrl = "http://lib.ssau.ru/download?fname=";
 
@@ -552,10 +552,10 @@ public class ImportMassServlet extends DSpaceServlet {
         }
         context.complete();
         if (howManyWasSubmited > 0) {
-            log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-done");
+            //log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-done");
             request.getRequestDispatcher("/import/mass-import-done.jsp").forward(request, response);
         } else {
-            log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-wrong");
+            //log.info("ImportMassServlet>>doDSPost>>redirect to mass-import-wrong");
             request.getRequestDispatcher("/import/mass-import-wrong.jsp").forward(request, response);
         }
 
@@ -634,8 +634,8 @@ public class ImportMassServlet extends DSpaceServlet {
             Element subjectNode = (Element) nodes.item(j);
             Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
             Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:" + textSubject.getTextContent());
-            log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:" + qulSubject.getTextContent());
+            //log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:" + textSubject.getTextContent());
+            //log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:" + qulSubject.getTextContent());
             String normalizedQualifier = null;
             if (qulSubject != null && qulSubject.getTextContent() != null) {
                 String q = qulSubject.getTextContent().trim().toLowerCase();

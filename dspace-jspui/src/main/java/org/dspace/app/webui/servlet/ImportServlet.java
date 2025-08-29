@@ -72,7 +72,7 @@ public class ImportServlet extends DSpaceServlet {
         request.setAttribute("community_id", community_id);
         String collection_id = request.getParameter("collection_id");
         request.setAttribute("collection_id", collection_id);
-        log.info("ImportServlet>>>doDSGET>>comm:" + community_id + "; coll" + collection_id);
+        //log.info("ImportServlet>>>doDSGET>>comm:" + community_id + "; coll" + collection_id);
         boolean forbiden = false;
         if (collection_id != null) {
             try (PreparedStatement pstm = context.getDBConnection().prepareStatement("SELECT count(*) FROM collection WHERE collection_id = ? AND( workflow_step_1 IS NOT NULL OR workflow_step_2 IS NOT NULL OR workflow_step_3 IS NOT NULL)")) {
@@ -80,7 +80,7 @@ public class ImportServlet extends DSpaceServlet {
                 try (ResultSet resultSet = pstm.executeQuery();) {
                     resultSet.next();
                     int cnt = resultSet.getInt(1);
-                    log.info("ImportServlet>>>doDSGET>>result of sql query is cnt:" + cnt);
+                    //log.info("ImportServlet>>>doDSGET>>result of sql query is cnt:" + cnt);
                     if (cnt > 0) {
                         forbiden = true;
                     }
@@ -100,13 +100,13 @@ public class ImportServlet extends DSpaceServlet {
     protected void doDSPost(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
-        log.info("ImportServlet>>>doDSPOST>>enter");
+        //log.info("ImportServlet>>>doDSPOST>>enter");
         SoapHelper sh = new SoapHelper();
 
         String collectionId = request.getParameter("collection_id");
 
         Collection col = Collection.find(context, Integer.parseInt(collectionId));
-        log.info("ImportServlet>>>doDSPOST>>collection_id:" + collectionId + "; collection itself" + col);
+        //log.info("ImportServlet>>>doDSPOST>>collection_id:" + collectionId + "; collection itself" + col);
         request.setAttribute("collection_id", collectionId);
 
         WorkspaceItem wsitem = WorkspaceItem.createMass(context, col, false);
@@ -117,14 +117,14 @@ public class ImportServlet extends DSpaceServlet {
 
         String test = request.getParameter("action");
         String item_id = request.getParameter("import_item");
-        log.info("ImportServlet>>>doDSPost>>action:" + test + "; item_id" + item_id);
+        //log.info("ImportServlet>>>doDSPost>>action:" + test + "; item_id" + item_id);
         if (test != null) {
             log.info("doDSPost>>action is not null");
             Document docMeta = null;
 
             if (test.equals("write_ident")) {
                 String iden = request.getParameter("identifier");
-                log.info("ImportServlet>>>doDSPost>>write_ident identifier:" + iden);
+                //log.info("ImportServlet>>>doDSPost>>write_ident identifier:" + iden);
                 try {
                     docMeta = sh.getRecordById(iden);
                 } catch (Exception e) {
@@ -140,7 +140,7 @@ public class ImportServlet extends DSpaceServlet {
                 NodeList idNode = bullshit_doc.getElementsByTagName("m:BiblId");
 
                 String idItem = idNode.item(0).getTextContent();
-                log.info("ImportServlet>>>doDSPost>>write_name identifier:" + idItem);
+                //log.info("ImportServlet>>>doDSPost>>write_name identifier:" + idItem);
 
                 //request.setAttribute(idItem, "identifier");
                 try {
@@ -154,13 +154,13 @@ public class ImportServlet extends DSpaceServlet {
         }
 
         if (test == null) {
-            log.info("doDSPost>>action is null");
+            //log.info("doDSPost>>action is null");
             String uuid = request.getParameter("uuid_search");
             Document doc = null;
-            log.info("ImportServlet>>>doDSPost>getRecordById-uuid>uuid:" + uuid + ";");
+            //log.info("ImportServlet>>>doDSPost>getRecordById-uuid>uuid:" + uuid + ";");
             try {
                 doc = sh.getRecordById(uuid);
-                log.info("ImportServlet>>>doDSPost>doc received");
+                //log.info("ImportServlet>>>doDSPost>doc received");
             } catch (Exception e) {
                 doc = sh.getRecordById(uuid);
             }
@@ -177,11 +177,11 @@ public class ImportServlet extends DSpaceServlet {
             try {
                 transformer.transform(new DOMSource(doc), new StreamResult(writer));
             } catch (TransformerException e) {
-                log.info("doDSPost>>error occurred when doc was transformed by transform()");
+                //log.info("doDSPost>>error occurred when doc was transformed by transform()");
                 e.printStackTrace();
             }
             String output = writer.getBuffer().toString().replaceAll("\n|\r", "");
-            log.info("dsPost>>here is final version of output:" + output);
+            //log.info("dsPost>>here is final version of output:" + output);
 
             request.setAttribute("community_id", request.getParameter("community_id"));
             request.setAttribute("collection_id", request.getParameter("collection_id"));
@@ -191,10 +191,10 @@ public class ImportServlet extends DSpaceServlet {
             NodeList testWow = doc.getElementsByTagName("Records");
             try {
                 if (testWow.getLength() > 0) {
-                    log.info("ImportServlet>>>doDSPost>>length>0 - REDIRECT TO IMPORT/IMPORT-ITEM");
+                    //log.info("ImportServlet>>>doDSPost>>length>0 - REDIRECT TO IMPORT/IMPORT-ITEM");
                     request.getRequestDispatcher("/import/import-item.jsp").forward(request, response);
                 } else {
-                    log.info("ImportServlet>>>doDSPost>>length==0");
+                    //log.info("ImportServlet>>>doDSPost>>length==0");
                     request.getRequestDispatcher("/import/import-no.jsp").forward(request, response);
                 }
             } catch (Exception e) {
@@ -207,7 +207,7 @@ public class ImportServlet extends DSpaceServlet {
             log.info("doDSPost>>Second branch for action is not null (?)");
             String name = request.getParameter("name");
             String title = request.getParameter("title");
-            log.info("ImportServlet>>>doDSPost>getRecordByName>name:" + name + "; title:" + title);
+            //log.info("ImportServlet>>>doDSPost>getRecordByName>name:" + name + "; title:" + title);
 
             if (name != null && name.equals("")) {
                 name = null;
@@ -224,7 +224,7 @@ public class ImportServlet extends DSpaceServlet {
             }
 
             TransformerFactory tf = TransformerFactory.newInstance();
-            log.info("SH>>doDSPost>>TransformerFactory was created");
+            //log.info("SH>>doDSPost>>TransformerFactory was created");
             Transformer transformer = null;
             try {
                 transformer = tf.newTransformer();
