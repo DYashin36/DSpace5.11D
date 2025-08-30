@@ -7,6 +7,9 @@
  */
 package org.dspace.sword;
 
+import java.sql.SQLException;
+
+import org.apache.log4j.Logger;
 import org.dspace.content.Bitstream;
 import org.dspace.content.BitstreamFormat;
 import org.dspace.content.Bundle;
@@ -21,9 +24,6 @@ import org.purl.sword.atom.Link;
 import org.purl.sword.atom.Rights;
 import org.purl.sword.atom.Summary;
 import org.purl.sword.atom.Title;
-import org.apache.log4j.Logger;
-
-import java.sql.SQLException;
 
 /**
  * @author Richard Jones
@@ -47,7 +47,7 @@ public class ItemEntryGenerator extends DSpaceATOMEntry
 	 */
 	protected void addCategories()
 	{
-		Metadatum[] dcv = item.getMetadataByMetadataString("dc.subject.*");
+		Metadatum[] dcv = item.getMetadataByMetadataString("dc.subject");
 		if (dcv != null)
 		{
 			for (int i = 0; i < dcv.length; i++)

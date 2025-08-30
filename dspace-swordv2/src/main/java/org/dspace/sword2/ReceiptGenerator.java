@@ -222,7 +222,7 @@ public class ReceiptGenerator
 	 */
 	protected void addCategories(DepositResult result, DepositReceipt receipt)
 	{
-		Metadatum[] dcv = result.getItem().getMetadataByMetadataString("dc.subject.*");
+		Metadatum[] dcv = result.getItem().getMetadataByMetadataString("dc.subject");
 		if (dcv != null)
 		{
 			for (int i = 0; i < dcv.length; i++)
@@ -234,7 +234,7 @@ public class ReceiptGenerator
 
 	protected void addCategories(Item item, DepositReceipt receipt)
 	{
-		Metadatum[] dcv = item.getMetadataByMetadataString("dc.subject.*");
+		Metadatum[] dcv = item.getMetadataByMetadataString("dc.subject");
 		if (dcv != null)
 		{
 			for (int i = 0; i < dcv.length; i++)
