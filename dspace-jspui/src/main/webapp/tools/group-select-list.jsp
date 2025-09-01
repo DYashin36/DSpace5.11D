@@ -173,7 +173,7 @@ function clearGroups()
     {
         Group g = groups[i];
 		// Make sure no quotes in full name will mess up our Javascript
-        SString fullname = (g.getName() == null ? "Unnamed group" : g.getName().replace('\'', ' '));
+        String fullname = (g.getName() == null ? "Unnamed group" : g.getName().replace('\'', ' '));
 %>
         <tr>
 			<td headers="t1" class="">
