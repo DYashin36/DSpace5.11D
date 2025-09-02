@@ -444,7 +444,7 @@ public class UploadWithEmbargoStep extends UploadStep
                 {
                     noPath = noPath.substring(noPath.indexOf('\\') + 1);
                 }
-
+                noPath = new String(noPath.getBytes("ISO-8859-1"), "UTF-8");
                 b.setName(noPath);
                 b.setSource(filePath);
                 b.setDescription(fileDescription);

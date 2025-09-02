@@ -18,8 +18,8 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 
+import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.util.AuthorizeUtil;
@@ -507,6 +507,7 @@ public class CollectionWizardServlet extends DSpaceServlet
                 {
                     noPath = noPath.substring(noPath.indexOf('\\') + 1);
                 }
+                noPath = new String(noPath.getBytes("ISO-8859-1"), "UTF-8");
 
                 logoBS.setName(noPath);
                 logoBS.setSource(wrapper.getFilesystemName("file"));

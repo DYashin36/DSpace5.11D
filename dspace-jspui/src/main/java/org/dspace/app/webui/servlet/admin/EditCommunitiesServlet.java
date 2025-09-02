@@ -17,8 +17,8 @@ import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 
+import org.apache.commons.fileupload.FileUploadBase.FileSizeLimitExceededException;
 import org.apache.log4j.Logger;
 import org.dspace.app.util.AuthorizeUtil;
 import org.dspace.app.webui.servlet.DSpaceServlet;
@@ -34,11 +34,11 @@ import org.dspace.content.Community;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.FormatIdentifier;
 import org.dspace.content.Item;
-import org.dspace.harvest.HarvestedCollection;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.dspace.eperson.Group;
+import org.dspace.harvest.HarvestedCollection;
 
 /**
  * Servlet for editing communities and collections, including deletion,
@@ -952,6 +952,7 @@ public class EditCommunitiesServlet extends DSpaceServlet
             {
                 noPath = noPath.substring(noPath.indexOf('\\') + 1);
             }
+            noPath = new String(noPath.getBytes("ISO-8859-1"), "UTF-8");
 
             logoBS.setName(noPath);
             logoBS.setSource(wrapper.getFilesystemName("file"));

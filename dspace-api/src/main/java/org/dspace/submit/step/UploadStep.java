@@ -7,7 +7,11 @@
  */
 package org.dspace.submit.step;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Enumeration;
 
@@ -17,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -34,8 +37,8 @@ import org.dspace.content.BitstreamFormat;
 import org.dspace.content.Bundle;
 import org.dspace.content.FormatIdentifier;
 import org.dspace.content.Item;
-import org.dspace.core.Context;
 import org.dspace.core.ConfigurationManager;
+import org.dspace.core.Context;
 import org.dspace.curate.Curator;
 import org.dspace.submit.AbstractProcessingStep;
 
@@ -668,7 +671,7 @@ public class UploadStep extends AbstractProcessingStep
                 {
                     noPath = noPath.substring(noPath.indexOf('\\') + 1);
                 }
-
+                noPath = new String(noPath.getBytes("ISO-8859-1"), "UTF-8");
                 b.setName(noPath);
                 b.setSource(filePath);
                 b.setDescription(fileDescription);
