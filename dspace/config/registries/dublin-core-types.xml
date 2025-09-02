@@ -91,6 +91,14 @@ org.dspace.content.MetadataValue instead.
     <name>dc</name>
     <namespace>http://dublincore.org/documents/dcmi-terms/</namespace>
   </dc-schema>
+  <dc-schema>
+    <name>dcterms</name>
+    <namespace>http://dublincore.org/documents/dcmi-terms/</namespace>
+  </dc-schema>
+  <dc-schema>
+    <name>local</name>
+    <namespace>http://dublincore.org/documents/dcmi-terms/</namespace>
+  </dc-schema>
 
   <dc-type>
     <schema>dc</schema>
