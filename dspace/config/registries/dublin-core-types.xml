@@ -93,12 +93,13 @@ org.dspace.content.MetadataValue instead.
   </dc-schema>
   <dc-schema>
     <name>dcterms</name>
-    <namespace>http://dublincore.org/documents/dcmi-terms/</namespace>
-  </dc-schema>
-  <dc-schema>
+    <namespace>http://purl.org/dc/terms/</namespace>
+</dc-schema>
+
+<dc-schema>
     <name>local</name>
-    <namespace>http://dublincore.org/documents/dcmi-terms/</namespace>
-  </dc-schema>
+    <namespace>http://dspace.org/local/</namespace>
+</dc-schema>
 
   <dc-type>
     <schema>dc</schema>
