@@ -32,6 +32,8 @@
           class="org.dspace.browse.SolrBrowseCreateDAO">
     </bean>
 
+
+
     <!--Bean that is used for mapping communities/collections to certain discovery configurations.-->
     <bean id="org.dspace.discovery.configuration.DiscoveryConfigurationService" class="org.dspace.discovery.configuration.DiscoveryConfigurationService">
         <property name="map">
@@ -98,6 +100,7 @@
                 <ref bean="searchFilterAuthor" />
                 <ref bean="searchFilterSubject" />
                 <ref bean="searchFilterIssued" />
+                <ref bean ="searchFilterEditor"/>
             </list>
         </property>
         <!-- Set TagCloud configuration per discovery configuration -->
@@ -109,6 +112,7 @@
                 <ref bean="searchFilterAuthor" />
                 <ref bean="searchFilterSubject" />
                 <ref bean="searchFilterIssued" />
+                <ref bean ="searchFilterEditor" />
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -403,6 +407,15 @@
         </property>
         <property name="type" value="date"/>
         <property name="sortOrder" value="VALUE"/>
+    </bean>
+
+    <bean id="searchFilterEditor" class="org.dspace.discovery.configuration.DiscoverySearchFilter">
+        <property name="indexFieldName" value="editor"/>
+        <property name="metadataFields">
+            <list>
+              <value>dc.contributor.editor</value>
+            </list>
+        </property>
     </bean>
 
     <!--Sort properties-->
