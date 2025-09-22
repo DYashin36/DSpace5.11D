@@ -1,52 +1,12 @@
 package org.dspace.app.webui.servlet;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileDeleteStrategy;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
-import org.apache.pdfbox.PDFReader;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
-import org.dspace.app.webui.servlet.admin.EditCommunitiesServlet;
-import org.dspace.app.webui.util.SoapHelper;
-import org.dspace.authorize.AuthorizeException;
-import org.dspace.authorize.ResourcePolicy;
-import org.dspace.content.*;
-import org.dspace.core.ConfigurationManager;
-import org.dspace.core.Constants;
-import org.dspace.core.Context;
-import org.dspace.core.LogManager;
-import org.dspace.eperson.Group;
-import org.dspace.handle.HandleManager;
-import org.dspace.identifier.Handle;
-import org.dspace.storage.rdbms.DatabaseManager;
-import org.dspace.storage.rdbms.TableRow;
-import org.dspace.storage.rdbms.TableRowIterator;
-import org.dspace.workflow.WorkflowManager;
-import org.dspace.xmlworkflow.XmlWorkflowManager;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -54,7 +14,44 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.io.FileDeleteStrategy;
+import org.apache.log4j.Logger;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.util.PDFTextStripper;
+import org.dspace.app.webui.servlet.admin.EditCommunitiesServlet;
+import org.dspace.app.webui.util.SoapHelper;
+import org.dspace.authorize.AuthorizeException;
+import org.dspace.content.Bitstream;
+import org.dspace.content.BitstreamFormat;
+import org.dspace.content.Collection;
+import org.dspace.content.FormatIdentifier;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.Metadatum;
+import org.dspace.content.WorkspaceItem;
+import org.dspace.core.ConfigurationManager;
+import org.dspace.core.Context;
+import org.dspace.core.LogManager;
+import org.dspace.handle.HandleManager;
+import org.dspace.storage.rdbms.DatabaseManager;
+import org.dspace.storage.rdbms.TableRow;
+import org.dspace.storage.rdbms.TableRowIterator;
+import org.dspace.workflow.WorkflowManager;
+import org.dspace.xmlworkflow.XmlWorkflowManager;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Created by root on 1/12/16.
@@ -228,38 +225,33 @@ public class ImportMassServlet extends DSpaceServlet {
                                 }
 
                                 try {
-                                    Node author = record.getElementsByTagName("Creator").item(0);
-                                    //log.info("doDSPost>>received Creator is " + author);
-                                    String authorName = author.getTextContent();
-                                    //log.info("doDSPost>>received authorName is " + authorName);
-                                    if (!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
-                                        String contribs[] = authorName.split(",");
-                                        for (int l = 0; l < contribs.length; l++) {
-                                            itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", contribs[l]);
-                                        }
-                                        itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "creator", null, "ru", author.getTextContent());
-                                    }
-                                    author = null;
-                                } catch (Exception e) {
-                                    log.info(e.getMessage());
-                                }
+    NodeList contributors = record.getElementsByTagName("Contributor");
+    for (int c = 0; c < contributors.getLength(); c++) {
+        Element contribElement = (Element) contributors.item(c);
 
-                                try {
-                                    Node contrib = record.getElementsByTagName("Contributor").item(0);
-                                    //log.info("doDSPost>>received Contributor is " + contrib);
-                                    String authorName = contrib.getTextContent();
-                                    //log.info("doDSPost>>received authorName is " + authorName);
-                                    if (!authorName.equals("|||") && (authorName != null) && (!authorName.equals(""))) {
-                                        String contribs[] = authorName.split(",");
-                                        for (int l = 0; l < contribs.length; l++) {
-                                            itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", contribs[l]);
-                                        }
-                                        //itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "creator", null, "ru", author.getTextContent());
-                                    }
-                                    contrib = null;
-                                } catch (Exception e) {
-                                    log.info(e.getMessage());
-                                }
+        Node qualifierNode = contribElement.getElementsByTagName("Qualifier").item(0);
+        Node valueNode = contribElement.getElementsByTagName("Value").item(0);
+
+        if (qualifierNode != null && valueNode != null) {
+            String qualifier = qualifierNode.getTextContent().trim();
+            String value = valueNode.getTextContent().trim();
+
+            // добавляем только авторов
+            if ("Author".equalsIgnoreCase(qualifier) && !value.isEmpty()) {
+                itemItem.addMetadata(
+                    MetadataSchema.DC_SCHEMA,
+                    "contributor",
+                    "author",
+                    "ru",
+                    value
+                );
+                log.info("Added author: " + value);
+            }
+        }
+    }
+} catch (Exception e) {
+    log.warn("Error while processing Contributor nodes: " + e.getMessage());
+}
 
                                 try {
                                     NodeList subjects = record.getElementsByTagName("Subject");
@@ -390,80 +382,74 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 itemItem.setDiscoverable(true);
 
-                                try {
-                                    Node link = record.getElementsByTagName("Link").item(0);
-                                    //log.info("doDSPost>>received Link is " + link);
-                                    if (link != null) {
-                                        String firstUrl = "http://lib.ssau.ru/download?fname=";
+                               try {
+    Node link = record.getElementsByTagName("Link").item(0);
+    //log.info("doDSPost>>received Link is " + link);
+    if (link != null) {
+        // UNC путь из <Value>
+        String fullPath = link.getTextContent().trim();
 
-                                        String linkEncode = URLEncoder.encode(link.getTextContent(), "UTF-8");
+        // имя файла берём после последнего \
+        String filenamelel = fullPath.substring(fullPath.lastIndexOf('\\') + 1);
 
-                                        String filenamelel = link.getTextContent().substring(link.getTextContent().lastIndexOf('\\') + 1);
+        // открываем файл напрямую с сетевого диска
+        InputStream iss = new FileInputStream(fullPath);
+        InputStream issforPdf = new FileInputStream(fullPath);
 
-                                        InputStream iss = new URL(firstUrl + linkEncode).openStream();
+        log.info("doDSPost>>using local file path: " + fullPath);
 
-                                        InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
+        try {
+            PDFTextStripper pdfStripper = new PDFTextStripper();
+            PDDocument docum = PDDocument.load(issforPdf);
 
-                                        log.info("imgay: " + firstUrl + linkEncode);
+            String parsedText = pdfStripper.getText(docum);
 
-                                        try {
-                                            PDFTextStripper pdfStripper = null;
-                                            PDDocument docum = null;
-                                            PDFParser parser = new PDFParser(issforPdf);
-                                            COSDocument cosDoc = null;
+            Integer fifty = (Integer) Math.round(parsedText.length() / 2);
+            if (fifty < 0) {
+                fifty = fifty * (-1);
+            }
+            Integer toCut = 500;
+            if ((parsedText.length() - fifty) < 500) {
+                toCut = parsedText.length();
+            }
+            String subText = parsedText.substring(fifty, fifty + toCut - 1);
+            try {
+                subText = subText.substring(subText.indexOf(".") + 1);
+            } catch (Exception e) {
+                // игнор
+            }
+            itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
 
-                                            parser.parse();
-                                            cosDoc = parser.getDocument();
-                                            pdfStripper = new PDFTextStripper();
-                                            docum = new PDDocument(cosDoc);
-                                            //pdfStripper.getText(docum);
-                                            String parsedText = pdfStripper.getText(docum);
-                                            //log.info(parsedText);
-                                            Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-                                            if (fifty < 0) {
-                                                fifty = fifty * (-1);
-                                            }
-                                            Integer toCut = 500;
-                                            if ((parsedText.length() - fifty) < 500) {
-                                                toCut = parsedText.length();
-                                            }
-                                            String subText = parsedText.substring(fifty, fifty + toCut - 1);
-                                            try {
-                                                subText = subText.substring(subText.indexOf(".") + 1);
-                                            } catch (Exception e) {
+            docum.close();
+        } catch (Exception e) {
+            log.error("PDF parse error", e);
+        }
 
-                                            }
-                                            itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
-                                        } catch (Exception e) {
+        if (exists == false) {
+            itemItem.createBundle("ORIGINAL");
+            log.info("doDSPost>>Bundle 'ORIGINAL' created");
+            Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
+            log.info("doDSPost>>Bitstream received");
+            b.setName(filenamelel);
+            b.setDescription("from 1C");
+            b.setSource("1C");
 
-                                        }
+            itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
 
-                                        if (exists == false) {
-                                            itemItem.createBundle("ORIGINAL");
-                                            log.info("doDSPost>>Bundle 'ORIGINAL' created");
-                                            Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
-                                            log.info("doDSPost>>Bitstream received");
-                                            b.setName(filenamelel);
-                                            b.setDescription("from 1C");
-                                            b.setSource("1C");
+            BitstreamFormat bf = FormatIdentifier.guessFormat(context, b);
+            b.setFormat(bf);
 
-                                            itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
+            b.update();
+            log.info("doDSPost>>Bundle 'ORIGINAL' updated");
+        }
+        itemItem.update();
 
-                                            BitstreamFormat bf = null;
+        iss.close();
+    }
+} catch (Exception e) {
+    log.error("wtferror", e);
+}
 
-                                            bf = FormatIdentifier.guessFormat(context, b);
-                                            b.setFormat(bf);
-
-                                            b.update();
-                                            log.info("doDSPost>>Bundle 'ORIGINAL' updated");
-                                        }
-                                        itemItem.update();
-
-                                        iss.close();
-                                    }
-                                } catch (Exception e) {
-                                    log.error("wtferror", e);
-                                }
 
                                 if (exists == false) {
                                     log.error("OK I GOT HERE");
