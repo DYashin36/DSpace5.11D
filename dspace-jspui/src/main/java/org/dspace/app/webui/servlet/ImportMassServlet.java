@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -24,6 +26,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.log4j.Logger;
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 import org.dspace.app.webui.servlet.admin.EditCommunitiesServlet;
@@ -384,71 +388,90 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                try {
     Node link = record.getElementsByTagName("Link").item(0);
-    //log.info("doDSPost>>received Link is " + link);
-    if (link != null) {
-        // UNC путь из <Value>
-        String fullPath = link.getTextContent().trim();
 
-        // имя файла берём после последнего \
-        String filenamelel = fullPath.substring(fullPath.lastIndexOf('\\') + 1);
+    String firstUrl = "http://lib.ssau.ru/download?fname=";
 
-        // открываем файл напрямую с сетевого диска
-        InputStream iss = new FileInputStream(fullPath);
-        InputStream issforPdf = new FileInputStream(fullPath);
+    String linkValue = null;
 
-        log.info("doDSPost>>using local file path: " + fullPath);
-
-        try {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            PDDocument docum = PDDocument.load(issforPdf);
-
-            String parsedText = pdfStripper.getText(docum);
-
-            Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-            if (fifty < 0) {
-                fifty = fifty * (-1);
-            }
-            Integer toCut = 500;
-            if ((parsedText.length() - fifty) < 500) {
-                toCut = parsedText.length();
-            }
-            String subText = parsedText.substring(fifty, fifty + toCut - 1);
-            try {
-                subText = subText.substring(subText.indexOf(".") + 1);
-            } catch (Exception e) {
-                // игнор
-            }
-            itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
-
-            docum.close();
-        } catch (Exception e) {
-            log.error("PDF parse error", e);
+    // Проверяем, есть ли внутри <Value>
+    NodeList childNodes = link.getChildNodes();
+    for (int in = 0; in < childNodes.getLength(); in++) {
+        Node child = childNodes.item(in);
+        if ("Value".equalsIgnoreCase(child.getNodeName())) {
+            linkValue = child.getTextContent().trim();
+            break;
         }
-
-        if (exists == false) {
-            itemItem.createBundle("ORIGINAL");
-            log.info("doDSPost>>Bundle 'ORIGINAL' created");
-            Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
-            log.info("doDSPost>>Bitstream received");
-            b.setName(filenamelel);
-            b.setDescription("from 1C");
-            b.setSource("1C");
-
-            itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
-
-            BitstreamFormat bf = FormatIdentifier.guessFormat(context, b);
-            b.setFormat(bf);
-
-            b.update();
-            log.info("doDSPost>>Bundle 'ORIGINAL' updated");
-        }
-        itemItem.update();
-
-        iss.close();
     }
+
+    // Если <Value> нет — значит <Link> содержит путь напрямую
+    if (linkValue == null || linkValue.isEmpty()) {
+        linkValue = link.getTextContent().trim();
+    }
+
+    // Кодируем для запроса
+    String linkEncode = URLEncoder.encode(linkValue, "UTF-8");
+
+    // Достаём имя файла
+    String filenamelel = linkValue.substring(linkValue.lastIndexOf('\\') + 1);
+
+    // Открываем два потока (для записи и анализа PDF)
+    InputStream iss = new URL(firstUrl + linkEncode).openStream();
+    InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
+
+    log.info("imgay: " + firstUrl + linkEncode);
+
+    try {
+        PDFTextStripper pdfStripper = null;
+        PDDocument docum = null;
+        PDFParser parser = new PDFParser(issforPdf);
+        COSDocument cosDoc = null;
+
+        parser.parse();
+        cosDoc = parser.getDocument();
+        pdfStripper = new PDFTextStripper();
+        docum = new PDDocument(cosDoc);
+        String parsedText = pdfStripper.getText(docum);
+
+        Integer fifty = (Integer) Math.round(parsedText.length() / 2);
+        if (fifty < 0) {
+            fifty = fifty * (-1);
+        }
+        Integer toCut = 500;
+        if ((parsedText.length() - fifty) < 500) {
+            toCut = parsedText.length();
+        }
+        String subText = parsedText.substring(fifty, fifty + toCut - 1);
+        try {
+            subText = subText.substring(subText.indexOf(".") + 1);
+        } catch (Exception e) {
+        }
+        itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
+    } catch (Exception e) {
+    }
+
+    if (exists == false) {
+        itemItem.createBundle("ORIGINAL");
+        Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
+        b.setName(filenamelel);
+        b.setDescription("from 1C");
+        b.setSource("1C");
+
+        itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
+
+        BitstreamFormat bf = null;
+        bf = FormatIdentifier.guessFormat(context, b);
+        b.setFormat(bf);
+
+        b.update();
+    }
+    itemItem.update();
+
+    iss.close();
 } catch (Exception e) {
     log.error("wtferror", e);
 }
+
+
 
 
                                 if (exists == false) {
