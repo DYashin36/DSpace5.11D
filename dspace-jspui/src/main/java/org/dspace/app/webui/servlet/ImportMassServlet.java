@@ -388,9 +388,7 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                try {
     Node link = record.getElementsByTagName("Link").item(0);
-
     String firstUrl = "http://lib.ssau.ru/download?fname=";
-
     String linkValue = null;
 
     // Проверяем, есть ли внутри <Value>
@@ -402,7 +400,6 @@ public class ImportMassServlet extends DSpaceServlet {
             break;
         }
     }
-
     // Если <Value> нет — значит <Link> содержит путь напрямую
     if (linkValue == null || linkValue.isEmpty()) {
         linkValue = link.getTextContent().trim();
@@ -410,66 +407,62 @@ public class ImportMassServlet extends DSpaceServlet {
 
     // Кодируем для запроса
     String linkEncode = URLEncoder.encode(linkValue, "UTF-8");
-
     // Достаём имя файла
     String filenamelel = linkValue.substring(linkValue.lastIndexOf('\\') + 1);
+    String fileUrl = firstUrl + linkEncode;
+    log.info("Downloading PDF: " + fileUrl);
 
-    // Открываем два потока (для записи и анализа PDF)
-    InputStream iss = new URL(firstUrl + linkEncode).openStream();
-    InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
+    // Поток для сохранения файла в DSpace
+    try (InputStream iss = new URL(fileUrl).openStream()) {
 
-    log.info("imgay: " + firstUrl + linkEncode);
+        // Второй поток для анализа PDF
+        try (InputStream issForPdf = new URL(fileUrl).openStream()) {
+            PDFParser parser = new PDFParser(issForPdf);
+            parser.parse();
 
-    try {
-        PDFTextStripper pdfStripper = null;
-        PDDocument docum = null;
-        PDFParser parser = new PDFParser(issforPdf);
-        COSDocument cosDoc = null;
+            try (COSDocument cosDoc = parser.getDocument();
+                 PDDocument docum = new PDDocument(cosDoc)) {
 
-        parser.parse();
-        cosDoc = parser.getDocument();
-        pdfStripper = new PDFTextStripper();
-        docum = new PDDocument(cosDoc);
-        String parsedText = pdfStripper.getText(docum);
+                PDFTextStripper pdfStripper = new PDFTextStripper();
+                String parsedText = pdfStripper.getText(docum);
 
-        Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-        if (fifty < 0) {
-            fifty = fifty * (-1);
-        }
-        Integer toCut = 500;
-        if ((parsedText.length() - fifty) < 500) {
-            toCut = parsedText.length();
-        }
-        String subText = parsedText.substring(fifty, fifty + toCut - 1);
-        try {
-            subText = subText.substring(subText.indexOf(".") + 1);
+                if (parsedText != null && !parsedText.isEmpty()) {
+                    int fifty = parsedText.length() / 2;
+                    if (fifty < 0) {
+                        fifty = fifty * (-1);
+                    }
+                    int toCut = 500;
+                    if ((parsedText.length() - fifty) < 500) {
+                        toCut = parsedText.length() - fifty;
+                    }
+                    String subText = parsedText.substring(fifty, fifty + toCut - 1);
+                    try {
+                        subText = subText.substring(subText.indexOf(".") + 1);
+                    } catch (Exception ignored) { }
+                    itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
+                }
+            }
         } catch (Exception e) {
+            log.warn("Could not parse PDF text: " + e.getMessage(), e);
         }
-        itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
-    } catch (Exception e) {
+
+        if (!exists) {
+            itemItem.createBundle("ORIGINAL");
+            Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
+            b.setName(filenamelel);
+            b.setDescription("from 1C");
+            b.setSource("1C");
+            itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
+            BitstreamFormat bf = FormatIdentifier.guessFormat(context, b);
+            b.setFormat(bf);
+            b.update();
+        }
+        itemItem.update();
     }
-
-    if (exists == false) {
-        itemItem.createBundle("ORIGINAL");
-        Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
-        b.setName(filenamelel);
-        b.setDescription("from 1C");
-        b.setSource("1C");
-
-        itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
-
-        BitstreamFormat bf = null;
-        bf = FormatIdentifier.guessFormat(context, b);
-        b.setFormat(bf);
-
-        b.update();
-    }
-    itemItem.update();
-
-    iss.close();
 } catch (Exception e) {
-    log.error("wtferror", e);
+    log.error("Error while attaching PDF", e);
 }
+
 
 
 
