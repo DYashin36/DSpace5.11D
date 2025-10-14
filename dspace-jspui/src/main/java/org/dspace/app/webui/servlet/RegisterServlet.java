@@ -13,9 +13,12 @@ import java.util.Hashtable;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -207,8 +210,8 @@ public class RegisterServlet extends DSpaceServlet
      *            current servlet response object
      */
     private void processEnterEmail(Context context, HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException,
-            SQLException, AuthorizeException
+        HttpServletResponse response) throws ServletException, IOException,
+        SQLException, AuthorizeException
 {
     String email = request.getParameter("email");
     if (email == null || email.length() > 64)
@@ -277,72 +280,153 @@ public class RegisterServlet extends DSpaceServlet
                     return;
                 }
 
-                // ---- Регистрация по LDAP (через netid)
-                else
-                {
-                    //--------- START LDAP AUTH SECTION -------------
-                    if (password != null && !password.equals(""))
-                    {
-                        String ldap_provider_url = ConfigurationManager.getProperty("authentication-ldap", "provider_url");
-                        String ldap_id_field = ConfigurationManager.getProperty("authentication-ldap", "id_field"); // sAMAccountName
-                        String ldap_search_context = ConfigurationManager.getProperty("authentication-ldap", "search_context");
+                //--------- START LDAP AUTH SECTION (improved) -------------
+                if (password != null && !password.equals("")) {
+                    String ldap_provider_url = ConfigurationManager.getProperty("authentication-ldap", "provider_url");
+                    String ldap_id_field = ConfigurationManager.getProperty("authentication-ldap", "id_field"); // sAMAccountName
+                    String ldap_search_context = ConfigurationManager.getProperty("authentication-ldap", "search_context");
+                    String ldap_search_user = ConfigurationManager.getProperty("authentication-ldap", "search.user");
+                    String ldap_search_password = ConfigurationManager.getProperty("authentication-ldap", "search.password");
 
-                        log.debug(LogManager.getHeader(context, "ldap_debug",
-                            "Start LDAP authentication (direct bind with transformation): " +
-                            "provider_url=" + ldap_provider_url +
-                            ", id_field=" + ldap_id_field +
-                            ", search_context=" + ldap_search_context +
-                            ", netid=" + netid));
+                    if (ldap_provider_url != null && ldap_provider_url.endsWith("/")) {
+                        ldap_provider_url = ldap_provider_url.substring(0, ldap_provider_url.length() - 1);
+                    }
 
-                        // 🧩 1. Преобразуем netid в корректный DN
-                        String userDN;
+                    String fallbackDomain = "ad.ssau.ru"; // уточнить у AD-админа
 
-                        // Попробуем использовать UPN — чаще всего работает в AD
-                        userDN = netid + "@ad.ssau.ru";
+                    log.debug(LogManager.getHeader(context, "ldap_debug",
+                        "Start LDAP authentication: provider_url=" + ldap_provider_url +
+                        ", id_field=" + ldap_id_field +
+                        ", search_context=" + ldap_search_context +
+                        ", netid=" + netid +
+                        ", search.user=" + (ldap_search_user == null ? "null" : ldap_search_user)));
 
-                        log.debug(LogManager.getHeader(context, "ldap_dn_transformed",
-                            "Transformed userDN=" + userDN));
+                    // Экранируем netid для LDAP фильтра
+                    String safeNetid = netid;
+                    if (safeNetid != null) {
+                        safeNetid = safeNetid.replace("\\", "\\5c").replace("*", "\\2a").replace("(", "\\28").replace(")", "\\29").replace("\0", "\\00");
+                    }
 
+                    // 1) Поиск DN
+                    DirContext searchCtx = null;
+                    String foundUserDN = null;
+                    try {
                         Hashtable<String, String> env = new Hashtable<>();
                         env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
                         env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
-                        env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
-                        env.put(javax.naming.Context.SECURITY_PRINCIPAL, userDN);
-                        env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
 
+                        if (ldap_search_user != null && !ldap_search_user.trim().isEmpty()
+                                && ldap_search_password != null && !ldap_search_password.trim().isEmpty()) {
+                            env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+                            env.put(javax.naming.Context.SECURITY_PRINCIPAL, ldap_search_user);
+                            env.put(javax.naming.Context.SECURITY_CREDENTIALS, ldap_search_password);
+                            log.debug(LogManager.getHeader(context, "ldap_search_bind", "Using search user to lookup"));
+                        } else {
+                            env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "none");
+                            log.debug(LogManager.getHeader(context, "ldap_search_bind", "Using anonymous search"));
+                        }
+
+                        System.setProperty("com.sun.jndi.ldap.object.disableEndpointIdentification", "true");
+
+                        searchCtx = new InitialDirContext(env);
+
+                        String filter = "(" + ldap_id_field + "=" + safeNetid + ")";
+                        SearchControls sc = new SearchControls();
+                        sc.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                        sc.setCountLimit(1);
+
+                        log.debug(LogManager.getHeader(context, "ldap_search", "Base='" + ldap_search_context + "' filter='" + filter + "'"));
+                        NamingEnumeration<SearchResult> results = searchCtx.search(ldap_search_context, filter, sc);
+
+                        if (results.hasMore()) {
+                            SearchResult sr = results.next();
+                            foundUserDN = sr.getNameInNamespace();
+                            log.debug(LogManager.getHeader(context, "ldap_search_result", "Found DN: " + foundUserDN));
+                        } else {
+                            log.debug(LogManager.getHeader(context, "ldap_search_result", "No DN found by search for netid=" + netid));
+                        }
+                    } catch (NamingException ne) {
+                        log.warn(LogManager.getHeader(context, "ldap_search_error", "LDAP search error for netid=" + netid + ": " + ne.toString()), ne);
+                    } finally {
+                        if (searchCtx != null) {
+                            try { searchCtx.close(); } catch (NamingException ignored) {}
+                        }
+                    }
+
+                    // 2) Попытка bind найденным DN
+                    boolean authOk = false;
+                    if (foundUserDN != null) {
                         DirContext authCtx = null;
+                        try {
+                            Hashtable<String, String> authEnv = new Hashtable<>();
+                            authEnv.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                            authEnv.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+                            authEnv.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+                            authEnv.put(javax.naming.Context.SECURITY_PRINCIPAL, foundUserDN);
+                            authEnv.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
 
-                        try
-                        {
+                            log.debug(LogManager.getHeader(context, "ldap_bind_attempt", "Trying bind with search DN: " + foundUserDN));
                             System.setProperty("com.sun.jndi.ldap.object.disableEndpointIdentification", "true");
-                            authCtx = new InitialDirContext(env);
-                            log.info(LogManager.getHeader(context, "ldap_auth_success",
-                                "LDAP bind successful for " + userDN));
+                            authCtx = new InitialDirContext(authEnv);
+                            authOk = true;
+                            log.info(LogManager.getHeader(context, "ldap_auth_success", "Bind OK for " + foundUserDN));
+                        } catch (NamingException e) {
+                            log.warn(LogManager.getHeader(context, "ldap_bind_failed", "Bind failed for found DN=" + foundUserDN + " : " + e.toString()));
+                        } finally {
+                            if (authCtx != null) try { authCtx.close(); } catch (NamingException ignore) {}
                         }
-                        catch (NamingException e)
-                        {
-                            log.error(LogManager.getHeader(context, "ldap_auth_failure",
-                                "LDAP bind failed for netid=" + netid +
-                                ", transformedDN=" + userDN +
-                                ", error=" + e.toString()), e);
+                    }
 
-                            JSPManager.showJSP(request, response, "/login/ldap-incorrect.jsp");
-                            return;
-                        }
-                        finally
-                        {
-                            if (authCtx != null)
-                            {
-                                try { authCtx.close(); } catch (NamingException ignore) {}
+                    // 3) Попытка bind шаблонами
+                    if (!authOk) {
+                        String[] templates = new String[] {
+                            netid + "@" + fallbackDomain,
+                            "CN=" + netid + "," + ldap_search_context,
+                            ldap_id_field + "=" + netid + "," + ldap_search_context,
+                            netid
+                        };
+
+                        for (String principal : templates) {
+                            DirContext authCtx = null;
+                            try {
+                                Hashtable<String, String> authEnv = new Hashtable<>();
+                                authEnv.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                                authEnv.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+                                authEnv.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+                                authEnv.put(javax.naming.Context.SECURITY_PRINCIPAL, principal);
+                                authEnv.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
+
+                                log.debug(LogManager.getHeader(context, "ldap_bind_attempt", "Trying bind with principal='" + principal + "'"));
+                                System.setProperty("com.sun.jndi.ldap.object.disableEndpointIdentification", "true");
+                                authCtx = new InitialDirContext(authEnv);
+                                authOk = true;
+                                log.info(LogManager.getHeader(context, "ldap_auth_success", "Bind OK for principal='" + principal + "'"));
+                                break;
+                            } catch (NamingException e) {
+                                String msg = e.toString();
+                                String dataCode = "unknown";
+                                try {
+                                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("data\\s(\\d+)").matcher(msg);
+                                    if (m.find()) dataCode = m.group(1);
+                                } catch (Exception x) {}
+                                log.debug(LogManager.getHeader(context, "ldap_bind_try_failed",
+                                    "Bind failed for principal='" + principal + "'; exception=" + msg + "; data=" + dataCode));
+                            } finally {
+                                if (authCtx != null) try { authCtx.close(); } catch (NamingException ignore) {}
                             }
                         }
                     }
-                    //--------- END LDAP AUTH SECTION -------------
 
-                    // Переходим к заполнению личных данных
-                    JSPManager.showJSP(request, response, "/register/registration-form.jsp");
-                    return;
+                    if (!authOk) {
+                        log.error(LogManager.getHeader(context, "ldap_auth_failure", "All LDAP bind attempts failed for netid=" + netid));
+                        JSPManager.showJSP(request, response, "/login/ldap-incorrect.jsp");
+                        return;
+                    }
                 }
+                //--------- END LDAP AUTH SECTION -------------
+
+                JSPManager.showJSP(request, response, "/register/registration-form.jsp");
+                return;
             }
             else
             {
@@ -405,6 +489,7 @@ public class RegisterServlet extends DSpaceServlet
         JSPManager.showInternalError(request, response);
     }
 }
+
 
 
     /**
