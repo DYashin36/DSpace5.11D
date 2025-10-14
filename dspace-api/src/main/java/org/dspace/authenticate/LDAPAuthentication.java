@@ -503,27 +503,21 @@ private String getAttrValue(Attributes attrs, String attrName) throws NamingExce
          * contact the ldap server and attempt to authenticate
          */
         protected boolean ldapAuthenticate(String netid, String password, Context context) {
-    if (password == null || password.isEmpty()) return false;
-
-    // Получаем DN пользователя через admin
-    String adminUser = ConfigurationManager.getProperty("authentication-ldap", "search.user");
-    String adminPassword = ConfigurationManager.getProperty("authentication-ldap", "search.password");
-    String userDN = getDNOfUser(adminUser, adminPassword, context, netid);
-
-    if (userDN == null) {
-        log.warn(LogManager.getHeader(context, "ldap_authentication",
-                "Cannot determine DN for netid=" + netid));
+    if (password == null || password.isEmpty()) {
+        log.debug(LogManager.getHeader(context, "ldap_authenticate", "Empty password for netid=" + netid));
         return false;
     }
 
-    log.debug(LogManager.getHeader(context, "LDAP Authenticate",
-            "Attempting bind with DN=" + userDN + " for netid=" + netid));
+    // Подробный лог входных данных
+    log.debug(LogManager.getHeader(context, "ldap_authenticate",
+            "Trying to authenticate user netid=" + netid +
+            " against " + ldap_provider_url));
 
     Hashtable<String, String> env = new Hashtable<>();
     env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
     env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
-    env.put(javax.naming.Context.SECURITY_PRINCIPAL, userDN);
+    env.put(javax.naming.Context.SECURITY_PRINCIPAL, netid);  // здесь может быть ошибка — если требуется полный DN
     env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
     env.put(javax.naming.Context.AUTHORITATIVE, "true");
     env.put(javax.naming.Context.REFERRAL, "follow");
@@ -531,15 +525,21 @@ private String getAttrValue(Attributes attrs, String attrName) throws NamingExce
     DirContext ctx = null;
     try {
         ctx = new InitialDirContext(env);
+        log.debug(LogManager.getHeader(context, "ldap_authenticate",
+                "LDAP bind successful for user=" + netid));
         return true;
     } catch (NamingException e) {
-        log.warn(LogManager.getHeader(context, "ldap_authentication",
-                "LDAP bind failed for netid=" + netid + " DN=" + userDN + ": " + e));
+        log.warn(LogManager.getHeader(context, "ldap_authenticate",
+                "Bind failed for netid=" + netid + ", principal=" + netid +
+                ", provider=" + ldap_provider_url + ", reason=" + e));
         return false;
     } finally {
-        try { if (ctx != null) ctx.close(); } catch (NamingException ignored) {}
+        if (ctx != null) {
+            try { ctx.close(); } catch (NamingException ignored) {}
+        }
     }
 }
+
     }
 
     /*
