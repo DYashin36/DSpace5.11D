@@ -9,12 +9,15 @@ package org.dspace.authenticate;
 
 import java.sql.SQLException;
 import java.util.Hashtable;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -393,205 +396,120 @@ public class LDAPAuthentication
             log = thelog;
         }
 
-        protected String getDNOfUser(String adminUser, String adminPassword, Context context, String netid)
-        {
-            // The resultant DN
-            String resultDN;
+        protected String getDNOfUser(String adminUser, String adminPassword, Context context, String netid) {
+    String resultDN = null;
 
-            // The search scope to use (default to 0)
-            int ldap_search_scope_value = 0;
-            try
-            {
-                ldap_search_scope_value = Integer.parseInt(ldap_search_scope.trim());
-            }
-            catch (NumberFormatException e)
-            {
-                // Log the error if it has been set but is invalid
-                if (ldap_search_scope != null)
-                {
-                    log.warn(LogManager.getHeader(context,
-                            "ldap_authentication", "invalid search scope: " + ldap_search_scope));
-                }
-            }
-
-            // Set up environment for creating initial context
-            Hashtable env = new Hashtable(11);
-            env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-            env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
-
-            if ((adminUser != null) && (!adminUser.trim().equals("")) &&
-                (adminPassword != null) && (!adminPassword.trim().equals("")))
-            {
-                // Use admin credentials for search// Authenticate
-                env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
-                env.put(javax.naming.Context.SECURITY_PRINCIPAL, adminUser);
-                env.put(javax.naming.Context.SECURITY_CREDENTIALS, adminPassword);
-            }
-            else
-            {
-                // Use anonymous authentication
-                env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "none");
-            }
-
-            DirContext ctx = null;
-            try
-            {
-                // Create initial context
-                ctx = new InitialDirContext(env);
-
-                Attributes matchAttrs = new BasicAttributes(true);
-                matchAttrs.put(new BasicAttribute(ldap_id_field, netid));
-
-                // look up attributes
-                try
-                {
-                    SearchControls ctrls = new SearchControls();
-                    ctrls.setSearchScope(ldap_search_scope_value);
-
-                    NamingEnumeration<SearchResult> answer = ctx.search(
-                            ldap_provider_url + ldap_search_context,
-                            "(&({0}={1}))", new Object[] { ldap_id_field,
-                                    netid }, ctrls);
-
-                    while (answer.hasMoreElements()) {
-                        SearchResult sr = answer.next();
-                        if (StringUtils.isEmpty(ldap_search_context)) {
-                            resultDN = sr.getName();
-                        } else {
-                            resultDN = (sr.getName() + "," + ldap_search_context);
-                        }
-
-                        String attlist[] = {ldap_email_field, ldap_givenname_field,
-                                            ldap_surname_field, ldap_phone_field, ldap_group_field};
-                        Attributes atts = sr.getAttributes();
-                        Attribute att;
-
-                        if (attlist[0] != null) {
-                            att = atts.get(attlist[0]);
-                            if (att != null)
-                            {
-                                ldapEmail = (String) att.get();
-                            }
-                        }
-
-                        if (attlist[1] != null) {
-                            att = atts.get(attlist[1]);
-                            if (att != null)
-                            {
-                                ldapGivenName = (String) att.get();
-                            }
-                        }
-
-                        if (attlist[2] != null) {
-                            att = atts.get(attlist[2]);
-                            if (att != null)
-                            {
-                                ldapSurname = (String) att.get();
-                            }
-                        }
-
-                        if (attlist[3] != null) {
-                            att = atts.get(attlist[3]);
-                            if (att != null)
-                            {
-                                ldapPhone = (String) att.get();
-                            }
-                        }
-                
-                        if (attlist[4] != null) {
-                            att = atts.get(attlist[4]);
-                            if (att != null) 
-                            {
-                                ldapGroup = (String) att.get();
-                            }
-                        }
-
-                        if (answer.hasMoreElements()) {
-                            // Oh dear - more than one match
-                            // Ambiguous user, can't continue
-
-                        } else {
-                            log.debug(LogManager.getHeader(context, "got DN", resultDN));
-                            return resultDN;
-                        }
-                    }
-                }
-                catch (NamingException e)
-                {
-                    // if the lookup fails go ahead and create a new record for them because the authentication
-                    // succeeded
-                    log.warn(LogManager.getHeader(context,
-                                "ldap_attribute_lookup", "type=failed_search "
-                                        + e));
-                }
-            }
-            catch (NamingException e)
-            {
-                log.warn(LogManager.getHeader(context,
-                            "ldap_authentication", "type=failed_auth " + e));
-            }
-            finally
-            {
-                // Close the context when we're done
-                try
-                {
-                    if (ctx != null)
-                    {
-                        ctx.close();
-                    }
-                }
-                catch (NamingException e)
-                {
-                }
-            }
-
-            // No DN match found
-            return null;
+    // Парсим search_scope
+    int ldap_search_scope_value = 0;
+    try {
+        ldap_search_scope_value = Integer.parseInt(ldap_search_scope.trim());
+    } catch (NumberFormatException e) {
+        if (ldap_search_scope != null) {
+            log.warn(LogManager.getHeader(context, "ldap_authentication",
+                    "Invalid search scope: " + ldap_search_scope));
         }
+    }
+
+    Hashtable<String, String> env = new Hashtable<>();
+    env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+    env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+
+    if (adminUser != null && !adminUser.trim().isEmpty() &&
+        adminPassword != null && !adminPassword.trim().isEmpty()) {
+        env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+        env.put(javax.naming.Context.SECURITY_PRINCIPAL, adminUser);
+        env.put(javax.naming.Context.SECURITY_CREDENTIALS, adminPassword);
+    } else {
+        env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "none");
+    }
+
+    DirContext ctx = null;
+    try {
+        ctx = new InitialDirContext(env);
+
+        SearchControls ctrls = new SearchControls();
+        ctrls.setSearchScope(ldap_search_scope_value);
+
+        String searchFilter = "(&(" + ldap_id_field + "=" + netid + "))";
+        NamingEnumeration<SearchResult> answer = ctx.search(
+                ldap_search_context, searchFilter, ctrls);
+
+        while (answer.hasMoreElements()) {
+            SearchResult sr = answer.next();
+            resultDN = sr.getNameInNamespace(); // полный DN
+            log.debug(LogManager.getHeader(context, "LDAP DN calculated",
+                    "netid=" + netid + ", DN=" + resultDN));
+
+            // Получаем атрибуты
+            Attributes atts = sr.getAttributes();
+            ldapEmail = getAttrValue(atts, ldap_email_field);
+            ldapGivenName = getAttrValue(atts, ldap_givenname_field);
+            ldapSurname = getAttrValue(atts, ldap_surname_field);
+            ldapPhone = getAttrValue(atts, ldap_phone_field);
+            ldapGroup = getAttrValue(atts, ldap_group_field);
+
+            return resultDN; // берем первый результат
+        }
+    } catch (NamingException e) {
+        log.warn(LogManager.getHeader(context, "ldap_authentication",
+                "LDAP search failed for netid=" + netid + ": " + e));
+    } finally {
+        try { if (ctx != null) ctx.close(); } catch (NamingException ignored) {}
+    }
+
+    return null;
+}
+
+// вспомогательный метод
+private String getAttrValue(Attributes atts, String field) throws NamingException {
+    if (field != null) {
+        Attribute att = atts.get(field);
+        if (att != null) return (String) att.get();
+    }
+    return null;
+}
 
         /**
          * contact the ldap server and attempt to authenticate
          */
-        protected boolean ldapAuthenticate(String netid, String password,
-                        Context context) {
-            if (!password.equals("")) {
-                // Set up environment for creating initial context
-                Hashtable<String, String> env = new Hashtable<String, String>();
-                env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
-                        "com.sun.jndi.ldap.LdapCtxFactory");
-                env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+        protected boolean ldapAuthenticate(String netid, String password, Context context) {
+    if (password == null || password.isEmpty()) return false;
 
-                // Authenticate
-                env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "Simple");
-                env.put(javax.naming.Context.SECURITY_PRINCIPAL, netid);
-                env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
-                env.put(javax.naming.Context.AUTHORITATIVE, "true");
-                env.put(javax.naming.Context.REFERRAL, "follow");
+    // Получаем DN пользователя через admin
+    String adminUser = ConfigurationManager.getProperty("authentication-ldap", "search.user");
+    String adminPassword = ConfigurationManager.getProperty("authentication-ldap", "search.password");
+    String userDN = getDNOfUser(adminUser, adminPassword, context, netid);
 
-                DirContext ctx = null;
-                try {
-                    // Try to bind
-                    ctx = new InitialDirContext(env);
-                } catch (NamingException e) {
-                    log.warn(LogManager.getHeader(context,
-                            "ldap_authentication", "type=failed_auth " + e));
-                    return false;
-                } finally {
-                    // Close the context when we're done
-                    try {
-                        if (ctx != null)
-                        {
-                            ctx.close();
-                        }
-                    } catch (NamingException e) {
-                    }
-                }
-            } else {
-                return false;
-            }
+    if (userDN == null) {
+        log.warn(LogManager.getHeader(context, "ldap_authentication",
+                "Cannot determine DN for netid=" + netid));
+        return false;
+    }
 
-            return true;
-        }        
+    log.debug(LogManager.getHeader(context, "LDAP Authenticate",
+            "Attempting bind with DN=" + userDN + " for netid=" + netid));
+
+    Hashtable<String, String> env = new Hashtable<>();
+    env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+    env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+    env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+    env.put(javax.naming.Context.SECURITY_PRINCIPAL, userDN);
+    env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
+    env.put(javax.naming.Context.AUTHORITATIVE, "true");
+    env.put(javax.naming.Context.REFERRAL, "follow");
+
+    DirContext ctx = null;
+    try {
+        ctx = new InitialDirContext(env);
+        return true;
+    } catch (NamingException e) {
+        log.warn(LogManager.getHeader(context, "ldap_authentication",
+                "LDAP bind failed for netid=" + netid + " DN=" + userDN + ": " + e));
+        return false;
+    } finally {
+        try { if (ctx != null) ctx.close(); } catch (NamingException ignored) {}
+    }
+}
     }
 
     /*
