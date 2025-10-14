@@ -98,7 +98,7 @@ public class RegisterServlet extends DSpaceServlet
                 {
                     JSPManager.showJSP(request, response, "/register/new-ldap-user.jsp");
                 }
-                JSPManager.showJSP(request, response, "/register/new-user.jsp");
+                else JSPManager.showJSP(request, response, "/register/new-user.jsp");
             }
             else
             {
