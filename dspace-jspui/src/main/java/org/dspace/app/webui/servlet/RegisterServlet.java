@@ -209,225 +209,203 @@ public class RegisterServlet extends DSpaceServlet
     private void processEnterEmail(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException
+{
+    String email = request.getParameter("email");
+    if (email == null || email.length() > 64)
     {
-        String email = request.getParameter("email");
-        if (email == null || email.length() > 64)
+        // Malformed request or entered value is too long.
+        email = "";
+    }
+    else
+    {
+        email = email.toLowerCase().trim();
+    }
+
+    String netid = request.getParameter("netid");
+    String password = request.getParameter("password");
+
+    EPerson eperson = EPerson.findByEmail(context, email);
+    EPerson eperson2 = null;
+    if (netid != null)
+    {
+        eperson2 = EPerson.findByNetid(context, netid.toLowerCase());
+    }
+
+    try
+    {
+        if (registering)
         {
-        	// Malformed request or entered value is too long.
-        	email = "";
+            // Если пользователь уже зарегистрирован
+            if ((eperson != null && eperson.canLogIn()) || (eperson2 != null && eperson2.canLogIn()))
+            {
+                log.info(LogManager.getHeader(context, "already_registered", "email=" + email));
+                JSPManager.showJSP(request, response, "/register/already-registered.jsp");
+                return;
+            }
+
+            // Проверяем, разрешена ли саморегистрация
+            boolean canRegister = AuthenticationManager.canSelfRegister(context, request, email);
+
+            if (canRegister)
+            {
+                // ---- Регистрация по email (без LDAP)
+                if ((!ldap_enabled) || (netid == null) || (netid.trim().equals("")))
+                {
+                    log.info(LogManager.getHeader(context, "sendtoken_register", "email=" + email));
+
+                    try
+                    {
+                        AccountManager.sendRegistrationInfo(context, email);
+                    }
+                    catch (javax.mail.SendFailedException e)
+                    {
+                        if (e.getNextException() instanceof SMTPAddressFailedException)
+                        {
+                            log.info(LogManager.getHeader(context, "invalid_email", "email=" + email));
+                            request.setAttribute("retry", Boolean.TRUE);
+                            JSPManager.showJSP(request, response, "/register/new-user.jsp");
+                            return;
+                        }
+                        else
+                        {
+                            throw e;
+                        }
+                    }
+
+                    JSPManager.showJSP(request, response, "/register/registration-sent.jsp");
+                    context.complete();
+                    return;
+                }
+
+                // ---- Регистрация по LDAP (через netid)
+                else
+                {
+                    //--------- START LDAP AUTH SECTION -------------
+                    if (password != null && !password.equals(""))
+                    {
+                        String ldap_provider_url = ConfigurationManager.getProperty("authentication-ldap", "provider_url");
+                        String ldap_id_field = ConfigurationManager.getProperty("authentication-ldap", "id_field"); // sAMAccountName
+                        String ldap_search_context = ConfigurationManager.getProperty("authentication-ldap", "search_context");
+
+                        log.debug(LogManager.getHeader(context, "ldap_debug",
+                            "Start LDAP authentication (direct bind with transformation): " +
+                            "provider_url=" + ldap_provider_url +
+                            ", id_field=" + ldap_id_field +
+                            ", search_context=" + ldap_search_context +
+                            ", netid=" + netid));
+
+                        // 🧩 1. Преобразуем netid в корректный DN
+                        String userDN;
+
+                        // Попробуем использовать UPN — чаще всего работает в AD
+                        userDN = netid + "@ad.ssau.ru";
+
+                        log.debug(LogManager.getHeader(context, "ldap_dn_transformed",
+                            "Transformed userDN=" + userDN));
+
+                        Hashtable<String, String> env = new Hashtable<>();
+                        env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+                        env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+                        env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+                        env.put(javax.naming.Context.SECURITY_PRINCIPAL, userDN);
+                        env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
+
+                        DirContext authCtx = null;
+
+                        try
+                        {
+                            System.setProperty("com.sun.jndi.ldap.object.disableEndpointIdentification", "true");
+                            authCtx = new InitialDirContext(env);
+                            log.info(LogManager.getHeader(context, "ldap_auth_success",
+                                "LDAP bind successful for " + userDN));
+                        }
+                        catch (NamingException e)
+                        {
+                            log.error(LogManager.getHeader(context, "ldap_auth_failure",
+                                "LDAP bind failed for netid=" + netid +
+                                ", transformedDN=" + userDN +
+                                ", error=" + e.toString()), e);
+
+                            JSPManager.showJSP(request, response, "/login/ldap-incorrect.jsp");
+                            return;
+                        }
+                        finally
+                        {
+                            if (authCtx != null)
+                            {
+                                try { authCtx.close(); } catch (NamingException ignore) {}
+                            }
+                        }
+                    }
+                    //--------- END LDAP AUTH SECTION -------------
+
+                    // Переходим к заполнению личных данных
+                    JSPManager.showJSP(request, response, "/register/registration-form.jsp");
+                    return;
+                }
+            }
+            else
+            {
+                JSPManager.showJSP(request, response, "/register/cannot-register.jsp");
+                return;
+            }
         }
         else
         {
-        	email = email.toLowerCase().trim();
-        }
-        
-        String netid = request.getParameter("netid");
-        String password = request.getParameter("password");
-        EPerson eperson = EPerson.findByEmail(context, email);
-        EPerson eperson2 = null;
-        if (netid!=null)
-        {
-            eperson2 = EPerson.findByNetid(context, netid.toLowerCase());
-        }
-
-        try
-        {
-            if (registering)
+            // ---- Режим восстановления пароля ----
+            if (eperson == null)
             {
-                // If an already-active user is trying to register, inform them so
-                if ((eperson != null && eperson.canLogIn()) || (eperson2 != null && eperson2.canLogIn()))
-                {
-                    log.info(LogManager.getHeader(context,
-                            "already_registered", "email=" + email));
-
-                    JSPManager.showJSP(request, response,
-                            "/register/already-registered.jsp");
-                }
-                else
-                {
-                    // Find out from site authenticator whether this email can
-                    // self-register
-                    boolean canRegister =
-                        AuthenticationManager.canSelfRegister(context, request, email);
-
-                    if (canRegister)
-                    {
-                        //-- registering by email
-                        if ((!ldap_enabled)||(netid==null)||(netid.trim().equals("")))
-                        {
-                            // OK to register.  Send token.
-                            log.info(LogManager.getHeader(context,
-                                "sendtoken_register", "email=" + email));
-
-                            try
-                            {
-                                AccountManager.sendRegistrationInfo(context, email);
-                            }
-                            catch (javax.mail.SendFailedException e)
-                            {
-                            	if (e.getNextException() instanceof SMTPAddressFailedException)
-                            	{
-                                    // If we reach here, the email is email is invalid for the SMTP server (i.e. fbotelho).
-                                    log.info(LogManager.getHeader(context,
-                                        "invalid_email",
-                                        "email=" + email));
-                                    request.setAttribute("retry", Boolean.TRUE);
-                                    JSPManager.showJSP(request, response, "/register/new-user.jsp");
-                                    return;
-                            	}
-                            	else
-                            	{
-                            		throw e;
-                            	}
-                            }
-                            JSPManager.showJSP(request, response,
-                                "/register/registration-sent.jsp");
-
-                            // Context needs completing to write registration data
-                            context.complete();
-                        }
-                        //-- registering by netid
-                        else 
-                        {
-                            //--------- START LDAP AUTH SECTION -------------
-if (password != null && !password.equals("")) {
-    String ldap_provider_url = ConfigurationManager.getProperty("authentication-ldap", "provider_url");
-    String ldap_id_field = ConfigurationManager.getProperty("authentication-ldap", "id_field");
-    String ldap_search_context = ConfigurationManager.getProperty("authentication-ldap", "search_context");
-
-    String fullDN = ldap_id_field + "=" + netid + "," + ldap_search_context;
-
-    log.debug(LogManager.getHeader(context, "ldap_debug",
-        "Start LDAP authentication: " +
-        "provider_url=" + ldap_provider_url +
-        ", id_field=" + ldap_id_field +
-        ", search_context=" + ldap_search_context +
-        ", netid=" + netid +
-        ", constructed_DN=" + fullDN));
-
-    Hashtable<String, String> env = new Hashtable<>();
-    env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-    env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
-    env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
-    env.put(javax.naming.Context.SECURITY_PRINCIPAL, fullDN);
-    env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
-
-    DirContext ctx = null;
-    try {
-        log.debug(LogManager.getHeader(context, "ldap_connect_attempt",
-            "Trying to connect to " + ldap_provider_url + " as " + fullDN));
-
-        ctx = new InitialDirContext(env);
-
-        log.info(LogManager.getHeader(context, "ldap_auth_success",
-            "LDAP bind successful for netid=" + netid));
-
-        ctx.close();
-    } catch (NamingException e) {
-        log.error(LogManager.getHeader(context, "ldap_auth_failure",
-            "LDAP bind failed: netid=" + netid +
-            ", DN=" + fullDN +
-            ", error=" + e.toString()), e);
-
-        JSPManager.showJSP(request, response, "/login/ldap-incorrect.jsp");
-        return;
-    } finally {
-        if (ctx != null) {
-            try { ctx.close(); } catch (NamingException ignored) {}
-        }
-    }
-}
-//--------- END LDAP AUTH SECTION -------------
-                            // Forward to "personal info page"
-                            JSPManager.showJSP(request, response, "/register/registration-form.jsp");
-                        }
-                    }
-                    else
-                    {
-                        JSPManager.showJSP(request, response,
-                            "/register/cannot-register.jsp");
-                    }
-                }
-            }
-            else
-            {
-                if (eperson == null)
-                {
-                    // Invalid email address
-                    log.info(LogManager.getHeader(context, "unknown_email",
-                            "email=" + email));
-
-                    request.setAttribute("retry", Boolean.TRUE);
-
-                    JSPManager.showJSP(request, response,
-                            "/register/forgot-password.jsp");
-                }
-                else if (!eperson.canLogIn())
-                {
-                    // Can't give new password to inactive user
-                    log.info(LogManager.getHeader(context,
-                            "unregistered_forgot_password", "email=" + email));
-
-                    JSPManager.showJSP(request, response,
-                            "/register/inactive-account.jsp");
-                }
-                else if (eperson.getRequireCertificate() && !registering)
-                {
-                    // User that requires certificate can't get password
-                    log.info(LogManager.getHeader(context,
-                            "certificate_user_forgot_password", "email="
-                                    + email));
-
-                    JSPManager.showJSP(request, response,
-                            "/error/require-certificate.jsp");
-                }
-                else
-                {
-                    // OK to send forgot pw token.
-                    log.info(LogManager.getHeader(context,
-                            "sendtoken_forgotpw", "email=" + email));
-
-                    AccountManager.sendForgotPasswordInfo(context, email);
-                    JSPManager.showJSP(request, response,
-                            "/register/password-token-sent.jsp");
-
-                    // Context needs completing to write registration data
-                    context.complete();
-                }
-            }
-        }
-        catch (AddressException ae)
-        {
-            // Malformed e-mail address
-            log.info(LogManager.getHeader(context, "bad_email", "email="
-                    + email));
-
-            request.setAttribute("retry", Boolean.TRUE);
-
-            if (registering)
-            {
-                if (ldap_enabled)
-                {
-                    JSPManager.showJSP(request, response, "/register/new-ldap-user.jsp");
-                }
-                else
-                {
-                    JSPManager.showJSP(request, response, "/register/new-user.jsp");
-                }
-            }
-            else
-            {
+                log.info(LogManager.getHeader(context, "unknown_email", "email=" + email));
+                request.setAttribute("retry", Boolean.TRUE);
                 JSPManager.showJSP(request, response, "/register/forgot-password.jsp");
             }
-        }
-        catch (MessagingException me)
-        {
-            // Some other mailing error
-            log.info(LogManager.getHeader(context, "error_emailing", "email=" + email), me);
-
-            JSPManager.showInternalError(request, response);
+            else if (!eperson.canLogIn())
+            {
+                log.info(LogManager.getHeader(context, "unregistered_forgot_password", "email=" + email));
+                JSPManager.showJSP(request, response, "/register/inactive-account.jsp");
+            }
+            else if (eperson.getRequireCertificate() && !registering)
+            {
+                log.info(LogManager.getHeader(context, "certificate_user_forgot_password", "email=" + email));
+                JSPManager.showJSP(request, response, "/error/require-certificate.jsp");
+            }
+            else
+            {
+                log.info(LogManager.getHeader(context, "sendtoken_forgotpw", "email=" + email));
+                AccountManager.sendForgotPasswordInfo(context, email);
+                JSPManager.showJSP(request, response, "/register/password-token-sent.jsp");
+                context.complete();
+            }
         }
     }
+    catch (AddressException ae)
+    {
+        log.info(LogManager.getHeader(context, "bad_email", "email=" + email));
+        request.setAttribute("retry", Boolean.TRUE);
+
+        if (registering)
+        {
+            if (ldap_enabled)
+            {
+                JSPManager.showJSP(request, response, "/register/new-ldap-user.jsp");
+            }
+            else
+            {
+                JSPManager.showJSP(request, response, "/register/new-user.jsp");
+            }
+        }
+        else
+        {
+            JSPManager.showJSP(request, response, "/register/forgot-password.jsp");
+        }
+    }
+    catch (MessagingException me)
+    {
+        log.info(LogManager.getHeader(context, "error_emailing", "email=" + email), me);
+        JSPManager.showInternalError(request, response);
+    }
+}
+
 
     /**
      * Process information from "Personal information page"
