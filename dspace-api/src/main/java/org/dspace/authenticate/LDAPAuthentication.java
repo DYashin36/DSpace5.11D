@@ -410,6 +410,7 @@ public class LDAPAuthentication
         }
     }
 
+    // Настройка окружения для InitialDirContext
     Hashtable<String, String> env = new Hashtable<>();
     env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
@@ -419,20 +420,28 @@ public class LDAPAuthentication
         env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
         env.put(javax.naming.Context.SECURITY_PRINCIPAL, adminUser);
         env.put(javax.naming.Context.SECURITY_CREDENTIALS, adminPassword);
+        log.debug(LogManager.getHeader(context, "LDAP Bind", 
+                "Using admin credentials: " + adminUser));
     } else {
         env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "none");
+        log.debug(LogManager.getHeader(context, "LDAP Bind", "Using anonymous bind"));
     }
 
     DirContext ctx = null;
     try {
         ctx = new InitialDirContext(env);
+        log.debug(LogManager.getHeader(context, "LDAP Context", "Successfully created InitialDirContext"));
 
+        // Настройка поиска
         SearchControls ctrls = new SearchControls();
         ctrls.setSearchScope(ldap_search_scope_value);
 
         String searchFilter = "(&(" + ldap_id_field + "=" + netid + "))";
-        NamingEnumeration<SearchResult> answer = ctx.search(
-                ldap_search_context, searchFilter, ctrls);
+        log.debug(LogManager.getHeader(context, "LDAP Search", 
+                "Searching for netid=" + netid + " with filter=" + searchFilter 
+                + " in context=" + ldap_search_context));
+
+        NamingEnumeration<SearchResult> answer = ctx.search(ldap_search_context, searchFilter, ctrls);
 
         while (answer.hasMoreElements()) {
             SearchResult sr = answer.next();
@@ -448,26 +457,47 @@ public class LDAPAuthentication
             ldapPhone = getAttrValue(atts, ldap_phone_field);
             ldapGroup = getAttrValue(atts, ldap_group_field);
 
+            log.debug(LogManager.getHeader(context, "LDAP Attributes",
+                    "netid=" + netid
+                    + ", email=" + ldapEmail
+                    + ", givenName=" + ldapGivenName
+                    + ", surname=" + ldapSurname
+                    + ", phone=" + ldapPhone
+                    + ", group=" + ldapGroup));
+
             return resultDN; // берем первый результат
         }
+
+        // Если результата нет
+        log.warn(LogManager.getHeader(context, "LDAP Search", "No DN found for netid=" + netid));
+
     } catch (NamingException e) {
         log.warn(LogManager.getHeader(context, "ldap_authentication",
                 "LDAP search failed for netid=" + netid + ": " + e));
     } finally {
-        try { if (ctx != null) ctx.close(); } catch (NamingException ignored) {}
+        try {
+            if (ctx != null) ctx.close();
+            log.debug(LogManager.getHeader(context, "LDAP Context", "LDAP context closed"));
+        } catch (NamingException ignored) {}
     }
 
     return null;
 }
 
-// вспомогательный метод
-private String getAttrValue(Attributes atts, String field) throws NamingException {
-    if (field != null) {
-        Attribute att = atts.get(field);
-        if (att != null) return (String) att.get();
+/**
+ * Вспомогательный метод для безопасного получения значения атрибута LDAP
+ */
+private String getAttrValue(Attributes attrs, String attrName) throws NamingException {
+    if (attrName != null && attrs != null) {
+        Attribute attr = attrs.get(attrName);
+        if (attr != null) {
+            Object val = attr.get();
+            return val != null ? val.toString() : null;
+        }
     }
     return null;
 }
+
 
         /**
          * contact the ldap server and attempt to authenticate
