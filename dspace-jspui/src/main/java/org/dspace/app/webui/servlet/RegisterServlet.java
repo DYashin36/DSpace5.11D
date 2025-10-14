@@ -7,15 +7,9 @@
  */
 package org.dspace.app.webui.servlet;
 
-import com.sun.mail.smtp.SMTPAddressFailedException;
-import org.apache.log4j.Logger;
-import org.dspace.app.webui.util.JSPManager;
-import org.dspace.app.webui.util.UIUtil;
-import org.dspace.authenticate.AuthenticationManager;
-import org.dspace.authorize.AuthorizeException;
-import org.dspace.core.*;
-import org.dspace.eperson.AccountManager;
-import org.dspace.eperson.EPerson;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Hashtable;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -25,9 +19,19 @@ import javax.naming.directory.InitialDirContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Hashtable;
+
+import org.apache.log4j.Logger;
+import org.dspace.app.webui.util.JSPManager;
+import org.dspace.app.webui.util.UIUtil;
+import org.dspace.authenticate.AuthenticationManager;
+import org.dspace.authorize.AuthorizeException;
+import org.dspace.core.ConfigurationManager;
+import org.dspace.core.Context;
+import org.dspace.core.LogManager;
+import org.dspace.eperson.AccountManager;
+import org.dspace.eperson.EPerson;
+
+import com.sun.mail.smtp.SMTPAddressFailedException;
 
 /**
  * Servlet for handling user registration and forgotten passwords.
@@ -286,40 +290,54 @@ public class RegisterServlet extends DSpaceServlet
                         else 
                         {
                             //--------- START LDAP AUTH SECTION -------------
-                            if (password!=null && !password.equals("")) 
-                            {
-                                String ldap_provider_url = ConfigurationManager.getProperty("authentication-ldap", "provider_url");
-                                String ldap_id_field = ConfigurationManager.getProperty("authentication-ldap", "id_field");
-                                String ldap_search_context = ConfigurationManager.getProperty("authentication-ldap", "search_context");
-                           
-                                // Set up environment for creating initial context
-                                Hashtable env = new Hashtable(11);
-                                env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-                                env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
-                        
-                                // Authenticate 
-                                env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
-                                env.put(javax.naming.Context.SECURITY_PRINCIPAL, ldap_id_field+"="+netid+","+ldap_search_context);
-                                env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
-                        
-                                try {
-                                   // Create initial context
-                                   DirContext ctx = new InitialDirContext(env);
-             
-                                   // Close the context when we're done
-                                   ctx.close();
-                                } 
-                                catch (NamingException e) 
-                                {
-                                    // If we reach here, supplied email/password was duff.
-                                    log.info(LogManager.getHeader(context,
-                                        "failed_login",
-                                        "netid=" + netid + e));
-                                    JSPManager.showJSP(request, response, "/login/ldap-incorrect.jsp");
-                                    return;
-                                }
-                            }
-                            //--------- END LDAP AUTH SECTION -------------
+if (password != null && !password.equals("")) {
+    String ldap_provider_url = ConfigurationManager.getProperty("authentication-ldap", "provider_url");
+    String ldap_id_field = ConfigurationManager.getProperty("authentication-ldap", "id_field");
+    String ldap_search_context = ConfigurationManager.getProperty("authentication-ldap", "search_context");
+
+    String fullDN = ldap_id_field + "=" + netid + "," + ldap_search_context;
+
+    log.debug(LogManager.getHeader(context, "ldap_debug",
+        "Start LDAP authentication: " +
+        "provider_url=" + ldap_provider_url +
+        ", id_field=" + ldap_id_field +
+        ", search_context=" + ldap_search_context +
+        ", netid=" + netid +
+        ", constructed_DN=" + fullDN));
+
+    Hashtable<String, String> env = new Hashtable<>();
+    env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+    env.put(javax.naming.Context.PROVIDER_URL, ldap_provider_url);
+    env.put(javax.naming.Context.SECURITY_AUTHENTICATION, "simple");
+    env.put(javax.naming.Context.SECURITY_PRINCIPAL, fullDN);
+    env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
+
+    DirContext ctx = null;
+    try {
+        log.debug(LogManager.getHeader(context, "ldap_connect_attempt",
+            "Trying to connect to " + ldap_provider_url + " as " + fullDN));
+
+        ctx = new InitialDirContext(env);
+
+        log.info(LogManager.getHeader(context, "ldap_auth_success",
+            "LDAP bind successful for netid=" + netid));
+
+        ctx.close();
+    } catch (NamingException e) {
+        log.error(LogManager.getHeader(context, "ldap_auth_failure",
+            "LDAP bind failed: netid=" + netid +
+            ", DN=" + fullDN +
+            ", error=" + e.toString()), e);
+
+        JSPManager.showJSP(request, response, "/login/ldap-incorrect.jsp");
+        return;
+    } finally {
+        if (ctx != null) {
+            try { ctx.close(); } catch (NamingException ignored) {}
+        }
+    }
+}
+//--------- END LDAP AUTH SECTION -------------
                             // Forward to "personal info page"
                             JSPManager.showJSP(request, response, "/register/registration-form.jsp");
                         }
