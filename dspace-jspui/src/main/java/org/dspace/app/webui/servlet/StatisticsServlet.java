@@ -63,14 +63,14 @@ public class StatisticsServlet extends org.dspace.app.webui.servlet.DSpaceServle
         // is the user a member of the Administrator (1) group
         boolean admin = Group.isMember(c, 1);
         
-        if (publicise || admin)
-        {
+        // if (publicise || admin)
+        // {
             showStatistics(c, request, response);
-        }
-        else
-        {
-            throw new AuthorizeException();
-        }
+        // }
+        // else
+        // {
+        //     throw new AuthorizeException();
+        // }
     }
     
     /**
@@ -94,6 +94,10 @@ public class StatisticsServlet extends org.dspace.app.webui.servlet.DSpaceServle
         
         File[] reports = reportDir.listFiles();
         File reportFile = null;
+
+        System.out.println("Report dir: " + reportDir.getAbsolutePath());
+        System.out.println("Files: " + Arrays.toString(reports));
+        System.out.println("Selected reportFile: " + (reportFile != null ? reportFile.getName() : "null"));
         
         FileInputStream fir = null;
         InputStreamReader ir = null;
