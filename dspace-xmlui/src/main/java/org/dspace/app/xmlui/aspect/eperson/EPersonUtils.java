@@ -58,8 +58,8 @@ public class EPersonUtils
         List progress = form.addList("forgot-password-progress",
                 List.TYPE_PROGRESS);
 
-        progress.addItem("forgot-verify-email", render(step, 1)).addContent(
-                new Message("default","xmlui.EPerson.EPersonUtils.forgot_verify_email"));
+        //progress.addItem("forgot-verify-email", render(step, 1)).addContent(
+                //new Message("default","xmlui.EPerson.EPersonUtils.forgot_verify_email"));
 
         progress.addItem("forgot-reset-passowrd", render(step, 2)).addContent(
                 new Message("default","xmlui.EPerson.EPersonUtils.forgot_reset_password"));
