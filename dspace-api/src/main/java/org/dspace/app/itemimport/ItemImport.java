@@ -842,11 +842,13 @@ public class ItemImport {
         if (mapOut != null) {
             mapOut.println(mapOutputString);
         }
-        String dspaceDir = ConfigurationManager.getProperty("dspace.dir");
+        String dspaceDir = ConfigurationManager.getProperty("dspace.1C.dir");
         c.commit();
         //THIS IS CUSTOM EXPORT DATA TO 1C AFTER dspace import -a -e eperson -m pathtomapfile -s pathtothesourcefolder -c newhandlecollecton
         try {
-            String exportPath = dspaceDir + "/1C";
+            String exportPath = dspaceDir;// + "/1C";
+            //ЗДЕСЬ Я ПРАВЛЮ ПАПКУ 1С
+            //НЕ ТЕРЯТЬ!!!
             //int seq = myitem.getID(); 
             ItemExport.exportItemToFolder(c, myitem, exportPath, 0, false);
             log.info("Item ID=" + myitem.getID() + " exported to folder " + exportPath);

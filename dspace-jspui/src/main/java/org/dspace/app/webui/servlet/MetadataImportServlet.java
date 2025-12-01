@@ -123,7 +123,8 @@ public class MetadataImportServlet extends DSpaceServlet {
             //Custom save to 1C after import-metadata thing in
             //Administer->Content
             try {
-                String dspaceDir = ConfigurationManager.getProperty("dspace.dir");
+                String dspaceDir = ConfigurationManager.getProperty("dspace.1C.dir");
+                
                 MetadataImport mImport = new MetadataImport(context, csv);
                 List<BulkEditChange> changes = mImport.runImport(true, false, false, false);
                 log.info("MetadataImportServlet>>doDSPost>>else if branch>>export is here");
@@ -136,7 +137,9 @@ public class MetadataImportServlet extends DSpaceServlet {
                             //saving every new and every changed item to 1C
                             log.info("MetadataImportServlet>>doDSPost>>Export Item to folder");
                             //ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
-                            ItemExport.exportItemToFolder(context, item, dspaceDir+"/1C", 0, false);
+                            //ЗДЕСЬ Я ПРАВЛЮ ПАПКУ 1С
+                    //НЕ ТЕРЯТЬ!!
+                            ItemExport.exportItemToFolder(context, item, dspaceDir, 0, false);
                         } catch (Exception ex) {
                             log.error("Ошибка экспорта Item ID=" + item.getID(), ex);
                         }
