@@ -175,7 +175,9 @@ public class CompleteStep extends AbstractProcessingStep {
                     //ItemExport.exportItemToFolder(context, item, "/home/dspace/1C", 0, false);
                     //ЗДЕСЬ Я ПРАВЛЮ ПАПКУ 1С
                     //НЕ ТЕРЯТЬ!!!
+                    log.info("THIS IS AN 1C EXPORT:"+dspaceDir);
                     ItemExport.exportItemToFolder(context, item, dspaceDir, 0, false);
+                    log.info("THIS IS AN 1C EXPORT: SUCCESS");
                 }
             }
         } catch (Exception e) {
