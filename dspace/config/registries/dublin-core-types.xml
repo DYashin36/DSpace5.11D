@@ -892,6 +892,13 @@ org.dspace.content.MetadataValue instead.
   </dc-type>
 
   <dc-type>
+    <schema>local</schema>
+    <element>identifier</element>
+    <qualifier>olduri</qualifier>
+    <scope_note>University</scope_note>
+  </dc-type>
+
+  <dc-type>
     <schema>dcterms</schema>
     <element>title</element>
     <!-- unqualified -->
