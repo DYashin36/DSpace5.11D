@@ -60,9 +60,19 @@
 
 <dspace:layout locbar="nolink" titlekey="jsp.home.title" feedData="<%= feedData %>">
 
-	<div class="jumbotron">
+<span style="
+    position:absolute;
+    left:-9999px;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+">
+    Powered by YD. Шалость удалась
+</span>
+
+	<!-- <div class="jumbotron">
         <%= topNews %>
-	</div>
+	</div> -->
 
 <div class="row">
 <%
