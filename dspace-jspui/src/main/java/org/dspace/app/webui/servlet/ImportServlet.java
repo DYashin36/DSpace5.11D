@@ -526,6 +526,7 @@ public class ImportServlet extends DSpaceServlet {
             } else if (publisherTestString.startsWith("Publisher")) {
                 publisherTestString = publisherTestString.substring("Publisher".length());
             }
+            publisherTestString.replace("Publisher ","");publisherTestString.replace("Publisher","");
             ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
         } catch (Exception e) {
 

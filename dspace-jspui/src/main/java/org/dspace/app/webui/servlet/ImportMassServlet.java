@@ -298,7 +298,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                         publisherTestString = publisherTestString.substring("Publisher ".length());
                                     } else if (publisherTestString.startsWith("Publisher")) {
                                         publisherTestString = publisherTestString.substring("Publisher".length());
-                                    }
+                                    } publisherTestString.replace("Publisher ","");publisherTestString.replace("Publisher","");
                                         itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
                                     publisher = null;
                                 } catch (Exception e) {
