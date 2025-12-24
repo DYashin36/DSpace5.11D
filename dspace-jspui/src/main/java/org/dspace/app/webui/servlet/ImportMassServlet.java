@@ -294,13 +294,12 @@ public class ImportMassServlet extends DSpaceServlet {
                                 try {
                                     Node publisher = record.getElementsByTagName("Publisher").item(0);
                                     String publisherTestString = publisher.getTextContent();
-                                    if(publisherTestString.startsWith("Publisher"))
-                                        {
-                                            publisherTestString = publisherTestString.replaceFirst("^Publisher\\s*", "");
-                                        }
+                                    if (publisherTestString.startsWith("Publisher ")) {
+                                        publisherTestString = publisherTestString.substring("Publisher ".length());
+                                    } else if (publisherTestString.startsWith("Publisher")) {
+                                        publisherTestString = publisherTestString.substring("Publisher".length());
+                                    }
                                         itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
-                                    //log.info("doDSPost>>received Publisher is " + publisher);
-                                    //itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.getTextContent());
                                     publisher = null;
                                 } catch (Exception e) {
                                     log.info(e.getMessage());
