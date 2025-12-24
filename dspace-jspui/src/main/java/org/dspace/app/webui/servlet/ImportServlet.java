@@ -26,10 +26,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
 import org.dspace.app.webui.util.SoapHelper;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Bitstream;
@@ -524,7 +520,12 @@ public class ImportServlet extends DSpaceServlet {
         }
 
         try {
-            ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.item(0).getTextContent());
+            String publisherTestString = publisher.item(0).getTextContent();
+            if(publisherTestString.startsWith("Publisher"))
+            {
+                publisherTestString = publisherTestString.replaceFirst("^Publisher\\s*", "");
+            }
+            ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
         } catch (Exception e) {
 
         }
@@ -655,34 +656,34 @@ public class ImportServlet extends DSpaceServlet {
             InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
 
             try {
-                PDFTextStripper pdfStripper = null;
-                PDDocument docum = null;
-                PDFParser parser = new PDFParser(issforPdf);
-                COSDocument cosDoc = null;
+                // PDFTextStripper pdfStripper = null;
+                // PDDocument docum = null;
+                // PDFParser parser = new PDFParser(issforPdf);
+                // COSDocument cosDoc = null;
 
-                parser.parse();
-                cosDoc = parser.getDocument();
-                pdfStripper = new PDFTextStripper();
-                docum = new PDDocument(cosDoc);
-                //pdfStripper.getText(docum);
-                String parsedText = pdfStripper.getText(docum);
-                //log.info(parsedText);
+                // parser.parse();
+                // cosDoc = parser.getDocument();
+                // pdfStripper = new PDFTextStripper();
+                // docum = new PDDocument(cosDoc);
+                // //pdfStripper.getText(docum);
+                // String parsedText = pdfStripper.getText(docum);
+                // //log.info(parsedText);
 
-                Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-                if (fifty < 0) {
-                    fifty = fifty * (-1);
-                }
-                Integer toCut = 500;
-                if ((parsedText.length() - fifty) < 500) {
-                    toCut = parsedText.length();
-                }
-                String subText = parsedText.substring(fifty, fifty + toCut - 1);
-                try {
-                    subText = subText.substring(subText.indexOf(".") + 1);
-                } catch (Exception e) {
+                // Integer fifty = (Integer) Math.round(parsedText.length() / 2);
+                // if (fifty < 0) {
+                //     fifty = fifty * (-1);
+                // }
+                // Integer toCut = 500;
+                // if ((parsedText.length() - fifty) < 500) {
+                //     toCut = parsedText.length();
+                // }
+                // String subText = parsedText.substring(fifty, fifty + toCut - 1);
+                // try {
+                //     subText = subText.substring(subText.indexOf(".") + 1);
+                // } catch (Exception e) {
 
-                }
-                ti.addMetadata("dc", "textpart", null, null, subText + "...");
+                // }
+                ti.addMetadata("dc", "textpart", null, null, "");
             } catch (Exception e) {
 
             }
