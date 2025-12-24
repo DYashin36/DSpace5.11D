@@ -2,7 +2,6 @@ package org.dspace.app.webui.servlet;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +25,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileDeleteStrategy;
 import org.apache.log4j.Logger;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
 import org.dspace.app.webui.servlet.admin.EditCommunitiesServlet;
 import org.dspace.app.webui.util.SoapHelper;
 import org.dspace.authorize.AuthorizeException;
@@ -298,8 +293,14 @@ public class ImportMassServlet extends DSpaceServlet {
 
                                 try {
                                     Node publisher = record.getElementsByTagName("Publisher").item(0);
+                                    String publisherTestString = publisher.getTextContent();
+                                    if(publisherTestString.startsWith("Publisher"))
+                                        {
+                                            publisherTestString = publisherTestString.replaceFirst("^Publisher\\s*", "");
+                                        }
+                                        itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
                                     //log.info("doDSPost>>received Publisher is " + publisher);
-                                    itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.getTextContent());
+                                    //itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisher.getTextContent());
                                     publisher = null;
                                 } catch (Exception e) {
                                     log.info(e.getMessage());
@@ -411,40 +412,41 @@ public class ImportMassServlet extends DSpaceServlet {
     String filenamelel = linkValue.substring(linkValue.lastIndexOf('\\') + 1);
     String fileUrl = firstUrl + linkEncode;
     log.info("Downloading PDF: " + fileUrl);
+    itemItem.addMetadata("dc", "textpart", null, null, "");
 
     // Поток для сохранения файла в DSpace
     try (InputStream iss = new URL(fileUrl).openStream()) {
 
         // Второй поток для анализа PDF
-        try (InputStream issForPdf = new URL(fileUrl).openStream()) {
-            PDFParser parser = new PDFParser(issForPdf);
-            parser.parse();
+        // try (InputStream issForPdf = new URL(fileUrl).openStream()) {
+        //     PDFParser parser = new PDFParser(issForPdf);
+        //     parser.parse();
 
-            try (COSDocument cosDoc = parser.getDocument();
-                 PDDocument docum = new PDDocument(cosDoc)) {
+        //     try (COSDocument cosDoc = parser.getDocument();
+        //          PDDocument docum = new PDDocument(cosDoc)) {
 
-                PDFTextStripper pdfStripper = new PDFTextStripper();
-                String parsedText = pdfStripper.getText(docum);
+        //         PDFTextStripper pdfStripper = new PDFTextStripper();
+        //         String parsedText = pdfStripper.getText(docum);
 
-                if (parsedText != null && !parsedText.isEmpty()) {
-                    int fifty = parsedText.length() / 2;
-                    if (fifty < 0) {
-                        fifty = fifty * (-1);
-                    }
-                    int toCut = 500;
-                    if ((parsedText.length() - fifty) < 500) {
-                        toCut = parsedText.length() - fifty;
-                    }
-                    String subText = parsedText.substring(fifty, fifty + toCut - 1);
-                    try {
-                        subText = subText.substring(subText.indexOf(".") + 1);
-                    } catch (Exception ignored) { }
-                    itemItem.addMetadata("dc", "textpart", null, null, subText + "...");
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Could not parse PDF text: " + e.getMessage(), e);
-        }
+        //         //if (parsedText != null && !parsedText.isEmpty()) {
+        //             // int fifty = parsedText.length() / 2;
+        //             // if (fifty < 0) {
+        //             //     fifty = fifty * (-1);
+        //             // }
+        //             // int toCut = 500;
+        //             // if ((parsedText.length() - fifty) < 500) {
+        //             //     toCut = parsedText.length() - fifty;
+        //             // }
+        //             // String subText = parsedText.substring(fifty, fifty + toCut - 1);
+        //             // try {
+        //             //     subText = subText.substring(subText.indexOf(".") + 1);
+        //             // } catch (Exception ignored) { }
+                    
+        //         //}
+        //     }
+        // } catch (Exception e) {
+        //     log.warn("Could not parse PDF text: " + e.getMessage(), e);
+        // }
 
         if (!exists) {
             itemItem.createBundle("ORIGINAL");

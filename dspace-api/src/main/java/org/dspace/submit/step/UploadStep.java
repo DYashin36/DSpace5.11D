@@ -11,7 +11,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.Enumeration;
 
@@ -19,16 +18,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
-import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
-import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.dspace.app.util.SubmissionInfo;
 import org.dspace.app.util.Util;
 import org.dspace.authorize.AuthorizeException;
@@ -553,66 +544,65 @@ public class UploadStep extends AbstractProcessingStep
 
                 if(exten.toLowerCase().equals("pdf")) {
                     try {
-                        PDFTextStripper pdfStripper = null;
-                        PDDocument docum = null;
-                        PDFParser parser = new PDFParser(fileInputStreamPdf);
-                        COSDocument cosDoc = null;
+                        // PDFTextStripper pdfStripper = null;
+                        // PDDocument docum = null;
+                        // PDFParser parser = new PDFParser(fileInputStreamPdf);
+                        // COSDocument cosDoc = null;
 
-                        parser.parse();
-                        cosDoc = parser.getDocument();
-                        pdfStripper = new PDFTextStripper();
-                        docum = new PDDocument(cosDoc);
-                        //pdfStripper.getText(docum);
+                        // parser.parse();
+                        // cosDoc = parser.getDocument();
+                        // pdfStripper = new PDFTextStripper();
+                        // docum = new PDDocument(cosDoc);
+                        // //pdfStripper.getText(docum);
 
-                        String parsedText = pdfStripper.getText(docum);
-                        Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-                        if(fifty < 0){
-                            fifty = fifty *(-1);
-                        }
-                        Integer toCut = 500;
-                        if((parsedText.length() - fifty) < 500){
-                            toCut = parsedText.length();
-                        }
+                        // String parsedText = pdfStripper.getText(docum);
+                        // Integer fifty = (Integer) Math.round(parsedText.length() / 2);
+                        // if(fifty < 0){
+                        //     fifty = fifty *(-1);
+                        // }
+                        // Integer toCut = 500;
+                        // if((parsedText.length() - fifty) < 500){
+                        //     toCut = parsedText.length();
+                        // }
 
 
-                        log.info("FUCKTHISSHIT: "+fifty +" " +toCut);
-                        String subText = parsedText.substring(fifty, fifty + toCut-1);
-                        try {
-                            subText = subText.substring(subText.indexOf(".") + 1);
-                        } catch(Exception e){
+                        // log.info("FUCKTHISSHIT: "+fifty +" " +toCut);
+                        // String subText = parsedText.substring(fifty, fifty + toCut-1);
+                        // try {
+                        //     subText = subText.substring(subText.indexOf(".") + 1);
+                        // } catch(Exception e){
 
-                        }
-                        item.addMetadata("dc", "textpart", null, null, subText + "...");
+                        // }
+                        item.addMetadata("dc", "textpart", null, null, "");
                         item.update();
                         context.commit();
-                        log.info(parsedText);
+                        //log.info(parsedText);
                     } catch (Exception e) {
                         log.info("omgerror: " + e.toString());
                     }
                 }
 
                 if(exten.toLowerCase().equals("txt")){
-                    StringWriter writer = new StringWriter();
-                    IOUtils.copy(fileInputStreamPdf, writer, "UTF-8");
+                    // StringWriter writer = new StringWriter();
+                    // IOUtils.copy(fileInputStreamPdf, writer, "UTF-8");
 
-                    String theString = writer.toString();
-                    if (theString.startsWith("\uFEFF")) {
+                    // String theString = writer.toString();
+                    // if (theString.startsWith("\uFEFF")) {
 
-                    } else {
-                        StringWriter writerAnsi = new StringWriter();
-                        IOUtils.copy(ifAnsi, writerAnsi, "Cp1252");
-                        theString = writerAnsi.toString();
-                    }
-                    Integer fifty = (Integer) Math.round(theString.length()*(50/100.0f));
-                    Integer toCut = 500;
-                    if((theString.length() - fifty) < 500){
-                        toCut = theString.length();
-                    }
-                    String subText = theString.substring(fifty, toCut-1);
-                    item.addMetadata("dc", "textpart", null, null, subText + "...");
+                    // } else {
+                    //     StringWriter writerAnsi = new StringWriter();
+                    //     IOUtils.copy(ifAnsi, writerAnsi, "Cp1252");
+                    //     theString = writerAnsi.toString();
+                    // }
+                    // Integer fifty = (Integer) Math.round(theString.length()*(50/100.0f));
+                    // Integer toCut = 500;
+                    // if((theString.length() - fifty) < 500){
+                    //     toCut = theString.length();
+                    // }
+                    // String subText = theString.substring(fifty, toCut-1);
+                    item.addMetadata("dc", "textpart", null, null, "");
                     item.update();
                     context.commit();
-                    log.info(subText);
                 }
 
                 log.info("OMGTEST: " + exten);
@@ -622,16 +612,16 @@ public class UploadStep extends AbstractProcessingStep
                     try
                     {
 
-                        HWPFDocument document = new HWPFDocument(fileInputStreamPdf);
-                        extractor = new WordExtractor(document);
-                        String fileData = extractor.getText();
-                        Integer fifty = (Integer) Math.round(50 * 100 / fileData.length());
-                        Integer toCut = 500;
-                        if((fileData.length() - fifty) < 500){
-                            toCut = fileData.length();
-                        }
-                        String subText = fileData.substring(fifty, toCut-1);
-                        item.addMetadata("dc", "textpart", null, null, subText +"...");
+                        // HWPFDocument document = new HWPFDocument(fileInputStreamPdf);
+                        // extractor = new WordExtractor(document);
+                        // String fileData = extractor.getText();
+                        // Integer fifty = (Integer) Math.round(50 * 100 / fileData.length());
+                        // Integer toCut = 500;
+                        // if((fileData.length() - fifty) < 500){
+                        //     toCut = fileData.length();
+                        // }
+                        //String subText = fileData.substring(fifty, toCut-1);
+                        item.addMetadata("dc", "textpart", null, null, "");
                         item.update();
                         context.commit();
                     }
@@ -642,18 +632,18 @@ public class UploadStep extends AbstractProcessingStep
                 }
 
                 if((exten.toLowerCase().equals("ocx"))){
-                    XWPFDocument document = new XWPFDocument(fileInputStreamPdf);
-                    XWPFWordExtractor extractor = null ;
-                    extractor = new XWPFWordExtractor(document);
+                    // XWPFDocument document = new XWPFDocument(fileInputStreamPdf);
+                    // XWPFWordExtractor extractor = null ;
+                    // extractor = new XWPFWordExtractor(document);
 
-                    String text = extractor.getText();
-                    Integer fifty = (Integer) Math.round(50 * 100 / text.length());
-                    Integer toCut = 500;
-                    if((text.length() - fifty) < 500){
-                        toCut = text.length();
-                    }
-                    String subText = text.substring(fifty, toCut-1);
-                    item.addMetadata("dc", "textpart", null, null, subText +"...");
+                    // String text = extractor.getText();
+                    // Integer fifty = (Integer) Math.round(50 * 100 / text.length());
+                    // Integer toCut = 500;
+                    // if((text.length() - fifty) < 500){
+                    //     toCut = text.length();
+                    // }
+                    // String subText = text.substring(fifty, toCut-1);
+                    item.addMetadata("dc", "textpart", null, null, "");
                     item.update();
                     context.commit();
                 }
