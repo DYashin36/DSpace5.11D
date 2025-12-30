@@ -11,17 +11,22 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.sql.DataSource;
-import org.apache.commons.dbcp.*;
+
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool.impl.GenericKeyedObjectPoolFactory;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
 import org.dspace.core.ConfigurationManager;
-
-import java.util.*;
-import org.apache.commons.lang.StringUtils;
 
 public class DataSourceInit {
     private static final Logger log = Logger.getLogger(DataSourceInit.class);
@@ -52,7 +57,7 @@ public class DataSourceInit {
 
             if (ConfigurationManager.getProperty("db.maxconnections") == null)
             {
-                maxConnections = 30;
+                maxConnections = 500;
             }
 
             int maxWait = ConfigurationManager.getIntProperty("db.maxwait");
