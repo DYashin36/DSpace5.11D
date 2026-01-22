@@ -207,7 +207,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 NodeList titleNode = record.getElementsByTagName("Title");
                                 //log.info("doDSPost>>received Title is " + titleNode);
                                 //  itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "title", null, "ru", tex.getTextContent());
-                                writeMetaDataToItemLowerCaseTitle(itemItem, "title", titleNode);
+                                writeMetaDataToItemNormalized(itemItem, "title", record.getElementsByTagName("Title"));
                                 titleNode = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -255,7 +255,7 @@ public class ImportMassServlet extends DSpaceServlet {
                             try {
                                 NodeList subjects = record.getElementsByTagName("Subject");
                                 //log.info("doDSPost>>received Subject is " + subjects);
-                                writeMetaDataToItemLowerCaseSubject(itemItem, "subject", subjects);
+                                writeMetaDataToItemNormalized(itemItem, "subject", record.getElementsByTagName("Subject"));
                                 subjects = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -264,7 +264,7 @@ public class ImportMassServlet extends DSpaceServlet {
                             try {
                                 NodeList descrs = record.getElementsByTagName("Description");
                                 //log.info("doDSPost>>received Description is " + descrs);
-                                writeMetaDataToItemLowerCase(itemItem, "description", descrs);
+                                writeMetaDataToItemNormalized(itemItem, "description", record.getElementsByTagName("Description"));
                                 descrs = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -292,91 +292,98 @@ public class ImportMassServlet extends DSpaceServlet {
                                 log.warn("Error while processing Date field: " + e.getMessage());
                             }
 
-                            try {
-                                NodeList publisherNodes = record.getElementsByTagName("Publisher");
-                                for (int p = 0; p < publisherNodes.getLength(); p++) {
-                                    Element publisherElement = (Element) publisherNodes.item(p);
-                                    Node qualifierNode = publisherElement.getElementsByTagName("Qualifier").item(0);
-                                    Node valueNode = publisherElement.getElementsByTagName("Value").item(0);
-                                    
-                                    if (valueNode != null) {
-                                        String publisherValue = valueNode.getTextContent().trim();
-                                        
-                                        if (!publisherValue.isEmpty()) {
-                                            itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherValue);
-                                            log.info("Added publisher: " + publisherValue);
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                log.warn("Error while processing Publisher field: " + e.getMessage());
-                            }
+                            writeMetaDataToItemNormalized(itemItem, "publisher", record.getElementsByTagName("Publisher"));
+                            writeMetaDataToItemNormalized(itemItem, "type", record.getElementsByTagName("Type"));
+                            writeMetaDataToItemNormalized(itemItem, "source", record.getElementsByTagName("Source"));
+                            writeMetaDataToItemNormalized(itemItem, "rights", record.getElementsByTagName("Rights"));
 
-                            try {
-                                NodeList typeNodes = record.getElementsByTagName("Type");
-                                for (int t = 0; t < typeNodes.getLength(); t++) {
-                                    Element typeElement = (Element) typeNodes.item(t);
-                                    Node qualifierNode = typeElement.getElementsByTagName("Qualifier").item(0);
-                                    Node valueNode = typeElement.getElementsByTagName("Value").item(0);
-                                    
-                                    if (valueNode != null) {
-                                        String typeValue = valueNode.getTextContent().trim();
-                                        
-                                        if (!typeValue.isEmpty()) {
-                                            itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", typeValue);
-                                            log.info("Added type: " + typeValue);
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                log.warn("Error while processing Type field: " + e.getMessage());
-                            }
 
-                            try {
-                                NodeList sourceNodes = record.getElementsByTagName("Source");
-                                for (int s = 0; s < sourceNodes.getLength(); s++) {
-                                    Element sourceElement = (Element) sourceNodes.item(s);
-                                    Node qualifierNode = sourceElement.getElementsByTagName("Qualifier").item(0);
-                                    Node valueNode = sourceElement.getElementsByTagName("Value").item(0);
+                            // try {
+                            //     NodeList publisherNodes = record.getElementsByTagName("Publisher");
+                            //     for (int p = 0; p < publisherNodes.getLength(); p++) {
+                            //         Element publisherElement = (Element) publisherNodes.item(p);
+                            //         Node qualifierNode = publisherElement.getElementsByTagName("Qualifier").item(0);
+                            //         Node valueNode = publisherElement.getElementsByTagName("Value").item(0);
                                     
-                                    if (valueNode != null) {
-                                        String sourceValue = valueNode.getTextContent().trim();
+                            //         if (valueNode != null) {
+                            //             String publisherValue = valueNode.getTextContent().trim();
                                         
-                                        if (!sourceValue.isEmpty()) {
-                                            itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sourceValue);
-                                            log.info("Added source: " + sourceValue);
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                log.warn("Error while processing Source field: " + e.getMessage());
-                            }
+                            //             if (!publisherValue.isEmpty()) {
+                            //                 itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherValue);
+                            //                 log.info("Added publisher: " + publisherValue);
+                            //             }
+                            //         }
+                            //     }
+                            // } catch (Exception e) {
+                            //     log.warn("Error while processing Publisher field: " + e.getMessage());
+                            // }
 
-                            try {
-                                NodeList rightsNodes = record.getElementsByTagName("Rights");
-                                for (int r = 0; r < rightsNodes.getLength(); r++) {
-                                    Element rightsElement = (Element) rightsNodes.item(r);
-                                    Node qualifierNode = rightsElement.getElementsByTagName("Qualifier").item(0);
-                                    Node valueNode = rightsElement.getElementsByTagName("Value").item(0);
+                            // try {
+                            //     NodeList typeNodes = record.getElementsByTagName("Type");
+                            //     for (int t = 0; t < typeNodes.getLength(); t++) {
+                            //         Element typeElement = (Element) typeNodes.item(t);
+                            //         Node qualifierNode = typeElement.getElementsByTagName("Qualifier").item(0);
+                            //         Node valueNode = typeElement.getElementsByTagName("Value").item(0);
                                     
-                                    if (valueNode != null) {
-                                        String rightsValue = valueNode.getTextContent().trim();
+                            //         if (valueNode != null) {
+                            //             String typeValue = valueNode.getTextContent().trim();
                                         
-                                        // Добавляем только если значение не пустое
-                                        if (!rightsValue.isEmpty()) {
-                                            itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rightsValue);
-                                            log.info("Added rights: " + rightsValue);
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                log.warn("Error while processing Rights field: " + e.getMessage());
-                            }
+                            //             if (!typeValue.isEmpty()) {
+                            //                 itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", typeValue);
+                            //                 log.info("Added type: " + typeValue);
+                            //             }
+                            //         }
+                            //     }
+                            // } catch (Exception e) {
+                            //     log.warn("Error while processing Type field: " + e.getMessage());
+                            // }
+
+                            // try {
+                            //     NodeList sourceNodes = record.getElementsByTagName("Source");
+                            //     for (int s = 0; s < sourceNodes.getLength(); s++) {
+                            //         Element sourceElement = (Element) sourceNodes.item(s);
+                            //         Node qualifierNode = sourceElement.getElementsByTagName("Qualifier").item(0);
+                            //         Node valueNode = sourceElement.getElementsByTagName("Value").item(0);
+                                    
+                            //         if (valueNode != null) {
+                            //             String sourceValue = valueNode.getTextContent().trim();
+                                        
+                            //             if (!sourceValue.isEmpty()) {
+                            //                 itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sourceValue);
+                            //                 log.info("Added source: " + sourceValue);
+                            //             }
+                            //         }
+                            //     }
+                            // } catch (Exception e) {
+                            //     log.warn("Error while processing Source field: " + e.getMessage());
+                            // }
+
+                            // try {
+                            //     NodeList rightsNodes = record.getElementsByTagName("Rights");
+                            //     for (int r = 0; r < rightsNodes.getLength(); r++) {
+                            //         Element rightsElement = (Element) rightsNodes.item(r);
+                            //         Node qualifierNode = rightsElement.getElementsByTagName("Qualifier").item(0);
+                            //         Node valueNode = rightsElement.getElementsByTagName("Value").item(0);
+                                    
+                            //         if (valueNode != null) {
+                            //             String rightsValue = valueNode.getTextContent().trim();
+                                        
+                            //             // Добавляем только если значение не пустое
+                            //             if (!rightsValue.isEmpty()) {
+                            //                 itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rightsValue);
+                            //                 log.info("Added rights: " + rightsValue);
+                            //             }
+                            //         }
+                            //     }
+                            // } catch (Exception e) {
+                            //     log.warn("Error while processing Rights field: " + e.getMessage());
+                            // }
 
                             try {
                                 NodeList formats = record.getElementsByTagName("Format");
                                 //log.info("doDSPost>>received Format is " + formats);
-                                writeMetaDataToItemLowerCase(itemItem, "format", formats);
+                                writeMetaDataToItemNormalized(itemItem, "format", record.getElementsByTagName("Format"));
+
                                 formats = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -385,7 +392,8 @@ public class ImportMassServlet extends DSpaceServlet {
                             try {
                                 NodeList languages = record.getElementsByTagName("Language");
                                 //log.info("doDSPost>>received Language is " + languages);
-                                writeMetaDataToItemLowerCase(itemItem, "language", languages);
+                                writeMetaDataToItemNormalized(itemItem, "language", record.getElementsByTagName("Language"));
+
                                 languages = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -394,7 +402,9 @@ public class ImportMassServlet extends DSpaceServlet {
                             try {
                                 NodeList relations = record.getElementsByTagName("Relation");
                                 //log.info("doDSPost>>received Relation is " + relations);
-                                writeMetaDataToItemLowerCase(itemItem, "relation", relations);
+                                writeMetaDataToItemNormalized(itemItem, "relation", record.getElementsByTagName("Relation"));
+
+                                
                                 relations = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -403,7 +413,8 @@ public class ImportMassServlet extends DSpaceServlet {
                             try {
                                 NodeList coverages = record.getElementsByTagName("Coverage");
                                 //log.info("doDSPost>>received Coverage is " + coverages);
-                                writeMetaDataToItemLowerCase(itemItem, "coverage", coverages);
+                                writeMetaDataToItemNormalized(itemItem, "coverage", record.getElementsByTagName("Coverage"));
+
                                 coverages = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -412,7 +423,8 @@ public class ImportMassServlet extends DSpaceServlet {
                             try {
                                 NodeList citation = record.getElementsByTagName("Citation");
                                 //log.info("doDSPost>>received Citation is " + citation);
-                                writeMetaDataToItemLowerCase(itemItem, "citation", citation);
+                                writeMetaDataToItemNormalized(itemItem, "citation", record.getElementsByTagName("Citation"));
+
                                 citation = null;
                             } catch (Exception e) {
                                 log.info(e.getMessage());
@@ -600,18 +612,18 @@ public class ImportMassServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCaseSubject(Item item, String qualifier, NodeList nodes) {
-        for (int j = 0; j < nodes.getLength(); j++) {
-            Element subjectNode = (Element) nodes.item(j);
-            Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
-            Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            if (qulSubject.getTextContent().toLowerCase().equals("subject")) {
-                item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            } else {
-                item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
-            }
-        }
-    }
+    // public void writeMetaDataToItemLowerCaseSubject(Item item, String qualifier, NodeList nodes) {
+    //     for (int j = 0; j < nodes.getLength(); j++) {
+    //         Element subjectNode = (Element) nodes.item(j);
+    //         Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
+    //         Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
+    //         if (qulSubject.getTextContent().toLowerCase().equals("subject")) {
+    //             item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
+    //         } else {
+    //             item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, qulSubject.getTextContent().toLowerCase(), "ru", textSubject.getTextContent());
+    //         }
+    //     }
+    // }
 
     public void writeMetaDataToItemLowerCaseIdentifier(Item item, String qualifier, NodeList nodes) {
         for (int j = 0; j < nodes.getLength(); j++) {
@@ -637,32 +649,62 @@ public class ImportMassServlet extends DSpaceServlet {
         }
     }
 
-    public void writeMetaDataToItemLowerCaseTitle(Item item, String qualifier, NodeList nodes) {
-        log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle was called");
-        for (int j = 0; j < nodes.getLength(); j++) {
-            Element subjectNode = (Element) nodes.item(j);
-            Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
-            Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
-            //log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:" + textSubject.getTextContent());
-            //log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:" + qulSubject.getTextContent());
-            String normalizedQualifier = null;
-            if (qulSubject != null && qulSubject.getTextContent() != null) {
-                String q = qulSubject.getTextContent().trim().toLowerCase();
-                if (!q.isEmpty()) {
-                    normalizedQualifier = q;
-                    log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>normalizedQualifier is " + normalizedQualifier);
-                }
-            }
+    public void writeMetaDataToItemNormalized(Item item, String element, NodeList nodes) {
+    for (int j = 0; j < nodes.getLength(); j++) {
+        Element el = (Element) nodes.item(j);
 
-            if ("title".equals(normalizedQualifier)) {
-                log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>call with null");
-                item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
-            } else {
-                log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>call with normalizedQ");
-                item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, normalizedQualifier, "ru", textSubject.getTextContent());
-            }
+        Node valueNode = el.getElementsByTagName("Value").item(0);
+        Node qualNode = el.getElementsByTagName("Qualifier").item(0);
+
+        if (valueNode == null || qualNode == null) continue;
+
+        String value = valueNode.getTextContent().trim();
+        if (value.isEmpty()) continue;
+
+        String qual = qualNode.getTextContent().trim().toLowerCase();
+
+        // если qualifier = element → не пишем его вторично
+        if (qual.equals(element.toLowerCase())) {
+            qual = null;
         }
+
+        item.addMetadata(
+            MetadataSchema.DC_SCHEMA,
+            element.toLowerCase(),
+            qual,
+            "ru",
+            value
+        );
     }
+}
+
+
+    // public void writeMetaDataToItemLowerCaseTitle(Item item, String qualifier, NodeList nodes) {
+    //     log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle was called");
+    //     for (int j = 0; j < nodes.getLength(); j++) {
+    //         Element subjectNode = (Element) nodes.item(j);
+    //         Node textSubject = subjectNode.getElementsByTagName("Value").item(0);
+    //         Node qulSubject = subjectNode.getElementsByTagName("Qualifier").item(0);
+    //         //log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received textSubject:" + textSubject.getTextContent());
+    //         //log.info("ImportMassServlet>>writeMetaDataToItemLowerCaseTitle>>Received qulSubject:" + qulSubject.getTextContent());
+    //         String normalizedQualifier = null;
+    //         if (qulSubject != null && qulSubject.getTextContent() != null) {
+    //             String q = qulSubject.getTextContent().trim().toLowerCase();
+    //             if (!q.isEmpty()) {
+    //                 normalizedQualifier = q;
+    //                 log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>normalizedQualifier is " + normalizedQualifier);
+    //             }
+    //         }
+
+    //         if ("title".equals(normalizedQualifier)) {
+    //             log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>call with null");
+    //             item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, null, "ru", textSubject.getTextContent());
+    //         } else {
+    //             log.info("InportMassServlet>>writeMetaDataToItemLowerCaseTitle>>call with normalizedQ");
+    //             item.addMetadata(MetadataSchema.DC_SCHEMA, qualifier, normalizedQualifier, "ru", textSubject.getTextContent());
+    //         }
+    //     }
+    // }
 
     private static String removeUTF8BOM(String s) {
         if (s.startsWith(UTF8_BOM)) {
