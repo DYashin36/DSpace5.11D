@@ -497,12 +497,12 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-        // NodeList rughts = null;
-        // try {
-        //     rughts = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
-        // } catch (XPathExpressionException e) {
-        //     e.printStackTrace();
-        // }
+        NodeList rughts = null;
+        try {
+            rughts = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        }
 
         writeMetaDataToItemNormalized(ti, "rights", rughts);
 
