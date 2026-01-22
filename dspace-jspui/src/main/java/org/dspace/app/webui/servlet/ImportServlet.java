@@ -462,11 +462,13 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-        try {
-            ti.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sources.item(0).getTextContent());
-        } catch (Exception e) {
+        // try {
+        //     ti.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sources.item(0).getTextContent());
+        // } catch (Exception e) {
 
-        }
+        // }
+        writeMetaDataToItemNormalized(ti, "source", sources);
+
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Type']");
@@ -481,11 +483,13 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-        try {
-            ti.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.item(0).getTextContent());
-        } catch (Exception e) {
+        // try {
+        //     ti.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.item(0).getTextContent());
+        // } catch (Exception e) {
 
-        }
+        // }
+        writeMetaDataToItemNormalized(ti, "type", type);
+
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Rights']");
@@ -493,18 +497,15 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-        NodeList rughts = null;
-        try {
-            rughts = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
-        }
+        // NodeList rughts = null;
+        // try {
+        //     rughts = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
+        // } catch (XPathExpressionException e) {
+        //     e.printStackTrace();
+        // }
 
-        try {
-            ti.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rughts.item(0).getTextContent());
-        } catch (Exception e) {
+        writeMetaDataToItemNormalized(ti, "rights", rughts);
 
-        }
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Publisher']");
@@ -519,18 +520,20 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-        try {
-            String publisherTestString = publisher.item(0).getTextContent();
-            if (publisherTestString.startsWith("Publisher ")) {
-                publisherTestString = publisherTestString.substring("Publisher ".length());
-            } else if (publisherTestString.startsWith("Publisher")) {
-                publisherTestString = publisherTestString.substring("Publisher".length());
-            }
-            publisherTestString.replace("Publisher ","");publisherTestString.replace("Publisher","");
-            ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
-        } catch (Exception e) {
+        // try {
+        //     String publisherTestString = publisher.item(0).getTextContent();
+        //     if (publisherTestString.startsWith("Publisher ")) {
+        //         publisherTestString = publisherTestString.substring("Publisher ".length());
+        //     } else if (publisherTestString.startsWith("Publisher")) {
+        //         publisherTestString = publisherTestString.substring("Publisher".length());
+        //     }
+        //     publisherTestString.replace("Publisher ","");publisherTestString.replace("Publisher","");
+        //     ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
+        // } catch (Exception e) {
 
-        }
+        // }
+        writeMetaDataToItemNormalized(ti, "publisher", publisher);
+
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Contributor']");
@@ -782,6 +785,35 @@ public class ImportServlet extends DSpaceServlet {
 
         }
     }
+
+    public void writeMetaDataToItemNormalized(Item item, String element, NodeList nodes) {
+    for (int j = 0; j < nodes.getLength(); j++) {
+        Element el = (Element) nodes.item(j);
+
+        Node valueNode = el.getElementsByTagName("Value").item(0);
+        Node qualNode = el.getElementsByTagName("Qualifier").item(0);
+
+        if (valueNode == null || qualNode == null) continue;
+
+        String value = valueNode.getTextContent().trim();
+        if (value.isEmpty()) continue;
+
+        String qual = qualNode.getTextContent().trim().toLowerCase();
+
+        // если qualifier = element → не пишем его вторично
+        if (qual.equals(element.toLowerCase())) {
+            qual = null;
+        }
+
+        item.addMetadata(
+            MetadataSchema.DC_SCHEMA,
+            element.toLowerCase(),
+            qual,
+            "ru",
+            value
+        );
+    }
+}
 
     public void writeMetaDataToItemLowerCase(Item item, String qualifier, NodeList nodes) {
         for (int j = 0; j < nodes.getLength(); j++) {
