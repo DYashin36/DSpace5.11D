@@ -224,33 +224,33 @@ public class ImportMassServlet extends DSpaceServlet {
                             }
 
                             try {
-    NodeList contributors = record.getElementsByTagName("Contributor");
-    for (int c = 0; c < contributors.getLength(); c++) {
-        Element contribElement = (Element) contributors.item(c);
+                                NodeList contributors = record.getElementsByTagName("Contributor");
+                                for (int c = 0; c < contributors.getLength(); c++) {
+                                    Element contribElement = (Element) contributors.item(c);
 
-        Node qualifierNode = contribElement.getElementsByTagName("Qualifier").item(0);
-        Node valueNode = contribElement.getElementsByTagName("Value").item(0);
+                                    Node qualifierNode = contribElement.getElementsByTagName("Qualifier").item(0);
+                                    Node valueNode = contribElement.getElementsByTagName("Value").item(0);
 
-        if (qualifierNode != null && valueNode != null) {
-            String qualifier = qualifierNode.getTextContent().trim();
-            String value = valueNode.getTextContent().trim();
+                                    if (qualifierNode != null && valueNode != null) {
+                                        String qualifier = qualifierNode.getTextContent().trim();
+                                        String value = valueNode.getTextContent().trim();
 
-            // добавляем только авторов
-            if ("Author".equalsIgnoreCase(qualifier) && !value.isEmpty()) {
-                itemItem.addMetadata(
-                    MetadataSchema.DC_SCHEMA,
-                    "contributor",
-                    "author",
-                    "ru",
-                    value
-                );
-                log.info("Added author: " + value);
-            }
-        }
-    }
-} catch (Exception e) {
-    log.warn("Error while processing Contributor nodes: " + e.getMessage());
-}
+                                        // добавляем только авторов
+                                        if ("Author".equalsIgnoreCase(qualifier) && !value.isEmpty()) {
+                                            itemItem.addMetadata(
+                                                MetadataSchema.DC_SCHEMA,
+                                                "contributor",
+                                                "author",
+                                                "ru",
+                                                value
+                                            );
+                                            log.info("Added author: " + value);
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                log.warn("Error while processing Contributor nodes: " + e.getMessage());
+                            }
 
                             try {
                                 NodeList subjects = record.getElementsByTagName("Subject");
@@ -275,6 +275,7 @@ public class ImportMassServlet extends DSpaceServlet {
                                 //log.info("doDSPost>>received Date count: " + dateNodes.getLength());
                                 for (int d = 0; d < dateNodes.getLength(); d++) {
                                     Element dateElement = (Element) dateNodes.item(d);
+                                    Node qualifierNode = dateElement.getElementsByTagName("Qualifier").item(0);
                                     Node valueNode = dateElement.getElementsByTagName("Value").item(0);
 
                                     if (valueNode != null) {
@@ -300,14 +301,6 @@ public class ImportMassServlet extends DSpaceServlet {
                                     
                                     if (valueNode != null) {
                                         String publisherValue = valueNode.getTextContent().trim();
-                                        // Удаляем "Publisher " из начала строки, если оно есть
-                                        if (publisherValue.startsWith("Publisher ")) {
-                                            publisherValue = publisherValue.substring("Publisher ".length());
-                                        } else if (publisherValue.startsWith("Publisher")) {
-                                            publisherValue = publisherValue.substring("Publisher".length());
-                                        }
-                                        // Также удаляем лишние пробелы
-                                        publisherValue = publisherValue.trim();
                                         
                                         if (!publisherValue.isEmpty()) {
                                             itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherValue);
@@ -328,13 +321,6 @@ public class ImportMassServlet extends DSpaceServlet {
                                     
                                     if (valueNode != null) {
                                         String typeValue = valueNode.getTextContent().trim();
-                                        // Удаляем "Type " из начала строки, если оно есть
-                                        if (typeValue.startsWith("Type ")) {
-                                            typeValue = typeValue.substring("Type ".length());
-                                        } else if (typeValue.startsWith("Type")) {
-                                            typeValue = typeValue.substring("Type".length());
-                                        }
-                                        typeValue = typeValue.trim();
                                         
                                         if (!typeValue.isEmpty()) {
                                             itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", typeValue);
@@ -355,13 +341,6 @@ public class ImportMassServlet extends DSpaceServlet {
                                     
                                     if (valueNode != null) {
                                         String sourceValue = valueNode.getTextContent().trim();
-                                        // Удаляем "Source " из начала строки, если оно есть
-                                        if (sourceValue.startsWith("Source ")) {
-                                            sourceValue = sourceValue.substring("Source ".length());
-                                        } else if (sourceValue.startsWith("Source")) {
-                                            sourceValue = sourceValue.substring("Source".length());
-                                        }
-                                        sourceValue = sourceValue.trim();
                                         
                                         if (!sourceValue.isEmpty()) {
                                             itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sourceValue);
@@ -382,18 +361,8 @@ public class ImportMassServlet extends DSpaceServlet {
                                     
                                     if (valueNode != null) {
                                         String rightsValue = valueNode.getTextContent().trim();
-                                        // Удаляем "Rights " или "License " из начала строки, если они есть
-                                        if (rightsValue.startsWith("Rights ")) {
-                                            rightsValue = rightsValue.substring("Rights ".length());
-                                        } else if (rightsValue.startsWith("License ")) {
-                                            rightsValue = rightsValue.substring("License ".length());
-                                        } else if (rightsValue.startsWith("Rights")) {
-                                            rightsValue = rightsValue.substring("Rights".length());
-                                        } else if (rightsValue.startsWith("License")) {
-                                            rightsValue = rightsValue.substring("License".length());
-                                        }
-                                        rightsValue = rightsValue.trim();
                                         
+                                        // Добавляем только если значение не пустое
                                         if (!rightsValue.isEmpty()) {
                                             itemItem.addMetadata(MetadataSchema.DC_SCHEMA, "rights", null, "ru", rightsValue);
                                             log.info("Added rights: " + rightsValue);
@@ -432,7 +401,6 @@ public class ImportMassServlet extends DSpaceServlet {
                             }
 
                             try {
-
                                 NodeList coverages = record.getElementsByTagName("Coverage");
                                 //log.info("doDSPost>>received Coverage is " + coverages);
                                 writeMetaDataToItemLowerCase(itemItem, "coverage", coverages);
@@ -442,7 +410,6 @@ public class ImportMassServlet extends DSpaceServlet {
                             }
 
                             try {
-
                                 NodeList citation = record.getElementsByTagName("Citation");
                                 //log.info("doDSPost>>received Citation is " + citation);
                                 writeMetaDataToItemLowerCase(itemItem, "citation", citation);
@@ -458,64 +425,55 @@ public class ImportMassServlet extends DSpaceServlet {
 
                             itemItem.setDiscoverable(true);
 
-                           try {
-    Node link = record.getElementsByTagName("Link").item(0);
-    String firstUrl = "http://lib.ssau.ru/download?fname=";
-    String linkValue = null;
+                            try {
+                                NodeList linkNodes = record.getElementsByTagName("Link");
+                                if (linkNodes.getLength() > 0) {
+                                    Element linkElement = (Element) linkNodes.item(0);
+                                    String firstUrl = "http://lib.ssau.ru/download?fname=";
+                                    String linkValue = null;
 
-    // Проверяем, есть ли внутри <Value>
-    NodeList childNodes = link.getChildNodes();
-    for (int in = 0; in < childNodes.getLength(); in++) {
-        Node child = childNodes.item(in);
-        if ("Value".equalsIgnoreCase(child.getNodeName())) {
-            linkValue = child.getTextContent().trim();
-            break;
-        }
-    }
-    // Если <Value> нет — значит <Link> содержит путь напрямую
-    if (linkValue == null || linkValue.isEmpty()) {
-        linkValue = link.getTextContent().trim();
-    }
-    
-    // Удаляем "Link " из начала строки, если оно есть
-    if (linkValue.startsWith("Link ")) {
-        linkValue = linkValue.substring("Link ".length());
-    } else if (linkValue.startsWith("Link")) {
-        linkValue = linkValue.substring("Link".length());
-    }
-    linkValue = linkValue.trim();
+                                    // Получаем значение из элемента Value
+                                    Node valueNode = linkElement.getElementsByTagName("Value").item(0);
+                                    if (valueNode != null) {
+                                        linkValue = valueNode.getTextContent().trim();
+                                    }
+                                    
+                                    // Если в Value ничего нет, пробуем получить текст самого элемента Link
+                                    if (linkValue == null || linkValue.isEmpty()) {
+                                        linkValue = linkElement.getTextContent().trim();
+                                    }
 
-    // Кодируем для запроса
-    String linkEncode = URLEncoder.encode(linkValue, "UTF-8");
-    // Достаём имя файла
-    String filenamelel = linkValue.substring(linkValue.lastIndexOf('\\') + 1);
-    String fileUrl = firstUrl + linkEncode;
-    log.info("Downloading PDF: " + fileUrl);
-    itemItem.addMetadata("dc", "textpart", null, null, "");
+                                    if (linkValue != null && !linkValue.isEmpty()) {
+                                        // Кодируем для запроса
+                                        String linkEncode = URLEncoder.encode(linkValue, "UTF-8");
+                                        // Достаём имя файла
+                                        String filenamelel = linkValue.substring(linkValue.lastIndexOf('\\') + 1);
+                                        String fileUrl = firstUrl + linkEncode;
+                                        log.info("Downloading PDF: " + fileUrl);
+                                        
+                                        itemItem.addMetadata("dc", "textpart", null, null, "");
 
-    // Поток для сохранения файла в DSpace
-    try (InputStream iss = new URL(fileUrl).openStream()) {
+                                        // Поток для сохранения файла в DSpace
+                                        try (InputStream iss = new URL(fileUrl).openStream()) {
 
-        if (!exists) {
-            itemItem.createBundle("ORIGINAL");
-            Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
-            b.setName(filenamelel);
-            b.setDescription("from 1C");
-            b.setSource("1C");
-            itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
-            BitstreamFormat bf = FormatIdentifier.guessFormat(context, b);
-            b.setFormat(bf);
-            b.update();
-        }
-        itemItem.update();
-    }
-} catch (Exception e) {
-    log.error("Error while attaching PDF", e);
-}
-
-
-
-
+                                            if (!exists) {
+                                                itemItem.createBundle("ORIGINAL");
+                                                Bitstream b = itemItem.getBundles("ORIGINAL")[0].createBitstream(iss);
+                                                b.setName(filenamelel);
+                                                b.setDescription("from 1C");
+                                                b.setSource("1C");
+                                                itemItem.getBundles("ORIGINAL")[0].setPrimaryBitstreamID(b.getID());
+                                                BitstreamFormat bf = FormatIdentifier.guessFormat(context, b);
+                                                b.setFormat(bf);
+                                                b.update();
+                                            }
+                                            itemItem.update();
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                log.error("Error while attaching PDF", e);
+                            }
 
                             if (exists == false) {
                                 log.error("OK I GOT HERE");
