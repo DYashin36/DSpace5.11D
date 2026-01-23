@@ -224,33 +224,34 @@ public class ImportMassServlet extends DSpaceServlet {
                             }
 
                             try {
-                                NodeList contributors = record.getElementsByTagName("Contributor");
-                                for (int c = 0; c < contributors.getLength(); c++) {
-                                    Element contribElement = (Element) contributors.item(c);
+    NodeList contributors = record.getElementsByTagName("Contributor");
+    for (int c = 0; c < contributors.getLength(); c++) {
+        Element contribElement = (Element) contributors.item(c);
 
-                                    Node qualifierNode = contribElement.getElementsByTagName("Qualifier").item(0);
-                                    Node valueNode = contribElement.getElementsByTagName("Value").item(0);
+        Node qualifierNode = contribElement.getElementsByTagName("Qualifier").item(0);
+        Node valueNode = contribElement.getElementsByTagName("Value").item(0);
 
-                                    if (qualifierNode != null && valueNode != null) {
-                                        String qualifier = qualifierNode.getTextContent().trim();
-                                        String value = valueNode.getTextContent().trim();
+        if (valueNode != null && qualifierNode != null) {
+            String value = valueNode.getTextContent().trim();
+            String qualifier = qualifierNode.getTextContent().trim().toLowerCase();
 
-                                        // добавляем только авторов
-                                        if ("Author".equalsIgnoreCase(qualifier) && !value.isEmpty()) {
-                                            itemItem.addMetadata(
-                                                MetadataSchema.DC_SCHEMA,
-                                                "contributor",
-                                                "author",
-                                                "ru",
-                                                value
-                                            );
-                                            log.info("Added author: " + value);
-                                        }
-                                    }
-                                }
-                            } catch (Exception e) {
-                                log.warn("Error while processing Contributor nodes: " + e.getMessage());
-                            }
+            if (!value.isEmpty()) {
+                // Добавляем всех контрибьюторов, сохраняем qualifier
+                itemItem.addMetadata(
+                    MetadataSchema.DC_SCHEMA,
+                    "contributor",
+                    qualifier.isEmpty() ? null : qualifier,
+                    "ru",
+                    value
+                );
+                log.info("Added contributor: " + value + " (qualifier: " + qualifier + ")");
+            }
+        }
+    }
+} catch (Exception e) {
+    log.warn("Error while processing Contributor nodes: " + e.getMessage());
+}
+
 
                             try {
                                 NodeList subjects = record.getElementsByTagName("Subject");

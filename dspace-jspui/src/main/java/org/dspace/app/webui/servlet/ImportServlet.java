@@ -337,20 +337,35 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-        try {
-            Node creator = creators.item(0);
+        // Получаем все элементы Contributor
+NodeList contributors = null;
+try {
+    XPathExpression expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Contributor']");
+    contributors = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
+} catch (XPathExpressionException e) {
+    e.printStackTrace();
+}
 
-            String creatorsString = creator.getTextContent();
-            if ((!creatorsString.equals("|||")) && (creatorsString != null) && (!creatorsString.equals(""))) {
-                ti.addMetadata(MetadataSchema.DC_SCHEMA, "creator", null, "ru", creatorsString);
-                String[] creatorsAr = creatorsString.split(",");
-                for (int i = 0; i < creatorsAr.length; i++) {
-                    ti.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", "author", "ru", creatorsAr[i]);
-                }
-            }
-        } catch (Exception e) {
+// Перебираем каждый Contributor
+for (int i = 0; i < contributors.getLength(); i++) {
+    Node contributorNode = contributors.item(i);
+    if (contributorNode.getNodeType() != Node.ELEMENT_NODE) continue;
 
-        }
+    Element el = (Element) contributorNode;
+    Node valueNode = el.getElementsByTagName("Value").item(0);
+    Node qualNode = el.getElementsByTagName("Qualifier").item(0);
+
+    if (valueNode == null || qualNode == null) continue;
+
+    String value = valueNode.getTextContent().trim();
+    if (value.isEmpty()) continue;  // Пропускаем пустые
+
+    String qual = qualNode.getTextContent().trim().toLowerCase();
+
+    // Добавляем всех контрибьюторов
+    ti.addMetadata(MetadataSchema.DC_SCHEMA, "contributor", qual, "ru", value);
+}
+
 
         try {
             expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Date']");
@@ -461,12 +476,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-        // try {
-        //     ti.addMetadata(MetadataSchema.DC_SCHEMA, "source", null, "ru", sources.item(0).getTextContent());
-        // } catch (Exception e) {
-
-        // }
         writeMetaDataToItemNormalized(ti, "source", sources);
 
 
@@ -483,11 +492,6 @@ public class ImportServlet extends DSpaceServlet {
             e.printStackTrace();
         }
 
-        // try {
-        //     ti.addMetadata(MetadataSchema.DC_SCHEMA, "type", null, "ru", type.item(0).getTextContent());
-        // } catch (Exception e) {
-
-        // }
         writeMetaDataToItemNormalized(ti, "type", type);
 
 
@@ -519,19 +523,6 @@ public class ImportServlet extends DSpaceServlet {
         } catch (XPathExpressionException e) {
             e.printStackTrace();
         }
-
-        // try {
-        //     String publisherTestString = publisher.item(0).getTextContent();
-        //     if (publisherTestString.startsWith("Publisher ")) {
-        //         publisherTestString = publisherTestString.substring("Publisher ".length());
-        //     } else if (publisherTestString.startsWith("Publisher")) {
-        //         publisherTestString = publisherTestString.substring("Publisher".length());
-        //     }
-        //     publisherTestString.replace("Publisher ","");publisherTestString.replace("Publisher","");
-        //     ti.addMetadata(MetadataSchema.DC_SCHEMA, "publisher", null, "ru", publisherTestString);
-        // } catch (Exception e) {
-
-        // }
         writeMetaDataToItemNormalized(ti, "publisher", publisher);
 
 
@@ -601,20 +592,6 @@ public class ImportServlet extends DSpaceServlet {
         }
         writeMetaDataToItemLowerCase(ti, "relation", relation);
 
-//        DateFormat df = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-//        Date today = Calendar.getInstance().getTime();
-//        String dateNow = df.format(today);
-//        try {
-//            ti.addMetadata(MetadataSchema.DC_SCHEMA, "date", "accessioned", "ru", dateNow);
-//        }
-//        catch(Exception e1){
-//
-//        }
-//        try {
-//            ti.addMetadata(MetadataSchema.DC_SCHEMA, "date", "available", "ru", dateNow);
-//        } catch(Exception e2){
-//
-//        }
         ti.setDiscoverable(true);
 
         //itemItem.update();
@@ -661,33 +638,6 @@ public class ImportServlet extends DSpaceServlet {
             InputStream issforPdf = new URL(firstUrl + linkEncode).openStream();
 
             try {
-                // PDFTextStripper pdfStripper = null;
-                // PDDocument docum = null;
-                // PDFParser parser = new PDFParser(issforPdf);
-                // COSDocument cosDoc = null;
-
-                // parser.parse();
-                // cosDoc = parser.getDocument();
-                // pdfStripper = new PDFTextStripper();
-                // docum = new PDDocument(cosDoc);
-                // //pdfStripper.getText(docum);
-                // String parsedText = pdfStripper.getText(docum);
-                // //log.info(parsedText);
-
-                // Integer fifty = (Integer) Math.round(parsedText.length() / 2);
-                // if (fifty < 0) {
-                //     fifty = fifty * (-1);
-                // }
-                // Integer toCut = 500;
-                // if ((parsedText.length() - fifty) < 500) {
-                //     toCut = parsedText.length();
-                // }
-                // String subText = parsedText.substring(fifty, fifty + toCut - 1);
-                // try {
-                //     subText = subText.substring(subText.indexOf(".") + 1);
-                // } catch (Exception e) {
-
-                // }
                 ti.addMetadata("dc", "textpart", null, null, "");
             } catch (Exception e) {
 
