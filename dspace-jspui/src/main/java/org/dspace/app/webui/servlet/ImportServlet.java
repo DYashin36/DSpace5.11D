@@ -340,8 +340,8 @@ public class ImportServlet extends DSpaceServlet {
         // Получаем все элементы Contributor
 NodeList contributors = null;
 try {
-    XPathExpression expr = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Contributor']");
-    contributors = (NodeList) expr.evaluate(docMeta, XPathConstants.NODESET);
+    XPathExpression exprCon = xpath.compile("/*/*/*/*/*[local-name()='Records']/*[local-name()='Contributor']");
+    contributors = (NodeList) exprCon.evaluate(docMeta, XPathConstants.NODESET);
 } catch (XPathExpressionException e) {
     e.printStackTrace();
 }
