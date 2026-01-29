@@ -178,10 +178,10 @@ public class GoogleMetadata
             }
         }
 
-        if (log.isDebugEnabled())
-        {
-            logConfiguration();
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     logConfiguration();
+        // }
     }
 
     /**
@@ -235,10 +235,10 @@ public class GoogleMetadata
             return false;
         }
 
-        if (log.isDebugEnabled())
-        {
-            log.debug("Processing " + fieldName);
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug("Processing " + fieldName);
+        // }
 
         if (config.equals("$handle"))
         {
@@ -343,21 +343,21 @@ public class GoogleMetadata
         ArrayList<ArrayList<String>> parsedOptions = new ArrayList<ArrayList<String>>();
         parsedOptions = parseOptions(configFilter);
 
-        if (log.isDebugEnabled())
-        {
-            log
-                    .debug("Resolved Fields For This Item Per Configuration Filter:");
-            for (int i = 0; i < parsedOptions.size(); i++)
-            {
-                ArrayList<String> optionFields = parsedOptions.get(i);
+        // if (log.isDebugEnabled())
+        // {
+        //     log
+        //             .debug("Resolved Fields For This Item Per Configuration Filter:");
+        //     for (int i = 0; i < parsedOptions.size(); i++)
+        //     {
+        //         ArrayList<String> optionFields = parsedOptions.get(i);
 
-                log.debug("Option " + (i + 1) + ":");
-                for (String f : optionFields)
-                {
-                    log.debug("{" + f + "}");
-                }
-            }
-        }
+        //         log.debug("Option " + (i + 1) + ":");
+        //         for (String f : optionFields)
+        //         {
+        //             log.debug("{" + f + "}");
+        //         }
+        //     }
+        // }
 
         // Iterate through each configured option's field-set until
         // we have a match.
@@ -387,13 +387,13 @@ public class GoogleMetadata
                         {
                             if (!resolvedFields.isEmpty())
                             {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Resolved Field Value For This Item:");
-                                    for (Metadatum r : resolvedFields)
-                                    {
-                                        log.debug("{" + r.value + "}");
-                                    }
-                                }
+                                // if (log.isDebugEnabled()) {
+                                //     log.debug("Resolved Field Value For This Item:");
+                                //     for (Metadatum r : resolvedFields)
+                                //     {
+                                //         log.debug("{" + r.value + "}");
+                                //     }
+                                // }
                                 return resolvedFields;
                             }
                         }
@@ -405,14 +405,14 @@ public class GoogleMetadata
             // return them, otherwise move on to the next option's field-set.
             if (!resolvedFields.isEmpty())
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Resolved Field Values For This Item:");
-                    for (Metadatum v : resolvedFields)
-                    {
-                        log.debug("{" + v.value + "}");
-                    }
-                }
+                // if (log.isDebugEnabled())
+                // {
+                //     log.debug("Resolved Field Values For This Item:");
+                //     for (Metadatum v : resolvedFields)
+                //     {
+                //         log.debug("{" + v.value + "}");
+                //     }
+                // }
 
                 // Check to see if this is a full option match
                 if (ALL_FIELDS_IN_OPTION == returnType)
@@ -610,15 +610,15 @@ public class GoogleMetadata
                 }
             }
 
-            if (log.isDebugEnabled())
-            {
-                log.debug("Field Names From Expanded Wildcard \"" + field
-                        + "\"");
-                for (String v : expandedDC)
-                {
-                    log.debug("    " + v);
-                }
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug("Field Names From Expanded Wildcard \"" + field
+            //             + "\"");
+            //     for (String v : expandedDC)
+            //     {
+            //         log.debug("    " + v);
+            //     }
+            // }
 
             return expandedDC;
         }
@@ -711,9 +711,9 @@ public class GoogleMetadata
         // Dissertations
         if (itemIsDissertation())
         {
-            if(log.isDebugEnabled()) {
-                log.debug("ITEM TYPE:  DISSERTATION");
-            }
+            // if(log.isDebugEnabled()) {
+            //     log.debug("ITEM TYPE:  DISSERTATION");
+            // }
 
             addSingleField(DISSERTATION_NAME);
             addSingleField(DISSERTATION_INSTITUTION);
@@ -722,9 +722,9 @@ public class GoogleMetadata
         // Patents
         if (itemIsPatent())
         {
-            if(log.isDebugEnabled()) {
-                log.debug("ITEM TYPE:  PATENT");
-            }
+            // if(log.isDebugEnabled()) {
+            //     log.debug("ITEM TYPE:  PATENT");
+            // }
 
             addSingleField(PATENT_NUMBER);
 
@@ -741,9 +741,9 @@ public class GoogleMetadata
         // Tech Reports
         if (itemIsTechReport())
         {
-            if(log.isDebugEnabled()) {
-                log.debug("ITEM TYPE:  TECH REPORT");
-            }
+            // if(log.isDebugEnabled()) {
+            //     log.debug("ITEM TYPE:  TECH REPORT");
+            // }
             addSingleField(TECH_REPORT_NUMBER);
             addSingleField(TECH_REPORT_INSTITUTION);
         }
@@ -1213,9 +1213,9 @@ public class GoogleMetadata
                 if (mdPairs.containsKey(parsedPair[0].trim()))
                 {
                     mdPairs.get(parsedPair[0].trim()).add(parsedPair[1]);
-                    if(log.isDebugEnabled()) {
-                        log.debug("Registering Type Identifier:  " + parsedPair[0] + " => " + parsedPair[1]);
-                    }
+                    // if(log.isDebugEnabled()) {
+                    //     log.debug("Registering Type Identifier:  " + parsedPair[0] + " => " + parsedPair[1]);
+                    // }
                 }
                 else
                 {
@@ -1224,9 +1224,9 @@ public class GoogleMetadata
                     newField.add(parsedPair[1].trim());
                     mdPairs.put(parsedPair[0].trim(), newField);
 
-                    if (log.isDebugEnabled()) {
-                        log.debug("Registering Type Identifier:  " + parsedPair[0] + " => " + parsedPair[1]);
-                    }
+                    // if (log.isDebugEnabled()) {
+                    //     log.debug("Registering Type Identifier:  " + parsedPair[0] + " => " + parsedPair[1]);
+                    // }
                 }
             }
             else

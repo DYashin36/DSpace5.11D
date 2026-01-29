@@ -175,21 +175,21 @@ public class Collection extends DSpaceObject
 
         if (row == null)
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug(LogManager.getHeader(context, "find_collection",
-                        "not_found,collection_id=" + id));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug(LogManager.getHeader(context, "find_collection",
+            //             "not_found,collection_id=" + id));
+            // }
 
             return null;
         }
 
         // not null, return Collection
-        if (log.isDebugEnabled())
-        {
-            log.debug(LogManager.getHeader(context, "find_collection",
-                    "collection_id=" + id));
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug(LogManager.getHeader(context, "find_collection",
+        //             "collection_id=" + id));
+        // }
 
         return new Collection(context, row);
     }

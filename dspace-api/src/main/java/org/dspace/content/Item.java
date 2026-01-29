@@ -141,21 +141,21 @@ public class Item extends DSpaceObject
 
         if (row == null)
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug(LogManager.getHeader(context, "find_item",
-                        "not_found,item_id=" + id));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug(LogManager.getHeader(context, "find_item",
+            //             "not_found,item_id=" + id));
+            // }
 
             return null;
         }
 
         // not null, return item
-        if (log.isDebugEnabled())
-        {
-            log.debug(LogManager.getHeader(context, "find_item", "item_id="
-                    + id));
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug(LogManager.getHeader(context, "find_item", "item_id="
+        //             + id));
+        // }
 
         return new Item(context, row);
     }

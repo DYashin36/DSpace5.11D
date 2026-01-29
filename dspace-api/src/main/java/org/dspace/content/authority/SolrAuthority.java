@@ -192,9 +192,9 @@ public class SolrAuthority implements ChoiceAuthority {
     @Override
     public String getLabel(String field, String key, String locale) {
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("requesting label for key " + key + " using locale " + locale);
-            }
+            // if (log.isDebugEnabled()) {
+            //     log.debug("requesting label for key " + key + " using locale " + locale);
+            // }
             SolrQuery queryArgs = new SolrQuery();
             queryArgs.setQuery("id:" + key);
             queryArgs.setRows(1);
@@ -208,9 +208,9 @@ public class SolrAuthority implements ChoiceAuthority {
                     //ok to fail here
                 }
                 if (label != null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("returning label " + label + " for key " + key + " using locale " + locale + " and fieldvalue " + "value_" + locale);
-                    }
+                    // if (log.isDebugEnabled()) {
+                    //     log.debug("returning label " + label + " for key " + key + " using locale " + locale + " and fieldvalue " + "value_" + locale);
+                    // }
                     return label;
                 }
                 try {
@@ -219,9 +219,9 @@ public class SolrAuthority implements ChoiceAuthority {
                     log.error("couldn't get field value for key " + key,e);
                 }
                 if (label != null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("returning label " + label + " for key " + key + " using locale " + locale + " and fieldvalue " + "value");
-                    }
+                    // if (log.isDebugEnabled()) {
+                    //     log.debug("returning label " + label + " for key " + key + " using locale " + locale + " and fieldvalue " + "value");
+                    // }
                     return label;
                 }
                 try {
@@ -230,9 +230,9 @@ public class SolrAuthority implements ChoiceAuthority {
                     log.error("couldn't get field value for key " + key,e);
                 }
                 if (label != null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("returning label " + label + " for key " + key + " using locale " + locale + " and fieldvalue " + "value_en");
-                    }
+                    // if (log.isDebugEnabled()) {
+                    //     log.debug("returning label " + label + " for key " + key + " using locale " + locale + " and fieldvalue " + "value_en");
+                    // }
                     return label;
                 }
             }

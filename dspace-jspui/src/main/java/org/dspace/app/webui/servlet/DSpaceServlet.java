@@ -103,11 +103,11 @@ public class DSpaceServlet extends HttpServlet
             // authentication?
             request = Authenticate.getRealRequest(request);
 
-            if (log.isDebugEnabled())
-            {
-                log.debug(LogManager.getHeader(context, "http_request", UIUtil
-                        .getRequestLogInfo(request)));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug(LogManager.getHeader(context, "http_request", UIUtil
+            //             .getRequestLogInfo(request)));
+            // }
 
             // Invoke the servlet code
             if (request.getMethod().equals("POST"))

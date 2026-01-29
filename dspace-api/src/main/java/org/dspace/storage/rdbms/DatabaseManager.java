@@ -195,19 +195,19 @@ public class DatabaseManager
      *                If a database error occurs
      */
     public static TableRowIterator queryTable(Context context, String table, String query, Object... parameters ) throws SQLException {
-        if (log.isDebugEnabled())
-        {
-            StringBuilder sb = new StringBuilder("Running query \"").append(query).append("\"  with parameters: ");
-            for (int i = 0; i < parameters.length; i++)
-            {
-                if (i > 0)
-               {
-                       sb.append(",");
-               }
-                sb.append(parameters[i].toString());
-            }
-            log.debug(sb.toString());
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     StringBuilder sb = new StringBuilder("Running query \"").append(query).append("\"  with parameters: ");
+        //     for (int i = 0; i < parameters.length; i++)
+        //     {
+        //         if (i > 0)
+        //        {
+        //                sb.append(",");
+        //        }
+        //         sb.append(parameters[i].toString());
+        //     }
+        //     log.debug(sb.toString());
+        // }
 
         PreparedStatement statement = null;
         try
@@ -269,7 +269,7 @@ public class DatabaseManager
                }
                 sb.append(parameters[i].toString());
             }
-            log.debug("Running query \"" + query + "\"  with parameters: " + sb.toString());
+            //log.debug("Running query \"" + query + "\"  with parameters: " + sb.toString());
         }
 
         PreparedStatement statement = context.getDBConnection().prepareStatement(query);
@@ -404,19 +404,19 @@ public class DatabaseManager
     public static int updateQuery(Context context, String query, Object... parameters) throws SQLException {
         PreparedStatement statement = null;
 
-        if (log.isDebugEnabled())
-        {
-            StringBuilder sb = new StringBuilder("Running query \"").append(query).append("\"  with parameters: ");
-            for (int i = 0; i < parameters.length; i++)
-            {
-                if (i > 0)
-               {
-                       sb.append(",");
-               }
-                sb.append(parameters[i].toString());
-            }
-            log.debug(sb.toString());
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     StringBuilder sb = new StringBuilder("Running query \"").append(query).append("\"  with parameters: ");
+        //     for (int i = 0; i < parameters.length; i++)
+        //     {
+        //         if (i > 0)
+        //        {
+        //                sb.append(",");
+        //        }
+        //         sb.append(parameters[i].toString());
+        //     }
+        //     log.debug(sb.toString());
+        // }
 
         try
         {
@@ -1137,7 +1137,7 @@ public class DatabaseManager
 
         if (log.isDebugEnabled())
         {
-            log.debug("Running query \"" + sql + "\"");
+            //log.debug("Running query \"" + sql + "\"");
         }
 
         try
@@ -1167,10 +1167,10 @@ public class DatabaseManager
     {
         PreparedStatement statement = null;
 
-        if (log.isDebugEnabled())
-        {
-            log.debug("Running query \"" + sql + "\"");
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     //log.debug("Running query \"" + sql + "\"");
+        // }
 
         try
         {
@@ -1739,10 +1739,10 @@ public class DatabaseManager
 
         PreparedStatement statement = null;
 
-        if (log.isDebugEnabled())
-        {
-            log.debug("Running query \"" + sql + "\"");
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //    // log.debug("Running query \"" + sql + "\"");
+        // }
 
         ResultSet rs = null;
         try

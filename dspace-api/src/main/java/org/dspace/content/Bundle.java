@@ -160,21 +160,21 @@ public class Bundle extends DSpaceObject
 
         if (row == null)
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug(LogManager.getHeader(context, "find_bundle",
-                        "not_found,bundle_id=" + id));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug(LogManager.getHeader(context, "find_bundle",
+            //             "not_found,bundle_id=" + id));
+            // }
 
             return null;
         }
         else
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug(LogManager.getHeader(context, "find_bundle",
-                        "bundle_id=" + id));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug(LogManager.getHeader(context, "find_bundle",
+            //             "bundle_id=" + id));
+            // }
 
             return new Bundle(context, row);
         }
