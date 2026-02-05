@@ -34,11 +34,11 @@ public class LoggerUsageEventListener extends AbstractUsageEventListener{
 		{
 			UsageEvent ue = (UsageEvent)event;
 
-			log.info(LogManager.getHeader(
-					ue.getContext(),
-					formatAction(ue.getAction(), ue.getObject()),
-					formatMessage(ue.getObject()))
-					);
+			// log.info(LogManager.getHeader(
+			// 		ue.getContext(),
+			// 		formatAction(ue.getAction(), ue.getObject()),
+			// 		formatMessage(ue.getObject()))
+			// 		);
 			
 		}
 	}

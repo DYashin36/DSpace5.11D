@@ -78,17 +78,17 @@ public class BrowserServlet extends AbstractBrowserServlet {
             return;
         }
         //This is a custom insertion from 5.2 custom
-        log.info("BrowserServlet>>doDSGet>>here is an import from systems");
+        //log.info("BrowserServlet>>doDSGet>>here is an import from systems");
         TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM systems");
         request.setAttribute("systems", tri);
         //
         // Is this a request to export the metadata, or a normal browse request?
         if ("submit_export_metadata".equals(UIUtil.getSubmitButton(request, "submit"))) {
-            log.info("now we are going to exportMetadata");
+           // log.info("now we are going to exportMetadata");
             exportMetadata(context, request, response, scope);
         } else {
             // execute browse request
-            log.info("execute browse request");
+            //log.info("execute browse request");
             processBrowse(context, scope, request, response);
         }
     }
@@ -97,7 +97,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
     protected void doDSPost(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException {
-        log.info("This is a BrowserServlet doDSPost");
+        //log.info("This is a BrowserServlet doDSPost");
 
         StringBuffer jb = new StringBuffer();
         String line = "wtf";
@@ -108,7 +108,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
                 jb.append(line);
             }
         } catch (Exception e) {
-            log.info("error occured:"+e.getMessage()); }
+            //log.info("error occured:"+e.getMessage()); }
 
         String result = request.getParameter("items");
         String path = request.getParameter("system_to");
@@ -116,8 +116,8 @@ public class BrowserServlet extends AbstractBrowserServlet {
         result = result.replace("]", "");
         result = result.replace("\"", "");
         result = result.replace("%22", "");
-        log.info("OMGWTF: " + result);
-        log.info("OMGWTF: " + path);
+        //log.info("OMGWTF: " + result);
+        //log.info("OMGWTF: " + path);
         String[] parts = result.split(",");
         ArrayList<Item> items = new ArrayList<>();
         for (String s : parts) {
@@ -127,10 +127,10 @@ public class BrowserServlet extends AbstractBrowserServlet {
         }
 
         try {
-            log.info("BrowserServlet>>doDSPost>>Here we call exportItemToFolderMass");
+            //log.info("BrowserServlet>>doDSPost>>Here we call exportItemToFolderMass");
             ItemExport.exportItemToFolderMass(context, items, path, 0, false);
-        } catch (Exception e) {
-            log.trace(e);
+        } catch (Exception ee) {
+            log.trace(ee);
         }
 
         response.setStatus(200);
@@ -193,7 +193,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
     protected void showSinglePage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException {
-        log.info("BrowserServlet>>Redirect to browse/single");
+        //log.info("BrowserServlet>>Redirect to browse/single");
         JSPManager.showJSP(request, response, "/browse/single.jsp");
     }
 
@@ -211,7 +211,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
     protected void showFullPage(Context context, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException,
             AuthorizeException {
-        log.info("BrowserServlet>>Redirect to browse/full");
+        //log.info("BrowserServlet>>Redirect to browse/full");
         JSPManager.showJSP(request, response, "/browse/full.jsp");
     }
 
@@ -230,7 +230,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
             throws IOException, ServletException {
         try {
             // Log the attempt
-            log.info(LogManager.getHeader(context, "metadataexport", "exporting_browse"));
+            //log.info(LogManager.getHeader(context, "metadataexport", "exporting_browse"));
 
             // Ensure we export all results
             scope.setOffset(0);
@@ -256,7 +256,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
             out.write(csv.toString());
             out.flush();
             out.close();
-            log.info(LogManager.getHeader(context, "metadataexport", "exported_file:browse-results.csv"));
+            //log.info(LogManager.getHeader(context, "metadataexport", "exported_file:browse-results.csv"));
             return;
         } catch (BrowseException be) {
             // Not sure what happened here!

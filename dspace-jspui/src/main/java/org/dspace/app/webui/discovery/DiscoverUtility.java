@@ -390,8 +390,8 @@ public class DiscoverUtility
             List<String> userFilters, List<DiscoverySearchFilterFacet> facets, int type)
     {
   
-        log.info("facets for scope, " + scope + ": "
-                + (facets != null ? facets.size() : null));
+        //log.info("facets for scope, " + scope + ": "
+               // + (facets != null ? facets.size() : null));
         if (facets != null)
         {
             queryArgs.setFacetMinCount(1);

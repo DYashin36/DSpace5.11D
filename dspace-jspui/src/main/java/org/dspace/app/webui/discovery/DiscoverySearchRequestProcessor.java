@@ -160,9 +160,9 @@ public class DiscoverySearchRequestProcessor implements SearchRequestProcessor
         }
 
         // Log
-        log.info(LogManager.getHeader(context, "opensearch",
-                "scope=" + scope + ",query=\"" + query + "\",results=("
-                        + qResults.getTotalSearchResults() + ")"));
+        // log.info(LogManager.getHeader(context, "opensearch",
+        //         "scope=" + scope + ",query=\"" + query + "\",results=("
+        //                 + qResults.getTotalSearchResults() + ")"));
 
         // format and return results
         Map<String, String> labelMap = getLabels(request);
@@ -373,11 +373,11 @@ public class DiscoverySearchRequestProcessor implements SearchRequestProcessor
             resultsItems = resultsListItem.toArray(resultsItems);
 
             // Log
-            log.info(LogManager.getHeader(context, "search", "scope=" + scope
-                    + ",query=\"" + query + "\",results=("
-                    + resultsCommunities.length + ","
-                    + resultsCollections.length + "," + resultsItems.length
-                    + ")"));
+            // log.info(LogManager.getHeader(context, "search", "scope=" + scope
+            //         + ",query=\"" + query + "\",results=("
+            //         + resultsCommunities.length + ","
+            //         + resultsCollections.length + "," + resultsItems.length
+            //         + ")"));
 
             // Pass in some page qualities
             // total number of pages
@@ -467,8 +467,8 @@ public class DiscoverySearchRequestProcessor implements SearchRequestProcessor
             ServletException
     {
         // Log the attempt
-        log.info(LogManager.getHeader(context, "metadataexport",
-                "exporting_search"));
+        // log.info(LogManager.getHeader(context, "metadataexport",
+        //         "exporting_search"));
 
         // Export a search view
         ArrayList iids = new ArrayList();
@@ -490,8 +490,8 @@ public class DiscoverySearchRequestProcessor implements SearchRequestProcessor
         out.write(csv.toString());
         out.flush();
         out.close();
-        log.info(LogManager.getHeader(context, "metadataexport",
-                "exported_file:search-results.csv"));
+        //log.info(LogManager.getHeader(context, "metadataexport",
+                //"exported_file:search-results.csv"));
         return;
     }
 
