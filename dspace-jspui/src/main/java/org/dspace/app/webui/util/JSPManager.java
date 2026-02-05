@@ -8,7 +8,6 @@
 package org.dspace.app.webui.util;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +16,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.core.Context;
-import org.dspace.core.LogManager;
 
 /**
  * Methods for displaying UI pages to the user.
@@ -52,14 +49,14 @@ public class JSPManager
             IOException
     {
         
-        log.debug(LogManager.getHeader((Context) request
-                    .getAttribute("dspace.context"), "showJsp", "THIS IS A LOG FOR A "+jsp+"showJsp()"));
+        //log.debug(LogManager.getHeader((Context) request
+                   // .getAttribute("dspace.context"), "showJsp", "THIS IS A LOG FOR A "+jsp+"showJsp()"));
             
-        log.debug("THIS IS A LOG FOR A "+jsp+"showJsp()");
-        if (log.isDebugEnabled())
+        //log.debug("THIS IS A LOG FOR A "+jsp+"showJsp()");
+        //if (log.isDebugEnabled())
         {
-            log.debug(LogManager.getHeader((Context) request
-                    .getAttribute("dspace.context"), "view_jsp", jsp));
+           // log.debug(LogManager.getHeader((Context) request
+                   // .getAttribute("dspace.context"), "view_jsp", jsp));
         }
 
         // For the moment, a simple forward

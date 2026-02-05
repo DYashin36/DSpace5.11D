@@ -415,8 +415,8 @@ public class SubmissionController extends DSpaceServlet
         // to the "select collection" step.
         else if (subInfo.getSubmissionItem() == null)
         {
-            log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton getSubmissionItem() == null"));
-            log.info("THIS IS A LOG FOR A submitButton getSubmissionItem() == null");
+            //log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton getSubmissionItem() == null"));
+            //log.info("THIS IS A LOG FOR A submitButton getSubmissionItem() == null");
             // we have just started this submission
             // (or we have just resumed a saved submission)
 
@@ -426,9 +426,9 @@ public class SubmissionController extends DSpaceServlet
         else
         // otherwise, figure out the next Step to call!
         {
-            log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submit process next step to call"));
+            //log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submit process next step to call"));
             
-            log.info("THIS IS A LOG FOR A submit process next step to call");
+           // log.info("THIS IS A LOG FOR A submit process next step to call");
             // Get the current step
             currentStepConfig = getCurrentStepConfig(request, subInfo);
 
@@ -450,15 +450,15 @@ public class SubmissionController extends DSpaceServlet
             else if (UIUtil.getSubmitButton(request, "").startsWith(
                     AbstractProcessingStep.PROGRESS_BAR_PREFIX))
             {
-                log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton stepJump()"));
-                log.info("THIS IS A LOG FOR A submitButton stepJump()");
+                //log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton stepJump()"));
+                //log.info("THIS IS A LOG FOR A submitButton stepJump()");
                 // jumping to a particular step/page
                 doStepJump(context, request, response, subInfo, currentStepConfig);
             }
             else
             {
-                log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton doStep()"));
-                log.info("THIS IS A LOG FOR A submitButton doStep()");
+                //log.info(LogManager.getHeader(null, "doDSPost", "THIS IS A LOG FOR A submitButton doStep()"));
+                //log.info("THIS IS A LOG FOR A submitButton doStep()");
                 // by default, load step class to start 
                 // or continue its processing
                 doStep(context, request, response, subInfo, currentStepConfig.getStepNumber());
@@ -591,22 +591,22 @@ public class SubmissionController extends DSpaceServlet
         if (currentStepConfig == null)
         {
             currentStepNum = -1;
-            log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NULL CURRENT_STEP_CONFIG"));
-            log.info("THIS IS A LOG FOR A NULL CURRENT_STEP_CONFIG");
+            //log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NULL CURRENT_STEP_CONFIG"));
+            //log.info("THIS IS A LOG FOR A NULL CURRENT_STEP_CONFIG");
         }
         else
         {
-            log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG"));
+            //log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG"));
             currentStepNum = currentStepConfig.getStepNumber();
-            log.info("THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG");
+            //log.info("THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG");
         }
 
         // as long as there are more steps after the current step,
         // do the next step in the current Submission Process
         if (subInfo.getSubmissionConfig().hasMoreSteps(currentStepNum))
         {
-            log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG WITH doStep() call"));
-            log.info("THIS IS A LOG FOR 'hasMoreSteps()' TRUE");
+            //log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG WITH doStep() call"));
+            l//og.info("THIS IS A LOG FOR 'hasMoreSteps()' TRUE");
             // update the current step & do this step
             currentStepNum++;
             
