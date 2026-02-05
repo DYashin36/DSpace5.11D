@@ -136,22 +136,22 @@ public class BitstreamFormat
 
         if (row == null)
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug(LogManager.getHeader(context,
-                        "find_bitstream_format",
-                        "not_found,bitstream_format_id=" + id));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug(LogManager.getHeader(context,
+            //             "find_bitstream_format",
+            //             "not_found,bitstream_format_id=" + id));
+            // }
 
             return null;
         }
 
         // not null, return format object
-        if (log.isDebugEnabled())
-        {
-            log.debug(LogManager.getHeader(context, "find_bitstream_format",
-                    "bitstream_format_id=" + id));
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug(LogManager.getHeader(context, "find_bitstream_format",
+        //             "bitstream_format_id=" + id));
+        // }
 
         return new BitstreamFormat(context, row);
     }
@@ -220,12 +220,12 @@ public class BitstreamFormat
         throws SQLException
     {
         // not null
-        if (log.isDebugEnabled())
-        {
-            log.debug(LogManager.getHeader(context, "find_bitstream",
-                    "bitstream_format_id="
-                            + formatRow.getIntColumn("bitstream_format_id")));
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug(LogManager.getHeader(context, "find_bitstream",
+        //             "bitstream_format_id="
+        //                     + formatRow.getIntColumn("bitstream_format_id")));
+        // }
 
         // From cache?
         BitstreamFormat fromCache = (BitstreamFormat) context.fromCache(
@@ -403,9 +403,9 @@ public class BitstreamFormat
         TableRow row = DatabaseManager.create(context,
                 "bitstreamformatregistry");
 
-        log.info(LogManager.getHeader(context, "create_bitstream_format",
-                "bitstream_format_id="
-                        + row.getIntColumn("bitstream_format_id")));
+        // log.info(LogManager.getHeader(context, "create_bitstream_format",
+        //         "bitstream_format_id="
+        //                 + row.getIntColumn("bitstream_format_id")));
 
         return new BitstreamFormat(context, row);
     }
@@ -580,8 +580,8 @@ public class BitstreamFormat
                     "Only administrators can modify bitstream formats");
         }
 
-        log.info(LogManager.getHeader(bfContext, "update_bitstream_format",
-                "bitstream_format_id=" + getID()));
+        // log.info(LogManager.getHeader(bfContext, "update_bitstream_format",
+        //         "bitstream_format_id=" + getID()));
 
         // Delete extensions
         DatabaseManager.updateQuery(bfContext,
@@ -642,9 +642,9 @@ public class BitstreamFormat
         // Delete this format from database
         DatabaseManager.delete(bfContext, bfRow);
 
-        log.info(LogManager.getHeader(bfContext, "delete_bitstream_format",
-                "bitstream_format_id=" + getID() + ",bitstreams_changed="
-                        + numberChanged));
+        //log.info(LogManager.getHeader(bfContext, "delete_bitstream_format",
+                //"bitstream_format_id=" + getID() + ",bitstreams_changed="
+                       // + numberChanged));
     }
 
     /**

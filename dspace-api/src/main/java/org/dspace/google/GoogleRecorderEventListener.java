@@ -51,7 +51,7 @@ public class GoogleRecorderEventListener extends AbstractUsageEventListener {
     public void receiveEvent(Event event) {
         if((event instanceof UsageEvent))
         {
-            log.debug("Usage event received " + event.getName());
+            //log.debug("Usage event received " + event.getName());
 
             // This is a wee bit messy but these keys should be combined in future.
             analyticsKey = new DSpace().getConfigurationService().getProperty("jspui.google.analytics.key");
@@ -89,10 +89,10 @@ public class GoogleRecorderEventListener extends AbstractUsageEventListener {
 
         try (CloseableHttpResponse response2 = httpclient.execute(httpPost)) {
             // I can't find a list of what are acceptable responses, so I log the response but take no action.
-            log.debug("Google Analytics response is " + response2.getStatusLine());
+            //log.debug("Google Analytics response is " + response2.getStatusLine());
         }
 
-        log.debug("Posted to Google Analytics - " + ue.getRequest().getRequestURI());
+        //log.debug("Posted to Google Analytics - " + ue.getRequest().getRequestURI());
     }
 
 }

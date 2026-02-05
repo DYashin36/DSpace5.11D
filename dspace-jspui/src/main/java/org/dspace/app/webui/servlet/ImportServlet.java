@@ -96,7 +96,7 @@ public class ImportServlet extends DSpaceServlet {
     protected void doDSPost(Context context, HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException,
             SQLException, AuthorizeException {
-        //log.info("ImportServlet>>>doDSPOST>>enter");
+        log.info("ImportServlet>>>doDSPOST>>enter");
         SoapHelper sh = new SoapHelper();
 
         String collectionId = request.getParameter("collection_id");

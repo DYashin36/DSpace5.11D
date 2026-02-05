@@ -77,10 +77,10 @@ public class HandleManager
         String url = ConfigurationManager.getProperty("dspace.url")
                 + "/handle/" + handle;
 
-        if (log.isDebugEnabled())
-        {
-            log.debug("Resolved " + handle + " to " + url);
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //    //log.debug("Resolved " + handle + " to " + url);
+        // }
 
         return url;
     }
@@ -188,11 +188,11 @@ public class HandleManager
         handle.setColumn("resource_id", dso.getID());
         DatabaseManager.update(context, handle);
 
-        if (log.isDebugEnabled())
-        {
-            log.debug("Created new handle for "
-                    + Constants.typeText[dso.getType()] + " (ID=" + dso.getID() + ") " + handleId );
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug("Created new handle for "
+        //             + Constants.typeText[dso.getType()] + " (ID=" + dso.getID() + ") " + handleId );
+        // }
 
         return handleId;
     }
@@ -256,11 +256,11 @@ public class HandleManager
         handle.setColumn("resource_id", dso.getID());
         DatabaseManager.update(context, handle);
 
-        if (log.isDebugEnabled())
-        {
-            log.debug("Created new handle for "
-                    + Constants.typeText[dso.getType()] + " (ID=" + dso.getID() + ") " + suppliedHandle );
-        }
+        // if (log.isDebugEnabled())
+        // {
+        //     log.debug("Created new handle for "
+        //             + Constants.typeText[dso.getType()] + " (ID=" + dso.getID() + ") " + suppliedHandle );
+        // }
 
         return suppliedHandle;
     }
@@ -289,10 +289,10 @@ public class HandleManager
                 row.setColumnNull("resource_id");
                 DatabaseManager.update(context, row);
 
-                if(log.isDebugEnabled())
-                {
-                    log.debug("Unbound Handle " + row.getStringColumn("handle") + " from object " + Constants.typeText[dso.getType()] + " id=" + dso.getID());
-                }
+                // if(log.isDebugEnabled())
+                // {
+                //     log.debug("Unbound Handle " + row.getStringColumn("handle") + " from object " + Constants.typeText[dso.getType()] + " id=" + dso.getID());
+                // }
             }
         }
         else
@@ -350,11 +350,11 @@ public class HandleManager
         {
             Item item = Item.find(context, resourceID);
 
-            if (log.isDebugEnabled())
-            {
-                log.debug("Resolved handle " + handle + " to item "
-                        + ((item == null) ? (-1) : item.getID()));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug("Resolved handle " + handle + " to item "
+            //             + ((item == null) ? (-1) : item.getID()));
+            // }
 
             return item;
         }
@@ -362,11 +362,11 @@ public class HandleManager
         {
             Collection collection = Collection.find(context, resourceID);
 
-            if (log.isDebugEnabled())
-            {
-                log.debug("Resolved handle " + handle + " to collection "
-                        + ((collection == null) ? (-1) : collection.getID()));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug("Resolved handle " + handle + " to collection "
+            //             + ((collection == null) ? (-1) : collection.getID()));
+            // }
 
             return collection;
         }
@@ -374,11 +374,11 @@ public class HandleManager
         {
             Community community = Community.find(context, resourceID);
 
-            if (log.isDebugEnabled())
-            {
-                log.debug("Resolved handle " + handle + " to community "
-                        + ((community == null) ? (-1) : community.getID()));
-            }
+            // if (log.isDebugEnabled())
+            // {
+            //     log.debug("Resolved handle " + handle + " to community "
+            //             + ((community == null) ? (-1) : community.getID()));
+            // }
 
             return community;
         }

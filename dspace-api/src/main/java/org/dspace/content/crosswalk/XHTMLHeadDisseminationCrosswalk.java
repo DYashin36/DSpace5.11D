@@ -215,12 +215,12 @@ public class XHTMLHeadDisseminationCrosswalk extends SelfNamedPlugin implements
             {
                 // Most of the time, in this crosswalk, an unrecognised
                 // element is OK, so just report at DEBUG level
-               if (log.isDebugEnabled())
-               {
-                   log.debug("No <meta> field for item "
-                            + (handle == null ? String.valueOf(dso.getID())
-                                    : handle) + " field " + originalKey);
-               }
+            //    if (log.isDebugEnabled())
+            //    {
+            //        log.debug("No <meta> field for item "
+            //                 + (handle == null ? String.valueOf(dso.getID())
+            //                         : handle) + " field " + originalKey);
+            //    }
             }
             else if (!provenance)
             {

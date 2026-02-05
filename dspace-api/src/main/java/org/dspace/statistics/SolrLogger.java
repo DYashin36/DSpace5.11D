@@ -123,9 +123,9 @@ public class SolrLogger
 
     static
     {
-        log.info("solr-statistics.spidersfile:" + ConfigurationManager.getProperty("solr-statistics", "spidersfile"));
-        log.info("solr-statistics.server:" + ConfigurationManager.getProperty("solr-statistics", "server"));
-        log.info("usage-statistics.dbfile:" + ConfigurationManager.getProperty("usage-statistics", "dbfile"));
+        // log.info("solr-statistics.spidersfile:" + ConfigurationManager.getProperty("solr-statistics", "spidersfile"));
+        // log.info("solr-statistics.server:" + ConfigurationManager.getProperty("solr-statistics", "server"));
+        // log.info("usage-statistics.dbfile:" + ConfigurationManager.getProperty("usage-statistics", "dbfile"));
     	
         HttpSolrServer server = null;
         
@@ -151,7 +151,7 @@ public class SolrLogger
                 //Base url should like : http://localhost:{port.number}/solr
                 String baseSolrUrl = server.getBaseURL().replace("statistics", "");
                 for (File solrCoreFile : solrCoreFiles) {
-                    log.info("Loading core with name: " + solrCoreFile.getName());
+                    //log.info("Loading core with name: " + solrCoreFile.getName());
 
                     createCore(server, solrCoreFile.getName());
                     //Add it to our cores list so we can query it !
@@ -176,21 +176,21 @@ public class SolrLogger
                 File dbFile = new File(dbPath);
                 service = new DatabaseReader.Builder(dbFile).build();
             } catch (FileNotFoundException fe) {
-                log.error(
-                    "The GeoLite Database file is missing (" + dbPath + ")! Solr Statistics cannot generate location " +
-                        "based reports! Please see the DSpace installation instructions for instructions to install " +
-                        "this file.",
-                    fe);
+                // log.error(
+                //     "The GeoLite Database file is missing (" + dbPath + ")! Solr Statistics cannot generate location " +
+                //         "based reports! Please see the DSpace installation instructions for instructions to install " +
+                //         "this file.",
+                //     fe);
             } catch (IOException e) {
-                log.error(
-                    "Unable to load GeoLite Database file (" + dbPath + ")! You may need to reinstall it. See the " +
-                        "DSpace installation instructions for more details.",
-                    e);
+                // log.error(
+                //     "Unable to load GeoLite Database file (" + dbPath + ")! You may need to reinstall it. See the " +
+                //         "DSpace installation instructions for more details.",
+                //     e);
             }
         }
         else
         {
-            log.error("The required 'dbfile' configuration is missing in solr-statistics.cfg!");
+            //log.error("The required 'dbfile' configuration is missing in solr-statistics.cfg!");
         }
         locationService = service;
 
@@ -203,7 +203,7 @@ public class SolrLogger
             useProxies = false;
         }
 
-        log.info("useProxies=" + useProxies);
+        //log.info("useProxies=" + useProxies);
     }
 
     /**
@@ -351,7 +351,7 @@ public class SolrLogger
             catch (Exception e)
             {
                 log.error("Failed DNS Lookup for IP:" + ip);
-                log.debug(e.getMessage(),e);
+                // log.debug(e.getMessage(),e);
             }
 		    if(request.getHeader("User-Agent") != null)
 		    {
@@ -439,7 +439,7 @@ public class SolrLogger
             catch (Exception e)
             {
                 log.error("Failed DNS Lookup for IP:" + ip);
-                log.debug(e.getMessage(),e);
+                //log.debug(e.getMessage(),e);
             }
 		    if(userAgent != null)
 		    {
@@ -778,7 +778,7 @@ public class SolrLogger
                         doc.addField("isBot", true);
                         SolrInputDocument newInput = ClientUtils.toSolrInputDocument(doc);
                         solr.add(newInput);
-                        log.info("Marked " + doc.getFieldValue("ip") + " as bot");
+                        //log.info("Marked " + doc.getFieldValue("ip") + " as bot");
                     }
                 };
 
@@ -1351,7 +1351,7 @@ public class SolrLogger
             HttpSolrServer statisticsYearServer = createCore(solr, coreName);
 
             System.out.println("Moving: " + totalRecords + " into core " + coreName);
-            log.info("Moving: " + totalRecords + " records into core " + coreName);
+            //log.info("Moving: " + totalRecords + " records into core " + coreName);
 
             List<File> filesToUpload = new ArrayList<File>();
             for(int i = 0; i < totalRecords; i+=10000){
@@ -1395,7 +1395,7 @@ public class SolrLogger
             solr.deleteByQuery(filterQuery.toString());
             solr.commit(true, true);
 
-            log.info("Moved " + totalRecords + " records into core: " + coreName);
+           // log.info("Moved " + totalRecords + " records into core: " + coreName);
         }
 
         FileUtils.deleteDirectory(tempDirectory);
@@ -1407,10 +1407,10 @@ public class SolrLogger
         HttpSolrServer returnServer = new HttpSolrServer(baseSolrUrl + "/" + coreName);
         try {
             SolrPingResponse ping = returnServer.ping();
-            log.debug(String.format("Ping of Solr Core [%s] Returned with Status [%d]", coreName, ping.getStatus()));
+           //log.debug(String.format("Ping of Solr Core [%s] Returned with Status [%d]", coreName, ping.getStatus()));
             return returnServer;
         } catch(Exception e) {
-            log.debug(String.format("Ping of Solr Core [%s] Failed with [%s].  New Core Will be Created", coreName, e.getClass().getName()));
+            //log.debug(String.format("Ping of Solr Core [%s] Failed with [%s].  New Core Will be Created", coreName, e.getClass().getName()));
         }
         CoreAdminRequest.Create create = new CoreAdminRequest.Create();
         create.setCoreName(coreName);
@@ -1418,7 +1418,7 @@ public class SolrLogger
         create.setDataDir(solrDir + coreName + File.separator + "data");
         HttpSolrServer solrServer = new HttpSolrServer(baseSolrUrl);
         create.process(solrServer);
-        log.info("Created core with name: " + coreName);
+        //log.info("Created core with name: " + coreName);
         return returnServer;
     }
 

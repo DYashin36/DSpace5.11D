@@ -24,16 +24,15 @@ import org.dspace.browse.BrowseException;
 import org.dspace.browse.BrowseIndex;
 import org.dspace.browse.BrowseInfo;
 import org.dspace.browse.BrowserScope;
-import org.dspace.sort.SortOption;
-import org.dspace.sort.SortException;
-import org.dspace.utils.DSpace;
 import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
-import org.dspace.core.LogManager;
 import org.dspace.core.Utils;
 import org.dspace.discovery.configuration.TagCloudConfiguration;
+import org.dspace.sort.SortException;
+import org.dspace.sort.SortOption;
+import org.dspace.utils.DSpace;
 
 /**
  * Servlet for browsing through indices, as they are defined in
@@ -273,7 +272,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
                 ",sort_by=" + sortBy + ",community=" + comHandle + ",collection=" + colHandle +
                 ",level=" + level + ",etal=" + etAl;
 
-            log.info(LogManager.getHeader(context, "browse", arguments));
+            //log.info(LogManager.getHeader(context, "browse", arguments));
 
             // set up a BrowseScope and start loading the values into it
             BrowserScope scope = new BrowserScope(context);
@@ -328,7 +327,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
     {
         try
         {
-            log.info("AbstractBrowserServlet>>processBrowse called");
+            //log.info("AbstractBrowserServlet>>processBrowse called");
             BrowseIndex bi = scope.getBrowseIndex();
 
             // now start up a browse engine and get it to do the work for us
@@ -341,13 +340,13 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             {
                 // Set a variable to create admin buttons
                 request.setAttribute("admin_button", Boolean.TRUE);
-                log.info("AbstractBrowserServlet>>admin_button set");
+                //log.info("AbstractBrowserServlet>>admin_button set");
             }
 
             if (binfo.hasResults())
             {
-                log.info("AbstractBrowserServlet>>binfo has results");
-                log.info("AbstractBrowserServlet>>Parameters: bi.isMetadataIndex="+bi.isMetadataIndex()+" - !scope.isSecondLevel()="+!scope.isSecondLevel());
+                //log.info("AbstractBrowserServlet>>binfo has results");
+                //log.info("AbstractBrowserServlet>>Parameters: bi.isMetadataIndex="+bi.isMetadataIndex()+" - !scope.isSecondLevel()="+!scope.isSecondLevel());
                 if (bi.isMetadataIndex() && !scope.isSecondLevel())
                 {
                 	if (bi.isTagCloudEnabled()){
@@ -367,7 +366,7 @@ public abstract class AbstractBrowserServlet extends DSpaceServlet
             }
             else
             {
-                log.info("AbstractBrowserServlet>>binfo has NO results");
+                //log.info("AbstractBrowserServlet>>binfo has NO results");
                 showNoResultsPage(context, request, response);
             }
         }
