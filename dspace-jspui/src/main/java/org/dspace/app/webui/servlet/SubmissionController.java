@@ -606,7 +606,7 @@ public class SubmissionController extends DSpaceServlet
         if (subInfo.getSubmissionConfig().hasMoreSteps(currentStepNum))
         {
             //log.debug(LogManager.getHeader(context, "doNextStep", "THIS IS A LOG FOR A NON NULL CURRENT_STEP_CONFIG WITH doStep() call"));
-            l//og.info("THIS IS A LOG FOR 'hasMoreSteps()' TRUE");
+            //log.info("THIS IS A LOG FOR 'hasMoreSteps()' TRUE");
             // update the current step & do this step
             currentStepNum++;
             
