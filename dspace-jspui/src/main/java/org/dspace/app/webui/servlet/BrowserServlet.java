@@ -78,13 +78,13 @@ public class BrowserServlet extends AbstractBrowserServlet {
             return;
         }
         //This is a custom insertion from 5.2 custom
-        //log.info("BrowserServlet>>doDSGet>>here is an import from systems");
+        log.info("BrowserServlet>>doDSGet>>here is an import from systems");
         TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM systems");
         request.setAttribute("systems", tri);
         //
         // Is this a request to export the metadata, or a normal browse request?
         if ("submit_export_metadata".equals(UIUtil.getSubmitButton(request, "submit"))) {
-           // log.info("now we are going to exportMetadata");
+            log.info("now we are going to exportMetadata");
             exportMetadata(context, request, response, scope);
         } else {
             // execute browse request
@@ -108,7 +108,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
                 jb.append(line);
             }
         } catch (Exception e) {
-            //log.info("error occured:"+e.getMessage()); }
+            log.info("error occured:"+e.getMessage()); }
 
         String result = request.getParameter("items");
         String path = request.getParameter("system_to");
@@ -127,10 +127,10 @@ public class BrowserServlet extends AbstractBrowserServlet {
         }
 
         try {
-            //log.info("BrowserServlet>>doDSPost>>Here we call exportItemToFolderMass");
+           // log.info("BrowserServlet>>doDSPost>>Here we call exportItemToFolderMass");
             ItemExport.exportItemToFolderMass(context, items, path, 0, false);
-        } catch (Exception ee) {
-            log.trace(ee);
+        } catch (Exception e) {
+            log.trace(e);
         }
 
         response.setStatus(200);
