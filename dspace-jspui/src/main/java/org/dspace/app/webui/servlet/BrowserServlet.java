@@ -78,7 +78,7 @@ public class BrowserServlet extends AbstractBrowserServlet {
             return;
         }
         //This is a custom insertion from 5.2 custom
-        log.info("BrowserServlet>>doDSGet>>here is an import from systems");
+        //log.info("BrowserServlet>>doDSGet>>here is an import from systems");
         TableRowIterator tri = DatabaseManager.queryTable(context, "systems", "SELECT * FROM systems");
         request.setAttribute("systems", tri);
         //
