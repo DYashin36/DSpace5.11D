@@ -822,36 +822,36 @@ public class DSIndexer
 
     private static void emailException(Exception exception) {
 		// Also email an alert, system admin may need to check for stale lock
-		try {
-			String recipient = ConfigurationManager
-					.getProperty("alert.recipient");
+		// try {
+		// 	String recipient = ConfigurationManager
+		// 			.getProperty("alert.recipient");
 
-			if (StringUtils.isNotBlank(recipient)) {
-				Email email = Email.getEmail(I18nUtil.getEmailFilename(Locale.getDefault(), "internal_error"));
-				email.addRecipient(recipient);
-				email.addArgument(ConfigurationManager
-						.getProperty("dspace.url"));
-				email.addArgument(new Date());
+		// 	if (StringUtils.isNotBlank(recipient)) {
+		// 		Email email = Email.getEmail(I18nUtil.getEmailFilename(Locale.getDefault(), "internal_error"));
+		// 		email.addRecipient(recipient);
+		// 		email.addArgument(ConfigurationManager
+		// 				.getProperty("dspace.url"));
+		// 		email.addArgument(new Date());
 
-				String stackTrace;
+		// 		String stackTrace;
 
-				if (exception != null) {
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-					exception.printStackTrace(pw);
-					pw.flush();
-					stackTrace = sw.toString();
-				} else {
-					stackTrace = "No exception";
-				}
+		// 		if (exception != null) {
+		// 			StringWriter sw = new StringWriter();
+		// 			PrintWriter pw = new PrintWriter(sw);
+		// 			exception.printStackTrace(pw);
+		// 			pw.flush();
+		// 			stackTrace = sw.toString();
+		// 		} else {
+		// 			stackTrace = "No exception";
+		// 		}
 
-				email.addArgument(stackTrace);
-				email.send();
-			}
-		} catch (Exception e) {
-			// Not much we can do here!
-			log.warn("Unable to send email alert", e);
-		}
+		// 		email.addArgument(stackTrace);
+		// 		email.send();
+		// 	}
+		// } catch (Exception e) {
+		// 	// Not much we can do here!
+		// 	log.warn("Unable to send email alert", e);
+		// }
 
 	}
 
