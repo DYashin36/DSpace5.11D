@@ -896,36 +896,36 @@ public class DOIOrganiser {
     private void sendAlertMail(String action, DSpaceObject dso, String doi, String reason) 
             throws IOException
     {
-        // String recipient = ConfigurationManager.getProperty("alert.recipient");
+        String recipient = ConfigurationManager.getProperty("alert.recipient");
 
-        // try
-        // {
-        //     if (recipient != null)
-        //     {
-        //         Email email = Email.getEmail(
-        //                 I18nUtil.getEmailFilename(Locale.getDefault(), "doi_maintenance_error"));
-        //         email.addRecipient(recipient);
-        //         email.addArgument(action);
-        //         email.addArgument(new Date());
-        //         email.addArgument(dso.getTypeText());
-        //         email.addArgument(new Integer(dso.getID()));
-        //         email.addArgument(doi);
-        //         email.addArgument(reason);
-        //         email.send();
+        try
+        {
+            if (recipient != null)
+            {
+                Email email = Email.getEmail(
+                        I18nUtil.getEmailFilename(Locale.getDefault(), "doi_maintenance_error"));
+                email.addRecipient(recipient);
+                email.addArgument(action);
+                email.addArgument(new Date());
+                email.addArgument(dso.getTypeText());
+                email.addArgument(new Integer(dso.getID()));
+                email.addArgument(doi);
+                email.addArgument(reason);
+                email.send();
                 
-        //         if (!quiet) 
-        //         {
-        //             System.err.println("Email alert is sent.");
-        //         }
-        //     }
-        // }
-        // catch (Exception e) {
-        //     LOG.warn("Unable to send email alert", e);
-        //     if (!quiet) 
-        //     {
-        //         System.err.println("Unable to send email alert.");
-        //     }
-        // }
+                if (!quiet) 
+                {
+                    System.err.println("Email alert is sent.");
+                }
+            }
+        }
+        catch (Exception e) {
+            LOG.warn("Unable to send email alert", e);
+            if (!quiet) 
+            {
+                System.err.println("Unable to send email alert.");
+            }
+        }
     }
 
     private void setQuiet() 

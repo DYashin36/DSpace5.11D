@@ -832,36 +832,36 @@ public class OAIHarvester {
      */
     private void alertAdmin(int status, Exception ex)
     {
-    	// try {
-		// 	String recipient = ConfigurationManager.getProperty("alert.recipient");
+    	try {
+			String recipient = ConfigurationManager.getProperty("alert.recipient");
 
-		// 	if (StringUtils.isNotBlank(recipient)) {
-		// 		Email email = Email.getEmail(I18nUtil.getEmailFilename(Locale.getDefault(), "harvesting_error"));
-		// 		email.addRecipient(recipient);
-		// 		email.addArgument(targetCollection.getID());
-		// 		email.addArgument(new Date());
-		// 		email.addArgument(status);
+			if (StringUtils.isNotBlank(recipient)) {
+				Email email = Email.getEmail(I18nUtil.getEmailFilename(Locale.getDefault(), "harvesting_error"));
+				email.addRecipient(recipient);
+				email.addArgument(targetCollection.getID());
+				email.addArgument(new Date());
+				email.addArgument(status);
 
-		// 		String stackTrace;
+				String stackTrace;
 
-		// 		if (ex != null) {
-        //             email.addArgument(ex.getMessage());
+				if (ex != null) {
+                    email.addArgument(ex.getMessage());
 
-		// 			StringWriter sw = new StringWriter();
-		// 			PrintWriter pw = new PrintWriter(sw);
-		// 			ex.printStackTrace(pw);
-		// 			pw.flush();
-		// 			stackTrace = sw.toString();
-		// 		} else {
-		// 			stackTrace = "No exception";
-		// 		}
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+					ex.printStackTrace(pw);
+					pw.flush();
+					stackTrace = sw.toString();
+				} else {
+					stackTrace = "No exception";
+				}
 
-		// 		email.addArgument(stackTrace);
-		// 		email.send();
-		// 	}
-		// } catch (Exception e) {
-		// 	log.warn("Unable to send email alert", e);
-		// }
+				email.addArgument(stackTrace);
+				email.send();
+			}
+		} catch (Exception e) {
+			log.warn("Unable to send email alert", e);
+		}
 
     }
 
