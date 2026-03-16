@@ -369,68 +369,68 @@ public class UIUtil extends Util
      */
     public static void sendAlert(HttpServletRequest request, Exception exception)
     {
-        String logInfo = UIUtil.getRequestLogInfo(request);
-        Context c = (Context) request.getAttribute("dspace.context");
-        Locale locale = getSessionLocale(request);
-        EPerson user = null;
+        // String logInfo = UIUtil.getRequestLogInfo(request);
+        // Context c = (Context) request.getAttribute("dspace.context");
+        // Locale locale = getSessionLocale(request);
+        // EPerson user = null;
 
-        try
-        {
-            String recipient = ConfigurationManager
-                    .getProperty("alert.recipient");
+        // try
+        // {
+        //     String recipient = ConfigurationManager
+        //             .getProperty("alert.recipient");
 
-            if (StringUtils.isNotBlank(recipient))
-            {
-                Email email = Email.getEmail(I18nUtil.getEmailFilename(locale, "internal_error"));
-                email.addRecipient(recipient);
-                email.addArgument(ConfigurationManager
-                        .getProperty("dspace.url"));
-                email.addArgument(new Date());
-                email.addArgument(request.getSession().getId());
-                email.addArgument(logInfo);
+        //     if (StringUtils.isNotBlank(recipient))
+        //     {
+        //         Email email = Email.getEmail(I18nUtil.getEmailFilename(locale, "internal_error"));
+        //         email.addRecipient(recipient);
+        //         email.addArgument(ConfigurationManager
+        //                 .getProperty("dspace.url"));
+        //         email.addArgument(new Date());
+        //         email.addArgument(request.getSession().getId());
+        //         email.addArgument(logInfo);
 
-                String stackTrace;
+        //         String stackTrace;
 
-                if (exception != null)
-                {
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    exception.printStackTrace(pw);
-                    pw.flush();
-                    stackTrace = sw.toString();
-                }
-                else
-                {
-                    stackTrace = "No exception";
-                }
+        //         if (exception != null)
+        //         {
+        //             StringWriter sw = new StringWriter();
+        //             PrintWriter pw = new PrintWriter(sw);
+        //             exception.printStackTrace(pw);
+        //             pw.flush();
+        //             stackTrace = sw.toString();
+        //         }
+        //         else
+        //         {
+        //             stackTrace = "No exception";
+        //         }
 
-                email.addArgument(stackTrace);
-                try
-                {
-                    user = c.getCurrentUser();
-                }
-                catch (Exception e)
-                {
-                    log.warn("No context, the database might be down or the connection pool exhausted.");
-                }
+        //         email.addArgument(stackTrace);
+        //         try
+        //         {
+        //             user = c.getCurrentUser();
+        //         }
+        //         catch (Exception e)
+        //         {
+        //             log.warn("No context, the database might be down or the connection pool exhausted.");
+        //         }
 
-                if (user != null)
-                {
-                    email.addArgument(user.getFullName() + " (" + user.getEmail() + ")");
-                }
-                else
-                {
-                    email.addArgument("Anonymous");
-                }
-                email.addArgument(request.getRemoteAddr());
-                email.send();
-            }
-        }
-        catch (Exception e)
-        {
-            // Not much we can do here!
-            log.warn("Unable to send email alert", e);
-        }
+        //         if (user != null)
+        //         {
+        //             email.addArgument(user.getFullName() + " (" + user.getEmail() + ")");
+        //         }
+        //         else
+        //         {
+        //             email.addArgument("Anonymous");
+        //         }
+        //         email.addArgument(request.getRemoteAddr());
+        //         email.send();
+        //     }
+        // }
+        // catch (Exception e)
+        // {
+        //     // Not much we can do here!
+        //     log.warn("Unable to send email alert", e);
+        // }
     }
 
     /**
