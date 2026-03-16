@@ -49,7 +49,8 @@
     if (coment == null)
         coment = "";
     
-    String bitstream_id = (String) request.getAttribute("bitstream-id");
+    Object bitstreamObj = request.getAttribute("bitstream-id");
+    String bitstream_id = (bitstreamObj != null) ? bitstreamObj.toString() : "";
     boolean allfiles = (request.getAttribute("allfiles") != null);
 
 %>
