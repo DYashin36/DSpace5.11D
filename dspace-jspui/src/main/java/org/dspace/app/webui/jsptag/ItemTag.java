@@ -477,33 +477,38 @@ public class ItemTag extends TagSupport {
             // =========================
             List<Metadatum> orderedValues = new ArrayList<>();
 
-            if ("dc".equals(schema)
-                    && "contributor".equals(element)
-                    && Item.ANY.equals(qualifier)) {
+if ("dc".equals(schema)
+        && "contributor".equals(element)
+        && Item.ANY.equals(qualifier)) {
 
-                List<Metadatum> authors = new ArrayList<>();
-                List<Metadatum> others = new ArrayList<>();
+    List<Metadatum> authors = new ArrayList<>();
+    List<Metadatum> others = new ArrayList<>();
 
-                for (int j = 0; j < values.length; j++) {
-                    if (values[j] != null && values[j].value != null) {
-                        if ("author".equals(values[j].qualifier)) {
-                            authors.add(values[j]);
-                        } else {
-                            others.add(values[j]);
-                        }
-                    }
-                }
+    for (int j = 0; j < values.length; j++) {
+        if (values[j] == null || values[j].value == null) {
+            continue;
+        }
 
-                orderedValues.addAll(authors);
-                orderedValues.addAll(others);
+        // НАДЁЖНЕЕ ЧЕМ qualifier
+        String fullField = values[j].schema + "." + values[j].element + "." + values[j].qualifier;
 
-            } else {
-                for (int j = 0; j < values.length; j++) {
-                    if (values[j] != null && values[j].value != null) {
-                        orderedValues.add(values[j]);
-                    }
-                }
-            }
+        if ("dc.contributor.author".equals(fullField)) {
+            authors.add(values[j]);
+        } else {
+            others.add(values[j]);
+        }
+    }
+
+    orderedValues.addAll(authors);
+    orderedValues.addAll(others);
+
+} else {
+    for (int j = 0; j < values.length; j++) {
+        if (values[j] != null && values[j].value != null) {
+            orderedValues.add(values[j]);
+        }
+    }
+}
             // =========================
 
             for (int j = 0; j < orderedValues.size(); j++) {
