@@ -377,216 +377,249 @@ public class ItemTag extends TagSupport {
      * Render an item in the given style
      */
     private void render() throws IOException, SQLException, DCInputsReaderException {
-        JspWriter out = pageContext.getOut();
-        HttpServletRequest request = (HttpServletRequest) pageContext.getRequest();
-        Context context = UIUtil.obtainContext(request);
-        Locale sessionLocale = UIUtil.getSessionLocale(request);
-        String configLine = styleSelection.getConfigurationForStyle(style);
+    JspWriter out = pageContext.getOut();
+    HttpServletRequest request = (HttpServletRequest) pageContext.getRequest();
+    Context context = UIUtil.obtainContext(request);
+    Locale sessionLocale = UIUtil.getSessionLocale(request);
+    String configLine = styleSelection.getConfigurationForStyle(style);
 
-        if (configLine == null) {
-            configLine = defaultFields;
+    if (configLine == null) {
+        configLine = defaultFields;
+    }
+
+    out.println("<table class=\"table itemDisplayTable\">");
+
+    StringTokenizer st = new StringTokenizer(configLine, ",");
+
+    while (st.hasMoreTokens()) {
+        String field = st.nextToken().trim();
+        boolean isDate = false;
+        boolean isLink = false;
+        boolean isResolver = false;
+        boolean isNoBreakLine = false;
+        boolean isDisplay = false;
+
+        String style = null;
+        Matcher fieldStyleMatcher = fieldStylePatter.matcher(field);
+        if (fieldStyleMatcher.matches()) {
+            style = fieldStyleMatcher.group(1);
         }
 
-        out.println("<table class=\"table itemDisplayTable\">");
+        String browseIndex;
+        try {
+            browseIndex = getBrowseField(field);
+        } catch (BrowseException e) {
+            log.error(e);
+            browseIndex = null;
+        }
 
-        /*
-         * Break down the configuration into fields and display them
-         * 
-         * FIXME?: it may be more efficient to do some processing once, perhaps
-         * to a more efficient intermediate class, but then it would become more
-         * difficult to reload the configuration "on the fly".
-         */
-        StringTokenizer st = new StringTokenizer(configLine, ",");
+        if (style != null) {
+            isDate = style.contains("date");
+            isLink = style.contains("link");
+            isNoBreakLine = style.contains("nobreakline");
+            isDisplay = style.equals("inputform");
+            isResolver = style.contains("resolver") || urn2baseurl.keySet().contains(style);
+            field = field.replaceAll("\\(" + style + "\\)", "");
+        }
 
-        while (st.hasMoreTokens()) {
-            String field = st.nextToken().trim();
-            boolean isDate = false;
-            boolean isLink = false;
-            boolean isResolver = false;
-            boolean isNoBreakLine = false;
-            boolean isDisplay = false;
+        String[] eq = field.split("\\.");
+        String schema = eq[0];
+        String element = eq[1];
+        String qualifier = null;
 
-            String style = null;
-            Matcher fieldStyleMatcher = fieldStylePatter.matcher(field);
-            if (fieldStyleMatcher.matches()) {
-                style = fieldStyleMatcher.group(1);
-            }
+        if (eq.length > 2 && eq[2].equals("*")) {
+            qualifier = Item.ANY;
+        } else if (eq.length > 2) {
+            qualifier = eq[2];
+        }
 
-            String browseIndex;
+        if (MetadataExposure.isHidden(context, schema, element, qualifier)) {
+            continue;
+        }
+
+        Metadatum[] values = item.getMetadata(schema, element, qualifier, Item.ANY);
+
+        if (values.length > 0) {
+            out.print("<tr><td class=\"metadataFieldLabel\">");
+
+            String label = null;
             try {
-                browseIndex = getBrowseField(field);
-            } catch (BrowseException e) {
-                log.error(e);
-                browseIndex = null;
+                label = I18nUtil.getMessage("metadata."
+                        + ("default".equals(this.style) ? "" : this.style + ".") + field,
+                        context);
+            } catch (MissingResourceException e) {
+                label = LocaleSupport.getLocalizedMessage(pageContext,
+                        "metadata." + field);
             }
 
-            // Find out if the field should rendered with a particular style
-            if (style != null) {
-                isDate = style.contains("date");
-                isLink = style.contains("link");
-                isNoBreakLine = style.contains("nobreakline");
-                isDisplay = style.equals("inputform");
-                isResolver = style.contains("resolver") || urn2baseurl.keySet().contains(style);
-                field = field.replaceAll("\\(" + style + "\\)", "");
-            }
+            out.print(label);
+            out.print(":&nbsp;</td><td class=\"metadataFieldValue\">");
 
-            // Get the separate schema + element + qualifier
-            String[] eq = field.split("\\.");
-            String schema = eq[0];
-            String element = eq[1];
-            String qualifier = null;
-            if (eq.length > 2 && eq[2].equals("*")) {
-                qualifier = Item.ANY;
-            } else if (eq.length > 2) {
-                qualifier = eq[2];
-            }
+            if (isDisplay) {
+                List<String> displayValues =
+                        Util.getControlledVocabulariesDisplayValueLocalized(
+                                item, values, schema, element, qualifier, sessionLocale);
 
-            // check for hidden field, even if it's configured..
-            if (MetadataExposure.isHidden(context, schema, element, qualifier)) {
+                if (displayValues != null && !displayValues.isEmpty()) {
+                    for (int d = 0; d < displayValues.size(); d++) {
+                        out.print(displayValues.get(d));
+                        if (d < displayValues.size() - 1) {
+                            out.print(" <br/>");
+                        }
+                    }
+                }
+                out.print("</td>");
                 continue;
             }
 
-            // FIXME: Still need to fix for metadata language?
-            Metadatum[] values = item.getMetadata(schema, element, qualifier, Item.ANY);
+            // =========================
+            // FIX: contributor ordering
+            // =========================
+            List<Metadatum> orderedValues = new ArrayList<>();
 
-            if (values.length > 0) {
-                out.print("<tr><td class=\"metadataFieldLabel\">");
+            if ("dc".equals(schema)
+                    && "contributor".equals(element)
+                    && Item.ANY.equals(qualifier)) {
 
-                String label = null;
-                try {
-                    label = I18nUtil.getMessage("metadata."
-                            + ("default".equals(this.style) ? "" : this.style + ".") + field,
-                            context);
-                } catch (MissingResourceException e) {
-                    // if there is not a specific translation for the style we
-                    // use the default one
-                    label = LocaleSupport.getLocalizedMessage(pageContext,
-                            "metadata." + field);
-                }
+                List<Metadatum> authors = new ArrayList<>();
+                List<Metadatum> others = new ArrayList<>();
 
-                out.print(label);
-                out.print(":&nbsp;</td><td class=\"metadataFieldValue\">");
-
-                //If the values are in controlled vocabulary and the display value should be shown
-                if (isDisplay) {
-                    List<String> displayValues = new ArrayList<String>();
-
-                    displayValues = Util.getControlledVocabulariesDisplayValueLocalized(item, values, schema, element, qualifier, sessionLocale);
-
-                    if (displayValues != null && !displayValues.isEmpty()) {
-                        for (int d = 0; d < displayValues.size(); d++) {
-                            out.print(displayValues.get(d));
-                            if (d < displayValues.size() - 1) {
-                                out.print(" <br/>");
-                            }
-
-                        }
-                    }
-                    out.print("</td>");
-                    continue;
-                }
                 for (int j = 0; j < values.length; j++) {
-                    if (Item.ANY.equals(qualifier)
-                            && "dc".equals(schema)
-                            && "contributor".equals(element)
-                            && "author".equals(values[j].qualifier)) {
-                        continue;
-                    }
                     if (values[j] != null && values[j].value != null) {
-                        if (j > 0) {
-                            if (isNoBreakLine) {
-                                String separator = ConfigurationManager
-                                        .getProperty("webui.itemdisplay.nobreakline.separator");
-                                if (separator == null) {
-                                    separator = ";&nbsp;";
-                                }
-                                out.print(separator);
-                            } else {
-                                out.print("<br />");
-                            }
-                        }
-
-                        if (isLink) {
-                            out.print("<a href=\"" + values[j].value + "\">"
-                                    + Utils.addEntities(values[j].value) + "</a>");
-                        } else if (isDate) {
-                            DCDate dd = new DCDate(values[j].value);
-
-                            // Parse the date
-                            out.print(UIUtil.displayDate(dd, false, false, (HttpServletRequest) pageContext.getRequest()));
-                        } else if (isResolver) {
-                            String value = values[j].value;
-                            if (value.startsWith("http://")
-                                    || value.startsWith("https://")
-                                    || value.startsWith("ftp://")
-                                    || value.startsWith("ftps://")) {
-                                // Already a URL, print as if it was a regular link
-                                out.print("<a href=\"" + value + "\">"
-                                        + Utils.addEntities(value) + "</a>");
-                            } else {
-                                String foundUrn = null;
-                                if (!style.equals("resolver")) {
-                                    foundUrn = style;
-                                } else {
-                                    for (String checkUrn : urn2baseurl.keySet()) {
-                                        if (value.startsWith(checkUrn)) {
-                                            foundUrn = checkUrn;
-                                        }
-                                    }
-                                }
-
-                                if (foundUrn != null) {
-
-                                    if (value.startsWith(foundUrn + ":")) {
-                                        value = value.substring(foundUrn.length() + 1);
-                                    }
-
-                                    String url = urn2baseurl.get(foundUrn);
-                                    out.print("<a href=\"" + url
-                                            + value + "\">"
-                                            + Utils.addEntities(values[j].value)
-                                            + "</a>");
-                                } else {
-                                    out.print(value);
-                                }
-                            }
-
-                        } else if (browseIndex != null) {
-                            String argument, value;
-                            if (values[j].authority != null
-                                    && values[j].confidence >= MetadataAuthorityManager.getManager()
-                                            .getMinConfidence(values[j].schema, values[j].element, values[j].qualifier)) {
-                                argument = "authority";
-                                value = values[j].authority;
-                            } else {
-                                argument = "value";
-                                value = values[j].value;
-                            }
-                            out.print("<a class=\"" + ("authority".equals(argument) ? "authority " : "") + browseIndex + "\""
-                                    + "href=\"" + request.getContextPath() + "/browse?type=" + browseIndex + "&amp;" + argument + "="
-                                    + URLEncoder.encode(value, "UTF-8") + "\">" + Utils.addEntities(values[j].value)
-                                    + "</a>");
+                        if ("author".equals(values[j].qualifier)) {
+                            authors.add(values[j]);
                         } else {
-                            out.print(Utils.addEntities(values[j].value));
+                            others.add(values[j]);
                         }
                     }
                 }
 
-                out.println("</td></tr>");
+                orderedValues.addAll(authors);
+                orderedValues.addAll(others);
+
+            } else {
+                for (int j = 0; j < values.length; j++) {
+                    if (values[j] != null && values[j].value != null) {
+                        orderedValues.add(values[j]);
+                    }
+                }
             }
+            // =========================
+
+            for (int j = 0; j < orderedValues.size(); j++) {
+                Metadatum value = orderedValues.get(j);
+
+                if (j > 0) {
+                    if (isNoBreakLine) {
+                        String separator = ConfigurationManager
+                                .getProperty("webui.itemdisplay.nobreakline.separator");
+                        if (separator == null) {
+                            separator = ";&nbsp;";
+                        }
+                        out.print(separator);
+                    } else {
+                        out.print("<br />");
+                    }
+                }
+
+                if (value != null && value.value != null) {
+
+                    if (isLink) {
+                        out.print("<a href=\"" + value.value + "\">"
+                                + Utils.addEntities(value.value) + "</a>");
+
+                    } else if (isDate) {
+                        DCDate dd = new DCDate(value.value);
+                        out.print(UIUtil.displayDate(dd, false, false,
+                                (HttpServletRequest) pageContext.getRequest()));
+
+                    } else if (isResolver) {
+                        String v = value.value;
+
+                        if (v.startsWith("http://")
+                                || v.startsWith("https://")
+                                || v.startsWith("ftp://")
+                                || v.startsWith("ftps://")) {
+
+                            out.print("<a href=\"" + v + "\">"
+                                    + Utils.addEntities(v) + "</a>");
+
+                        } else {
+
+                            String foundUrn = null;
+
+                            if (!"resolver".equals(style)) {
+                                foundUrn = style;
+                            } else {
+                                for (String checkUrn : urn2baseurl.keySet()) {
+                                    if (v.startsWith(checkUrn)) {
+                                        foundUrn = checkUrn;
+                                    }
+                                }
+                            }
+
+                            if (foundUrn != null) {
+
+                                if (v.startsWith(foundUrn + ":")) {
+                                    v = v.substring(foundUrn.length() + 1);
+                                }
+
+                                String url = urn2baseurl.get(foundUrn);
+
+                                out.print("<a href=\"" + url + v + "\">"
+                                        + Utils.addEntities(value.value)
+                                        + "</a>");
+                            } else {
+                                out.print(v);
+                            }
+                        }
+
+                    } else if (browseIndex != null) {
+
+                        String argument, v;
+
+                        if (value.authority != null
+                                && value.confidence >= MetadataAuthorityManager
+                                        .getManager()
+                                        .getMinConfidence(value.schema, value.element, value.qualifier)) {
+                            argument = "authority";
+                            v = value.authority;
+                        } else {
+                            argument = "value";
+                            v = value.value;
+                        }
+
+                        out.print("<a class=\""
+                                + ("authority".equals(argument) ? "authority " : "")
+                                + browseIndex + "\""
+                                + "href=\"" + request.getContextPath()
+                                + "/browse?type=" + browseIndex
+                                + "&amp;" + argument + "="
+                                + URLEncoder.encode(v, "UTF-8")
+                                + "\">"
+                                + Utils.addEntities(value.value)
+                                + "</a>");
+
+                    } else {
+                        out.print(Utils.addEntities(value.value));
+                    }
+                }
+            }
+
+            out.println("</td></tr>");
         }
+    }
 
-        listCollections();
+    listCollections();
 
-        out.println("</table><br/>");
+    out.println("</table><br/>");
 
-        listBitstreams();
+    listBitstreams();
 
-        if (ConfigurationManager
-                .getBooleanProperty("webui.licence_bundle.show")) {
-            out.println("<br/><br/>");
-            showLicence();
-        }
+    if (ConfigurationManager.getBooleanProperty("webui.licence_bundle.show")) {
+        out.println("<br/><br/>");
+        showLicence();
+    }
     }
 
     /**
