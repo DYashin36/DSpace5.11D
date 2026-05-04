@@ -2053,16 +2053,16 @@ public class ItemImport {
      */
     public static void emailSuccessMessage(Context context, EPerson eperson,
             String fileName) throws MessagingException {
-        try {
-            Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "bte_batch_import_success"));
-            email.addRecipient(eperson.getEmail());
-            email.addArgument(fileName);
+        // try {
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "bte_batch_import_success"));
+        //     email.addRecipient(eperson.getEmail());
+        //     email.addArgument(fileName);
 
-            email.send();
-        } catch (Exception e) {
-            log.warn(LogManager.getHeader(context, "emailSuccessMessage", "cannot notify user of import"), e);
-        }
+        //     email.send();
+        // } catch (Exception e) {
+        //     log.warn(LogManager.getHeader(context, "emailSuccessMessage", "cannot notify user of import"), e);
+        // }
     }
 
     /**
@@ -2077,18 +2077,18 @@ public class ItemImport {
      */
     public static void emailErrorMessage(EPerson eperson, String error)
             throws MessagingException {
-        log.warn("An error occurred during item import, the user will be notified. " + error);
-        try {
-            Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "bte_batch_import_error"));
-            email.addRecipient(eperson.getEmail());
-            email.addArgument(error);
-            email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/feedback");
+        // log.warn("An error occurred during item import, the user will be notified. " + error);
+        // try {
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "bte_batch_import_error"));
+        //     email.addRecipient(eperson.getEmail());
+        //     email.addArgument(error);
+        //     email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/feedback");
 
-            email.send();
-        } catch (Exception e) {
-            log.warn("error during item import error notification", e);
-        }
+        //     email.send();
+        // } catch (Exception e) {
+        //     log.warn("error during item import error notification", e);
+        // }
     }
 
     public static List<BatchUpload> getImportsAvailable(EPerson eperson)

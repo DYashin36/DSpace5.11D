@@ -405,40 +405,40 @@ public class XmlWorkflowManager {
      */
     private static void notifyOfArchive(Context c, Item i, Collection coll)
             throws SQLException, IOException {
-        try {
-            // Get submitter
-            EPerson ep = i.getSubmitter();
-            // Get the Locale
-            Locale supportedLocale = I18nUtil.getEPersonLocale(ep);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_archive"));
+        // try {
+        //     // Get submitter
+        //     EPerson ep = i.getSubmitter();
+        //     // Get the Locale
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(ep);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_archive"));
 
-            // Get the item handle to email to user
-            String handle = HandleManager.findHandle(c, i);
+        //     // Get the item handle to email to user
+        //     String handle = HandleManager.findHandle(c, i);
 
-            // Get title
-            Metadatum[] titles = i.getMetadata(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
-            String title = "";
-            try {
-                title = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
-            }
-            catch (MissingResourceException e) {
-                title = "Untitled";
-            }
-            if (titles.length > 0) {
-                title = titles[0].value;
-            }
+        //     // Get title
+        //     Metadatum[] titles = i.getMetadata(MetadataSchema.DC_SCHEMA, "title", null, Item.ANY);
+        //     String title = "";
+        //     try {
+        //         title = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
+        //     }
+        //     catch (MissingResourceException e) {
+        //         title = "Untitled";
+        //     }
+        //     if (titles.length > 0) {
+        //         title = titles[0].value;
+        //     }
 
-            email.addRecipient(ep.getEmail());
-            email.addArgument(title);
-            email.addArgument(coll.getMetadata("name"));
-            email.addArgument(HandleManager.getCanonicalForm(handle));
+        //     email.addRecipient(ep.getEmail());
+        //     email.addArgument(title);
+        //     email.addArgument(coll.getMetadata("name"));
+        //     email.addArgument(HandleManager.getCanonicalForm(handle));
 
-            email.send();
-        }
-        catch (MessagingException e) {
-            log.warn(LogManager.getHeader(c, "notifyOfArchive",
-                    "cannot email user" + " item_id=" + i.getID()));
-        }
+        //     email.send();
+        // }
+        // catch (MessagingException e) {
+        //     log.warn(LogManager.getHeader(c, "notifyOfArchive",
+        //             "cannot email user" + " item_id=" + i.getID()));
+        // }
     }
 
     /***********************************

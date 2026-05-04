@@ -1090,46 +1090,46 @@ public class WorkflowManager
     private static void notifyOfArchive(Context c, Item i, Collection coll)
             throws SQLException, IOException
     {
-        try
-        {
-            // Get submitter
-            EPerson ep = i.getSubmitter();
-            // Get the Locale
-            Locale supportedLocale = I18nUtil.getEPersonLocale(ep);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_archive"));
+        // try
+        // {
+        //     // Get submitter
+        //     EPerson ep = i.getSubmitter();
+        //     // Get the Locale
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(ep);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_archive"));
 
-            // Get the item handle to email to user
-            String handle = HandleManager.findHandle(c, i);
+        //     // Get the item handle to email to user
+        //     String handle = HandleManager.findHandle(c, i);
 
-            // Get title
-            Metadatum[] titles = i.getDC("title", null, Item.ANY);
-            String title = "";
-            try
-            {
-                title = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
-            }
-            catch (MissingResourceException e)
-            {
-                title = "Untitled";
-            }
-            if (titles.length > 0)
-            {
-                title = titles[0].value;
-            }
+        //     // Get title
+        //     Metadatum[] titles = i.getDC("title", null, Item.ANY);
+        //     String title = "";
+        //     try
+        //     {
+        //         title = I18nUtil.getMessage("org.dspace.workflow.WorkflowManager.untitled");
+        //     }
+        //     catch (MissingResourceException e)
+        //     {
+        //         title = "Untitled";
+        //     }
+        //     if (titles.length > 0)
+        //     {
+        //         title = titles[0].value;
+        //     }
 
-            email.addRecipient(ep.getEmail());
-            email.addArgument(title);
-            email.addArgument(coll.getMetadata("name"));
-            email.addArgument(HandleManager.getCanonicalForm(handle));
+        //     email.addRecipient(ep.getEmail());
+        //     email.addArgument(title);
+        //     email.addArgument(coll.getMetadata("name"));
+        //     email.addArgument(HandleManager.getCanonicalForm(handle));
 
-            email.send();
-        }
-        catch (MessagingException e)
-        {
-            log.warn(LogManager.getHeader(c, "notifyOfArchive",
-                    "cannot email user; item_id=" + i.getID()
-                    + ":  " + e.getMessage()));
-        }
+        //     email.send();
+        // }
+        // catch (MessagingException e)
+        // {
+        //     log.warn(LogManager.getHeader(c, "notifyOfArchive",
+        //             "cannot email user; item_id=" + i.getID()
+        //             + ":  " + e.getMessage()));
+        // }
     }
 
     /**
@@ -1304,73 +1304,73 @@ public class WorkflowManager
     private static void notifyGroupOfTask(Context c, WorkflowItem wi,
             Group mygroup, EPerson[] epa) throws SQLException, IOException
     {
-        // check to see if notification is turned off
-        // and only do it once - delete key after notification has
-        // been suppressed for the first time
-        Integer myID = Integer.valueOf(wi.getItem().getID());
+        // // check to see if notification is turned off
+        // // and only do it once - delete key after notification has
+        // // been suppressed for the first time
+        // Integer myID = Integer.valueOf(wi.getItem().getID());
 
-        if (noEMail.containsKey(myID))
-        {
-            // suppress email, and delete key
-            noEMail.remove(myID);
-        }
-        else
-        {
-            try
-            {
-                // Get the item title
-                String title = getItemTitle(wi);
+        // if (noEMail.containsKey(myID))
+        // {
+        //     // suppress email, and delete key
+        //     noEMail.remove(myID);
+        // }
+        // else
+        // {
+        //     try
+        //     {
+        //         // Get the item title
+        //         String title = getItemTitle(wi);
 
-                // Get the submitter's name
-                String submitter = getSubmitterName(wi);
+        //         // Get the submitter's name
+        //         String submitter = getSubmitterName(wi);
 
-                // Get the collection
-                Collection coll = wi.getCollection();
+        //         // Get the collection
+        //         Collection coll = wi.getCollection();
 
-                String message = "";
+        //         String message = "";
 
-                for (int i = 0; i < epa.length; i++)
-                {
-                    Locale supportedLocale = I18nUtil.getEPersonLocale(epa[i]);
-                    Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_task"));
-                    email.addArgument(title);
-                    email.addArgument(coll.getMetadata("name"));
-                    email.addArgument(submitter);
+        //         for (int i = 0; i < epa.length; i++)
+        //         {
+        //             Locale supportedLocale = I18nUtil.getEPersonLocale(epa[i]);
+        //             Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "submit_task"));
+        //             email.addArgument(title);
+        //             email.addArgument(coll.getMetadata("name"));
+        //             email.addArgument(submitter);
 
-                    ResourceBundle messages = ResourceBundle.getBundle("Messages", supportedLocale);
-                    switch (wi.getState())
-                    {
-                        case WFSTATE_STEP1POOL:
-                            message = messages.getString("org.dspace.workflow.WorkflowManager.step1");
+        //             ResourceBundle messages = ResourceBundle.getBundle("Messages", supportedLocale);
+        //             switch (wi.getState())
+        //             {
+        //                 case WFSTATE_STEP1POOL:
+        //                     message = messages.getString("org.dspace.workflow.WorkflowManager.step1");
 
-                            break;
+        //                     break;
 
-                        case WFSTATE_STEP2POOL:
-                            message = messages.getString("org.dspace.workflow.WorkflowManager.step2");
+        //                 case WFSTATE_STEP2POOL:
+        //                     message = messages.getString("org.dspace.workflow.WorkflowManager.step2");
 
-                            break;
+        //                     break;
 
-                        case WFSTATE_STEP3POOL:
-                            message = messages.getString("org.dspace.workflow.WorkflowManager.step3");
+        //                 case WFSTATE_STEP3POOL:
+        //                     message = messages.getString("org.dspace.workflow.WorkflowManager.step3");
 
-                            break;
-                    }
-                    email.addArgument(message);
-                    email.addArgument(getMyDSpaceLink());
-                    email.addRecipient(epa[i].getEmail());
-                    email.send();
-                }
-            }
-            catch (MessagingException e)
-            {
-                String gid = (mygroup != null) ?
-                             String.valueOf(mygroup.getID()) : "none";
-                log.warn(LogManager.getHeader(c, "notifyGroupofTask",
-                        "cannot email user group_id=" + gid
-                                + " workflow_item_id=" + wi.getID()
-                                + ":  " + e.getMessage()));
-            }
-        }
+        //                     break;
+        //             }
+        //             email.addArgument(message);
+        //             email.addArgument(getMyDSpaceLink());
+        //             email.addRecipient(epa[i].getEmail());
+        //             email.send();
+        //         }
+        //     }
+        //     catch (MessagingException e)
+        //     {
+        //         String gid = (mygroup != null) ?
+        //                      String.valueOf(mygroup.getID()) : "none";
+        //         log.warn(LogManager.getHeader(c, "notifyGroupofTask",
+        //                 "cannot email user group_id=" + gid
+        //                         + " workflow_item_id=" + wi.getID()
+        //                         + ":  " + e.getMessage()));
+        //     }
+        // }
     }
 
     private static String getMyDSpaceLink()
@@ -1381,48 +1381,48 @@ public class WorkflowManager
     private static void notifyOfReject(Context c, WorkflowItem wi, EPerson e,
             String reason)
     {
-        try
-        {
-            // Get the item title
-            String title = getItemTitle(wi);
+        // try
+        // {
+        //     // Get the item title
+        //     String title = getItemTitle(wi);
 
-            // Get the collection
-            Collection coll = wi.getCollection();
+        //     // Get the collection
+        //     Collection coll = wi.getCollection();
 
-            // Get rejector's name
-            String rejector = getEPersonName(e);
-            Locale supportedLocale = I18nUtil.getEPersonLocale(e);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale,"submit_reject"));
+        //     // Get rejector's name
+        //     String rejector = getEPersonName(e);
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(e);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale,"submit_reject"));
 
-            email.addRecipient(getSubmitterEPerson(wi).getEmail());
-            email.addArgument(title);
-            email.addArgument(coll.getMetadata("name"));
-            email.addArgument(rejector);
-            email.addArgument(reason);
-            email.addArgument(getMyDSpaceLink());
+        //     email.addRecipient(getSubmitterEPerson(wi).getEmail());
+        //     email.addArgument(title);
+        //     email.addArgument(coll.getMetadata("name"));
+        //     email.addArgument(rejector);
+        //     email.addArgument(reason);
+        //     email.addArgument(getMyDSpaceLink());
 
-            email.send();
-        }
-        catch (RuntimeException re)
-        {
-            // log this email error
-            log.warn(LogManager.getHeader(c, "notify_of_reject",
-                    "cannot email user eperson_id=" + e.getID()
-                            + " eperson_email=" + e.getEmail()
-                            + " workflow_item_id=" + wi.getID()
-                            + ":  " + re.getMessage()));
+        //     email.send();
+        // }
+        // catch (RuntimeException re)
+        // {
+        //     // log this email error
+        //     log.warn(LogManager.getHeader(c, "notify_of_reject",
+        //             "cannot email user eperson_id=" + e.getID()
+        //                     + " eperson_email=" + e.getEmail()
+        //                     + " workflow_item_id=" + wi.getID()
+        //                     + ":  " + re.getMessage()));
 
-            throw re;
-        }
-        catch (Exception ex)
-        {
-            // log this email error
-            log.warn(LogManager.getHeader(c, "notify_of_reject",
-                    "cannot email user eperson_id=" + e.getID()
-                            + " eperson_email=" + e.getEmail()
-                            + " workflow_item_id=" + wi.getID()
-                            + ":  " + ex.getMessage()));
-        }
+        //     throw re;
+        // }
+        // catch (Exception ex)
+        // {
+        //     // log this email error
+        //     log.warn(LogManager.getHeader(c, "notify_of_reject",
+        //             "cannot email user eperson_id=" + e.getID()
+        //                     + " eperson_email=" + e.getEmail()
+        //                     + " workflow_item_id=" + wi.getID()
+        //                     + ":  " + ex.getMessage()));
+        // }
     }
 
     // FIXME - are the following methods still needed?

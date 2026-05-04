@@ -2092,17 +2092,17 @@ public class ItemExport {
      */
     public static void emailSuccessMessage(Context context, EPerson eperson,
             String fileName) throws MessagingException {
-        try {
-            Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "export_success"));
-            email.addRecipient(eperson.getEmail());
-            email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/exportdownload/" + fileName);
-            email.addArgument(ConfigurationManager.getProperty("org.dspace.app.itemexport.life.span.hours"));
+        // try {
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "export_success"));
+        //     email.addRecipient(eperson.getEmail());
+        //     email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/exportdownload/" + fileName);
+        //     email.addArgument(ConfigurationManager.getProperty("org.dspace.app.itemexport.life.span.hours"));
 
-            email.send();
-        } catch (Exception e) {
-            log.warn(LogManager.getHeader(context, "emailSuccessMessage", "cannot notify user of export"), e);
-        }
+        //     email.send();
+        // } catch (Exception e) {
+        //     log.warn(LogManager.getHeader(context, "emailSuccessMessage", "cannot notify user of export"), e);
+        // }
     }
 
     /**
@@ -2117,18 +2117,18 @@ public class ItemExport {
      */
     public static void emailErrorMessage(EPerson eperson, String error)
             throws MessagingException {
-        log.warn("An error occurred during item export, the user will be notified. " + error);
-        try {
-            Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
-            Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "export_error"));
-            email.addRecipient(eperson.getEmail());
-            email.addArgument(error);
-            email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/feedback");
+        // log.warn("An error occurred during item export, the user will be notified. " + error);
+        // try {
+        //     Locale supportedLocale = I18nUtil.getEPersonLocale(eperson);
+        //     Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "export_error"));
+        //     email.addRecipient(eperson.getEmail());
+        //     email.addArgument(error);
+        //     email.addArgument(ConfigurationManager.getProperty("dspace.url") + "/feedback");
 
-            email.send();
-        } catch (Exception e) {
-            log.warn("error during item export error notification", e);
-        }
+        //     email.send();
+        // } catch (Exception e) {
+        //     log.warn("error during item export error notification", e);
+        // }
     }
 
     public static void zip(String strSource, String target) throws Exception {
