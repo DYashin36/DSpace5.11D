@@ -1,3 +1,4 @@
+```jsp
 <%--
 
     The contents of this file are subject to the license and copyright
@@ -50,11 +51,11 @@
         <meta name="Generator" content="<%= generator %>" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" href="<%= request.getContextPath() %>/favicon.ico" type="image/x-icon"/>
-	    <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/jquery-ui-1.10.3.custom/redmond/jquery-ui-1.10.3.custom.css" type="text/css" />
-	    <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/bootstrap/bootstrap.min.css" type="text/css" />
-	    <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/bootstrap/bootstrap-theme.min.css" type="text/css" />
-	    <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/bootstrap/dspace-theme.css" type="text/css" />
-        
+        <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/jquery-ui-1.10.3.custom/redmond/jquery-ui-1.10.3.custom.css" type="text/css" />
+        <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/bootstrap/bootstrap.min.css" type="text/css" />
+        <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/bootstrap/bootstrap-theme.min.css" type="text/css" />
+        <link rel="stylesheet" href="<%= request.getContextPath() %>/static/css/bootstrap/dspace-theme.css" type="text/css" />
+
 <%
     if (!"NONE".equals(feedRef))
     {
@@ -65,7 +66,7 @@
 <%
         }
     }
-    
+
     if (osLink)
     {
 %>
@@ -79,13 +80,13 @@
 <%
         }
 %>
-        
-	<script type='text/javascript' src="<%= request.getContextPath() %>/static/js/jquery/jquery-1.10.2.min.js"></script>
-	<script type='text/javascript' src='<%= request.getContextPath() %>/static/js/jquery/jquery-ui-1.10.3.custom.min.js'></script>
-	<script type='text/javascript' src='<%= request.getContextPath() %>/static/js/bootstrap/bootstrap.min.js'></script>
-	<script type='text/javascript' src='<%= request.getContextPath() %>/static/js/holder.js'></script>
-	<script type="text/javascript" src="<%= request.getContextPath() %>/utils.js"></script>
-    <script type="text/javascript" src="<%= request.getContextPath() %>/static/js/choice-support.js"> </script>
+
+        <script type='text/javascript' src="<%= request.getContextPath() %>/static/js/jquery/jquery-1.10.2.min.js"></script>
+        <script type='text/javascript' src='<%= request.getContextPath() %>/static/js/jquery/jquery-ui-1.10.3.custom.min.js'></script>
+        <script type='text/javascript' src='<%= request.getContextPath() %>/static/js/bootstrap/bootstrap.min.js'></script>
+        <script type='text/javascript' src='<%= request.getContextPath() %>/static/js/holder.js'></script>
+        <script type="text/javascript" src="<%= request.getContextPath() %>/utils.js"></script>
+        <script type="text/javascript" src="<%= request.getContextPath() %>/static/js/choice-support.js"> </script>
 
     <%--Gooogle Analytics recording.--%>
     <%
@@ -98,130 +99,222 @@
             _gaq.push(['_trackPageview']);
 
             (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                var ga = document.createElement('script');
+                ga.type = 'text/javascript';
+                ga.async = true;
                 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+                var s = document.getElementsByTagName('script')[0];
+                s.parentNode.insertBefore(ga, s);
             })();
         </script>
     <%
     }
+
     if (extraHeadDataLast != null)
     { %>
-		<%= extraHeadDataLast %>
-		<%
-		    }
+        <%= extraHeadDataLast %>
+    <%
+    }
     %>
+
     <!-- COUNTERS -->
+
     <!-- Top.Mail.Ru counter -->
     <script type="text/javascript">
     var _tmr = window._tmr || (window._tmr = []);
-    _tmr.push({id: "3603294", type: "pageView", start: (new Date()).getTime()});
+    _tmr.push({
+        id: "3603294",
+        type: "pageView",
+        start: (new Date()).getTime()
+    });
+
     (function (d, w, id) {
-      if (d.getElementById(id)) return;
-      var ts = d.createElement("script");
-      ts.type = "text/javascript";
-      ts.async = true;
-      ts.id = id;
-      ts.src = "https://top-fwz1.mail.ru/js/code.js";
-      var f = function () {
-        var s = d.getElementsByTagName("script")[0];
-        s.parentNode.insertBefore(ts, s);
-      };
-      if (w.opera == "[object Opera]") {
-        d.addEventListener("DOMContentLoaded", f, false);
-      } else {
-        f();
-      }
+        if (d.getElementById(id)) return;
+
+        var ts = d.createElement("script");
+        ts.type = "text/javascript";
+        ts.async = true;
+        ts.id = id;
+        ts.src = "https://top-fwz1.mail.ru/js/code.js";
+
+        var f = function () {
+            var s = d.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(ts, s);
+        };
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else {
+            f();
+        }
     })(document, window, "tmr-code");
     </script>
+
     <noscript>
-      <div>
-        <img src="https://top-fwz1.mail.ru/counter?id=3603294;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru"/>
-      </div>
+        <div>
+            <img src="https://top-fwz1.mail.ru/counter?id=3603294;js=na"
+                 style="position:absolute;left:-9999px;"
+                 alt="Top.Mail.Ru"/>
+        </div>
     </noscript>
     <!-- /Top.Mail.Ru counter -->
 
-    <!-- Yandex.Metrika counter -->
+
+    <!-- Yandex.Metrika counters -->
     <script type="text/javascript">
     (function(m,e,t,r,i,k,a){
-      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-      m[i].l=1*new Date();
-      for (var j = 0; j < document.scripts.length; j++) {
-        if (document.scripts[j].src === r) { return; }
-      }
-      k=e.createElement(t),a=e.getElementsByTagName(t)[0],
-      k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })
-    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+        m[i]=m[i]||function(){
+            (m[i].a=m[i].a||[]).push(arguments)
+        };
 
+        m[i].l=1*new Date();
+
+        for (var j = 0; j < document.scripts.length; j++) {
+            if (document.scripts[j].src === r) {
+                return;
+            }
+        }
+
+        k=e.createElement(t);
+        a=e.getElementsByTagName(t)[0];
+
+        k.async=1;
+        k.src=r;
+
+        a.parentNode.insertBefore(k,a);
+    })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+
+
+    /*
+     * Yandex.Metrika counter #1
+     * ID: 22649012
+     */
     ym(22649012, "init", {
-      clickmap:true,
-      trackLinks:true,
-      accurateTrackBounce:true,
-      webvisor:true
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
+        webvisor: true
+    });
+
+
+    /*
+     * Yandex.Metrika counter #2
+     * ID: 113519684
+     */
+    ym(113519684, "init", {
+        ssr: true,
+        webvisor: true,
+        clickmap: true,
+        ecommerce: "dataLayer",
+        referrer: document.referrer,
+        url: location.href,
+        accurateTrackBounce: true,
+        trackLinks: true
     });
     </script>
-    <noscript>
-      <div>
-        <img src="https://mc.yandex.ru/watch/22649012" style="position:absolute; left:-9999px;" alt=""/>
-      </div>
-    </noscript>
-    <!-- /Yandex.Metrika counter -->
-    <!-- /COUNTERS -->
-    
 
-<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-<!--[if lt IE 9]>
-  <script src="<%= request.getContextPath() %>/static/js/html5shiv.js"></script>
-  <script src="<%= request.getContextPath() %>/static/js/respond.min.js"></script>
-<![endif]-->
+
+    <noscript>
+        <div>
+            <img src="https://mc.yandex.ru/watch/22649012"
+                 style="position:absolute; left:-9999px;"
+                 alt="" />
+        </div>
+
+        <div>
+            <img src="https://mc.yandex.ru/watch/113519684"
+                 style="position:absolute; left:-9999px;"
+                 alt="" />
+        </div>
+    </noscript>
+    <!-- /Yandex.Metrika counters -->
+
+    <!-- /COUNTERS -->
+
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="<%= request.getContextPath() %>/static/js/html5shiv.js"></script>
+      <script src="<%= request.getContextPath() %>/static/js/respond.min.js"></script>
+    <![endif]-->
+
     </head>
 
     <%-- HACK: leftmargin, topmargin: for non-CSS compliant Microsoft IE browser --%>
     <%-- HACK: marginwidth, marginheight: for non-CSS compliant Netscape browser --%>
+
     <body class="undernavigation">
+
 <a class="sr-only" href="#content">Skip navigation</a>
-<header class="navbar navbar-inverse navbar-fixed-top">    
+
+<header class="navbar navbar-inverse navbar-fixed-top">
+
     <%
     if (!navbar.equals("off"))
     {
-%>
-            <div class="container">
-                <dspace:include page="<%= navbar %>" />
-            </div>
-<%
+    %>
+        <div class="container">
+            <dspace:include page="<%= navbar %>" />
+        </div>
+    <%
     }
     else
     {
-    	%>
+    %>
         <div class="container">
             <dspace:include page="/layout/navbar-minimal.jsp" />
         </div>
-<%    	
+    <%
     }
-%>
+    %>
+
 </header>
 
+
 <main id="content" role="main">
+
 <div class="container banner">
-	<div class="row">
-		<div class="col-md-9 brand">
-		<h1><fmt:message key="jsp.layout.header-default.brand.heading" /></h1>
-        <fmt:message key="jsp.layout.header-default.brand.description" /> 
+    <div class="row">
+
+        <div class="col-md-9 brand">
+            <h1><fmt:message key="jsp.layout.header-default.brand.heading" /></h1>
+            <fmt:message key="jsp.layout.header-default.brand.description" />
         </div>
-        <div class="col-md-3"><img class="pull-right" src="<%= request.getContextPath() %>/image/logo.gif" alt="DSpace logo" />
+
+        <div class="col-md-3">
+            <img class="pull-right"
+                 src="<%= request.getContextPath() %>/image/logo.gif"
+                 alt="DSpace logo" />
         </div>
-	</div>
-</div>	
+
+    </div>
+</div>
+
 <br/>
+
+
+<!-- Yandex.Metrika informer -->
+<div class="container">
+    <a href="https://metrika.yandex.ru/stat/?id=113519684&amp;from=informer"
+       target="_blank"
+       rel="nofollow">
+        <img src="https://informer.yandex.ru/informer/113519684/3_1_E6E6EDFF_E6E6EDFF_0_pageviews"
+             style="width:88px; height:31px; border:0;"
+             alt="Яндекс.Метрика"
+             title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)" />
+    </a>
+</div>
+<!-- /Yandex.Metrika informer -->
+
+
                 <%-- Location bar --%>
 <%
     if (locbar)
     {
 %>
 <div class="container">
-                <dspace:include page="/layout/location-bar.jsp" />
-</div>                
+    <dspace:include page="/layout/location-bar.jsp" />
+</div>
 <%
     }
 %>
@@ -229,7 +322,12 @@
 
         <%-- Page contents --%>
 <div class="container">
+
 <% if (request.getAttribute("dspace.layout.sidebar") != null) { %>
-	<div class="row">
-		<div class="col-md-9">
-<% } %>		
+
+    <div class="row">
+        <div class="col-md-9">
+
+<% } %>
+
+```
