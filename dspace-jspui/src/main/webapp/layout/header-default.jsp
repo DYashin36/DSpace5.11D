@@ -1,4 +1,3 @@
-```jsp
 <%--
 
     The contents of this file are subject to the license and copyright
@@ -293,20 +292,6 @@
 <br/>
 
 
-<!-- Yandex.Metrika informer -->
-<div class="container">
-    <a href="https://metrika.yandex.ru/stat/?id=113519684&amp;from=informer"
-       target="_blank"
-       rel="nofollow">
-        <img src="https://informer.yandex.ru/informer/113519684/3_1_E6E6EDFF_E6E6EDFF_0_pageviews"
-             style="width:88px; height:31px; border:0;"
-             alt="Яндекс.Метрика"
-             title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)" />
-    </a>
-</div>
-<!-- /Yandex.Metrika informer -->
-
-
                 <%-- Location bar --%>
 <%
     if (locbar)
@@ -329,5 +314,3 @@
         <div class="col-md-9">
 
 <% } %>
-
-```
