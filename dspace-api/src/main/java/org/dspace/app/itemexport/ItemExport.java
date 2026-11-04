@@ -2246,7 +2246,7 @@ public class ItemExport {
                 schemas.add(dcv.schema);
             }
         }
-        schemas.add(MetadataSchema.DC_SCHEMA);   // dublin_core.xml нужен импорту всегда, пусть даже пустой
+        schemas.add(MetadataSchema.DC_SCHEMA);   // dublin_core.xml нужен импорту всегда
 
         for (String schema : schemas) {
             String filename = MetadataSchema.DC_SCHEMA.equals(schema)
@@ -2261,24 +2261,56 @@ public class ItemExport {
             try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outFile))) {
                 out.write("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
                         .getBytes(StandardCharsets.UTF_8));
-                out.write(("<dublin_core schema=\"" + schema + "\">\n")
+                out.write(("<dublin_core schema=\"" + xmlEscape(schema) + "\">\n")
                         .getBytes(StandardCharsets.UTF_8));
 
                 for (Metadatum dcv : i.getMetadata(schema, Item.ANY, Item.ANY, Item.ANY)) {
                     String qualifier = (dcv.qualifier == null) ? "none" : dcv.qualifier;
+                    // language="" пишем как есть: в источнике пустая строка и NULL — разные значения
                     String language = (dcv.language != null)
-                            ? " language=\"" + Utils.addEntities(dcv.language) + "\""
+                            ? " language=\"" + xmlEscape(dcv.language) + "\""
                             : "";
-                    String value = (dcv.value == null) ? "" : Utils.addEntities(dcv.value);
 
-                    out.write(("  <dcvalue element=\"" + dcv.element + "\" qualifier=\""
-                            + qualifier + "\"" + language + ">" + value + "</dcvalue>\n")
+                    out.write(("  <dcvalue element=\"" + xmlEscape(dcv.element)
+                            + "\" qualifier=\"" + xmlEscape(qualifier) + "\"" + language + ">"
+                            + xmlEscape(dcv.value) + "</dcvalue>\n")
                             .getBytes(StandardCharsets.UTF_8));
                 }
 
                 out.write("</dublin_core>\n".getBytes(StandardCharsets.UTF_8));
             }
         }
+    }
+
+    /**
+     * Экранирование для SAF: только то, что требует XML. Кириллица, пробелы, слэши остаются как есть.
+     * \r пишется ссылкой &#13;, иначе XML-парсер при чтении превратит \r\n в \n.
+     * Управляющие символы, недопустимые в XML 1.0, заменяются на U+FFFD.
+     */
+    private static String xmlEscape(String s) {
+        if (s == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(s.length() + 16);
+        for (int k = 0; k < s.length(); k++) {
+            char ch = s.charAt(k);
+            switch (ch) {
+                case '&':  sb.append("&amp;");  break;
+                case '<':  sb.append("&lt;");   break;
+                case '>':  sb.append("&gt;");   break;
+                case '"':  sb.append("&quot;"); break;
+                case '\r': sb.append("&#13;");  break;
+                case '\t':
+                case '\n': sb.append(ch);       break;
+                default:
+                    if (ch < 0x20 || ch == 0xFFFE || ch == 0xFFFF) {
+                        sb.append('\uFFFD');
+                    } else {
+                        sb.append(ch);
+                    }
+            }
+        }
+        return sb.toString();
     }
 
 }
