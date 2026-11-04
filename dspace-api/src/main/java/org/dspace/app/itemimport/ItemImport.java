@@ -99,6 +99,12 @@ public class ItemImport {
 
     private static boolean template = false;
 
+        // -k: полный перенос — сохранить исходные даты поступления и provenance
+    private static boolean keepMetadata = false;
+
+    // -N: не выгружать импортированные записи в папку 1С
+    private static boolean skip1CExport = false;
+
     private static PrintWriter mapOut = null;
 
     private static final String tempWorkDir = ConfigurationManager.getProperty("org.dspace.app.batchitemimport.work.dir");
@@ -165,7 +171,10 @@ public class ItemImport {
             options.addOption("R", "resume", false,
                     "resume a failed import (add only)");
             options.addOption("q", "quiet", false, "don't display metadata");
-
+                        options.addOption("k", "keep-metadata", false,
+                    "keep original dates and provenance from the archive (InstallItem.restoreItem)");
+            options.addOption("N", "no-1c-export", false,
+                    "do not export imported items to the 1C folder");
             options.addOption("h", "help", false, "help");
 
             CommandLine line = parser.parse(options, argv);
@@ -189,6 +198,8 @@ public class ItemImport {
                 System.out
                         .println("deleting items:  ItemImport -d -e eperson -m mapfile");
                 System.out
+                        .println("full migration:  ItemImport -a -k -N -e eperson -c collection -s sourcedir -m mapfile");
+                        System.out
                         .println("If multiple collections are specified, the first collection will be the one that owns the item.");
 
                 System.exit(0);
@@ -258,6 +269,16 @@ public class ItemImport {
 
             if (line.hasOption('q')) {
                 isQuiet = true;
+            }
+
+                        if (line.hasOption('k')) {
+                keepMetadata = true;
+                System.out.println("**Keep metadata** - original dates and provenance will be preserved");
+            }
+
+            if (line.hasOption('N')) {
+                skip1CExport = true;
+                System.out.println("**No 1C export** - imported items will not be exported to the 1C folder");
             }
 
             boolean zip = false;
@@ -346,6 +367,13 @@ public class ItemImport {
             if (isResume && !"add".equals(command) && !"add-bte".equals(command)) {
                 System.out
                         .println("Error - resume option only works with the --add or the --add-bte commands");
+                System.exit(1);
+            }
+
+                        // restoreItem работает только при прямой установке в архив, не через workflow
+            if (keepMetadata && useWorkflow) {
+                System.out
+                        .println("Error - --keep-metadata cannot be used with --workflow");
                 System.exit(1);
             }
 
@@ -704,8 +732,10 @@ public class ItemImport {
              * do a delete as any error results in an aborted transaction without harming
              * the original item */
             File handleFile = new File(sourceDir + File.separatorChar + newItemName + File.separatorChar + "handle");
-            PrintWriter handleOut = new PrintWriter(new FileWriter(handleFile, true));
-
+            // false = перезаписать: если в выгрузке уже лежит handle-файл (экспорт без -m),
+            // при дописывании первой строкой остался бы исходный handle, а processHandleFile
+            // читает только первую строку — запись получила бы не тот handle.
+            PrintWriter handleOut = new PrintWriter(new FileWriter(handleFile, false));
             if (handleOut == null) {
                 throw new Exception("can't open handle file: " + handleFile.getCanonicalPath());
             }
@@ -807,9 +837,17 @@ public class ItemImport {
                     + File.separatorChar + itemname, "handle");
 
             // put item in system
+            
             if (!isTest) {
                 try {
-                    InstallItem.installItem(c, wi, myhandle);
+                    if (keepMetadata) {
+                        // Полный перенос: метаданные остаются как в архиве.
+                        // restoreItem добавляет accessioned/issued только если их нет
+                        // и пишет в provenance одну строку "Restored into DSpace on ...".
+                        InstallItem.restoreItem(c, wi, myhandle);
+                    } else {
+                        InstallItem.installItem(c, wi, myhandle);
+                    }
                 } catch (Exception e) {
                     wi.deleteAll();
                     log.error("Exception after install item, try to revert...", e);
@@ -844,16 +882,20 @@ public class ItemImport {
         }
         String dspaceDir = ConfigurationManager.getProperty("dspace.1C.dir");
         c.commit();
-        //THIS IS CUSTOM EXPORT DATA TO 1C AFTER dspace import -a -e eperson -m pathtomapfile -s pathtothesourcefolder -c newhandlecollecton
-        try {
-            String exportPath = dspaceDir;// + "/1C";
-            //ЗДЕСЬ Я ПРАВЛЮ ПАПКУ 1С
-            //НЕ ТЕРЯТЬ!!!
-            //int seq = myitem.getID(); 
-            ItemExport.exportItemToFolder(c, myitem, exportPath, 0, false);
-            log.info("Item ID=" + myitem.getID() + " exported to folder " + exportPath);
-        } catch (Exception ex) {
-            log.error("Error occured in the export process" + myitem.getID(), ex);
+                //THIS IS CUSTOM EXPORT DATA TO 1C AFTER dspace import -a -e eperson -m pathtomapfile -s pathtothesourcefolder -c newhandlecollecton
+        // В тестовом режиме myitem == null: раньше здесь был NullPointerException,
+        // причём повторный — внутри catch, и тестовый прогон обрывался на первой записи.
+        if (!isTest && !skip1CExport && myitem != null) {
+            try {
+                String exportPath = dspaceDir;// + "/1C";
+                //ЗДЕСЬ Я ПРАВЛЮ ПАПКУ 1С
+                //НЕ ТЕРЯТЬ!!!
+                //int seq = myitem.getID();
+                ItemExport.exportItemToFolder(c, myitem, exportPath, 0, false);
+                log.info("Item ID=" + myitem.getID() + " exported to folder " + exportPath);
+            } catch (Exception ex) {
+                log.error("Error occured in the export process " + myitem.getID(), ex);
+            }
         }
 
         return myitem;
@@ -989,9 +1031,14 @@ public class ItemImport {
         String qualifier = getAttributeValue(n, "qualifier"); //NodeValue();
         // //getElementData(n,
         // "qualifier");
-        String language = getAttributeValue(n, "language");
+                String language = getAttributeValue(n, "language");
         if (language != null) {
             language = language.trim();
+            // getAttributeValue возвращает "" при отсутствии атрибута;
+            // сохраняем NULL, как у исходных значений без языка
+            if (language.isEmpty()) {
+                language = null;
+            }
         }
 
         if (!isQuiet) {

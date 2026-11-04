@@ -405,7 +405,9 @@ public class ItemExport {
 
             // make it this far, now start exporting
             log.info("ItemExport>>exportItemToFolderMass>>here we call writeMetadataMass");
-            writeMetadataMass(c, schemas.iterator().next(), myItem, itemDir, migrate, files);
+            //writeMetadataMass(c, schemas.iterator().next(), myItem, itemDir, migrate, files);//ИЗМЕНЕНИЕ 04.11
+            // все схемы в одном файле, порядок схем больше не влияет на результат
+            writeMetadataMass(c, Item.ANY, myItem, itemDir, migrate, files);
             //writeBitstreams(c, myItem, itemDir);
             if (!migrate) {
                 //     writeHandle(c, myItem, itemDir);
@@ -418,7 +420,7 @@ public class ItemExport {
         }
     }
 
-    private static void exportItem(Context c, Item myItem, String destDirName,
+        private static void exportItem(Context c, Item myItem, String destDirName,
             int seqStart, boolean migrate) throws Exception {
         File destDir = new File(destDirName);
 
@@ -436,7 +438,8 @@ public class ItemExport {
 
             if (itemDir.mkdir()) {
                 // make it this far, now start exporting
-                writeMetadata(c, myItem, itemDir, migrate, 0);
+                writeMetadata(c, myItem, itemDir, migrate, 0);   // ExchangeXML (для 1С)
+                writeSafMetadata(myItem, itemDir);               // SAF: все схемы, все поля
                 writeBitstreams(c, myItem, itemDir);
                 if (!migrate) {
                     writeHandle(c, myItem, itemDir);
@@ -459,19 +462,25 @@ public class ItemExport {
      * @param destDir
      * @throws Exception
      */
-    private static void writeMetadata(Context c, Item i, File destDir, boolean migrate, Integer files)
+        private static void writeMetadata(Context c, Item i, File destDir, boolean migrate, Integer files)
             throws Exception {
-        Set<String> schemas = new HashSet<String>();
-        Metadatum[] dcValues = i.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY);
-        for (Metadatum dcValue : dcValues) {
-            schemas.add(dcValue.schema);
-        }
-
-        // Save each of the schemas into it's own metadata file
-        for (String schema : schemas) {
-            writeMetadata(c, schema, i, destDir, migrate, files);
-        }
+        // ExchangeXML — один файл на запись, значения всех схем.
+        // Цикл по схемам падал на второй схеме: имя файла от схемы не зависит.
+        writeMetadata(c, Item.ANY, i, destDir, migrate, files);
     }
+    // private static void writeMetadata(Context c, Item i, File destDir, boolean migrate, Integer files)
+    //         throws Exception {
+    //     Set<String> schemas = new HashSet<String>();
+    //     Metadatum[] dcValues = i.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY);
+    //     for (Metadatum dcValue : dcValues) {
+    //         schemas.add(dcValue.schema);
+    //     }
+
+    //     // Save each of the schemas into it's own metadata file
+    //     for (String schema : schemas) {
+    //         writeMetadata(c, schema, i, destDir, migrate, files);
+    //     }
+    // }
 
     //custom metadata writing
     private static void writeMetadataOld(Context c, String schema, Item i,
@@ -960,7 +969,7 @@ public class ItemExport {
         String filename;
         String filename2 = "";
 
-        if (schema.equals(MetadataSchema.DC_SCHEMA)) {
+            if (schema.equals(MetadataSchema.DC_SCHEMA) || Item.ANY.equals(schema)) {
             filename = "dublin_core.xml";
             filename2 = dateFormat.format(date) + zeroes + ".xml";
         } else {
@@ -2224,6 +2233,52 @@ public class ItemExport {
 
         boolean pathDeleted = path.delete();
         return (pathDeleted);
+    }
+
+        /**
+     * Стандартный SAF: dublin_core.xml для dc и metadata_<schema>.xml для остальных схем.
+     * Все поля без фильтрации, с языком, в исходном порядке значений.
+     */
+    private static void writeSafMetadata(Item i, File destDir) throws Exception {
+        Set<String> schemas = new HashSet<String>();
+        for (Metadatum dcv : i.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY)) {
+            if (dcv.schema != null) {
+                schemas.add(dcv.schema);
+            }
+        }
+        schemas.add(MetadataSchema.DC_SCHEMA);   // dublin_core.xml нужен импорту всегда, пусть даже пустой
+
+        for (String schema : schemas) {
+            String filename = MetadataSchema.DC_SCHEMA.equals(schema)
+                    ? "dublin_core.xml"
+                    : "metadata_" + schema + ".xml";
+            File outFile = new File(destDir, filename);
+
+            if (!outFile.createNewFile()) {
+                throw new Exception("Cannot create " + filename + " in " + destDir);
+            }
+
+            try (BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outFile))) {
+                out.write("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+                        .getBytes(StandardCharsets.UTF_8));
+                out.write(("<dublin_core schema=\"" + schema + "\">\n")
+                        .getBytes(StandardCharsets.UTF_8));
+
+                for (Metadatum dcv : i.getMetadata(schema, Item.ANY, Item.ANY, Item.ANY)) {
+                    String qualifier = (dcv.qualifier == null) ? "none" : dcv.qualifier;
+                    String language = (dcv.language != null)
+                            ? " language=\"" + Utils.addEntities(dcv.language) + "\""
+                            : "";
+                    String value = (dcv.value == null) ? "" : Utils.addEntities(dcv.value);
+
+                    out.write(("  <dcvalue element=\"" + dcv.element + "\" qualifier=\""
+                            + qualifier + "\"" + language + ">" + value + "</dcvalue>\n")
+                            .getBytes(StandardCharsets.UTF_8));
+                }
+
+                out.write("</dublin_core>\n".getBytes(StandardCharsets.UTF_8));
+            }
+        }
     }
 
 }
